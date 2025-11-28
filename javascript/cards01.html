@@ -1,0 +1,696 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>JavaScript Functions — Flashcards</title>
+<link rel="stylesheet" href="../examples/flashcards-responsive.css">
+
+<style>
+  :root{
+    --bg1: #071426;
+    --bg2: #0e2a4f;
+    --card-front: linear-gradient(135deg,#0f172a 0%, #112240 60%);
+    --accent: #7dd3fc;
+    --accent-2: #60a5fa;
+    --glass: rgba(255,255,255,0.06);
+    --muted: rgba(255,255,255,0.75);
+    --success: #16a34a;
+    --danger: #ef4444;
+    --card-width: min(880px, 86vw);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+                 Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji",
+                 "Segoe UI Emoji", "Segoe UI Symbol";
+  }
+
+  html,body{height:100%;}
+  body{
+    margin:0;
+    /* min-height:auto; */
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background: radial-gradient(1200px 600px at 10% 10%, rgba(96,165,250,0.06), transparent 8%),
+                linear-gradient(180deg,var(--bg1), var(--bg2));
+    color: #f8fafc;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    padding:32px;
+  }
+
+  .app {
+    width: var(--card-width);
+    max-width:100%;
+    display:grid;
+    grid-template-columns: 1fr 320px;
+    gap:20px;
+    align-items:start;
+  }
+
+  /* Left: flashcard area */
+  .study {
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 10px 30px rgba(2,6,23,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
+    min-height: 420px;
+  }
+
+  .header {
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom: 16px;
+  }
+  .brand {
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .logo {
+    width:56px; height:56px;
+    border-radius:12px;
+    background: linear-gradient(135deg,var(--accent),var(--accent-2));
+    display:grid; place-items:center;
+    font-weight:700; color:#02203a;
+    box-shadow:0 6px 18px rgba(17,24,39,0.5);
+  }
+  .title {
+    font-size:18px;
+    line-height:1;
+  }
+  .subtitle {
+    font-size:12px;
+    color:var(--muted);
+  }
+
+  .card-stage{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px 12px;
+  }
+
+  /* card */
+  .card-wrap {
+    perspective:1400px;
+    width:100%;
+    max-width:700px;
+    height:320px;
+    margin: 0 auto;
+    position:relative;
+  }
+  .card {
+    width:100%;
+    height:100%;
+    transform-style: preserve-3d;
+    transition: transform 560ms cubic-bezier(.2,.9,.2,1);
+    cursor:pointer;
+    border-radius:12px;
+    box-shadow: 0 20px 40px rgba(2,6,23,0.6);
+    position:relative;
+  }
+
+  .card.is-flipped {
+    transform: rotateY(180deg) scale(1.02);
+  }
+
+  .card-face {
+    position:absolute;
+    inset:0;
+    backface-visibility: hidden;
+    border-radius:12px;
+    padding:28px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:10px;
+  }
+
+  .front {
+    background: var(--card-front);
+    border: 1px solid rgba(255,255,255,0.04);
+  }
+  .back {
+    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+    transform: rotateY(180deg);
+    border: 1px solid rgba(255,255,255,0.03);
+  }
+
+  .card-content {
+    font-size:20px;
+    line-height:1.3;
+    max-height: 70%;
+    overflow:auto;
+  }
+
+  .meta {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    margin-top:12px;
+    color:var(--muted);
+    font-size:13px;
+  }
+
+  /* Right column (controls + list) */
+  .controls {
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+    border-radius: 12px;
+    padding:18px;
+    box-shadow: 0 8px 30px rgba(2,6,23,0.5);
+    height:fit-content;
+  }
+
+  .btn {
+    background:var(--glass);
+    color:var(--muted);
+    border: none;
+    padding:10px 12px;
+    border-radius:10px;
+    cursor:pointer;
+    min-width:44px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    font-weight:600;
+  }
+  .btn:hover { transform: translateY(-2px); }
+  .btn.primary {
+    background: linear-gradient(90deg,var(--accent),var(--accent-2));
+    color:#031124;
+    box-shadow: 0 8px 24px rgba(96,165,250,0.12);
+  }
+  .btn.ghost {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.04);
+  }
+  .btn.small { padding:8px 10px; font-size:13px; min-width:38px; }
+
+  .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+
+  progress {
+    width:100%;
+    height:10px;
+    accent-color: #7dd3fc;
+    border-radius:999px;
+    overflow:hidden;
+    -webkit-appearance:none;
+  }
+  progress::-webkit-progress-bar { background: rgba(255,255,255,0.03); border-radius:999px; }
+  progress::-webkit-progress-value { background: linear-gradient(90deg,var(--accent),var(--accent-2)); border-radius:999px; }
+
+  .counter { font-size:13px; color:var(--muted); margin-top:10px; }
+
+  .controls h3 { margin:6px 0 12px; font-size:15px; }
+
+  .card-list {
+    margin-top:12px;
+    max-height:260px;
+    overflow:auto;
+    border-radius:8px;
+    background: rgba(255,255,255,0.02);
+    padding:10px;
+    font-size:13px;
+  }
+
+  .card-item {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:8px;
+    border-radius:8px;
+    margin-bottom:6px;
+    transition: background .15s;
+  }
+  .card-item:hover{ background: rgba(255,255,255,0.02); }
+  .tag-known { color:var(--success); font-weight:700; }
+  .tag-unknown { color:var(--danger); font-weight:700; }
+
+  /* footer controls under card */
+  .actions { display:flex; gap:8px; justify-content:center; margin-top:14px; }
+
+  /* focus states */
+  button:focus, .card:focus { outline: 3px solid rgba(125,211,252,0.12); outline-offset:4px; }
+
+  /* small screens */
+  @media (max-width:960px){
+    .app { grid-template-columns: 1fr; padding-bottom:46px;}
+    .controls{ order: -1; margin-bottom:10px; }
+    .card-stage { padding-top:8px; }
+  }
+
+  /* print */
+  @media print{
+    body { background: white; color: black; }
+    .controls, .header, .meta, .actions, .logo { display:none !important; }
+    .card { box-shadow:none; transform:none !important; }
+    .card-face { transform:none !important; }
+    .card-content { font-size:16px; color:black; }
+  }
+
+  /* small helper */
+  .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace; font-size:12px; padding:6px 8px; background: rgba(255,255,255,0.03); border-radius:6px; border:1px solid rgba(255,255,255,0.02);}
+</style>
+</head>
+<body>
+<div class="app" role="application" aria-label="Rust Ownership flashcards">
+  <section class="study" aria-labelledby="study-title">
+    <div class="header">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">JS</div>
+        <div>
+          <div class="title" id="study-title">JavaScript weakness NOV 2025</div>
+          <div class="subtitle">Interactive flashcards • Keyboard: ← → flip: Space • Mark: K/U • Shuffle: S</div>
+        </div>
+      </div>
+      <div style="margin-left:auto; display:flex; gap:8px;">
+        <button id="shuffleBtn" class="btn small ghost" title="Shuffle (S)">🔀 Shuffle</button>
+        <button id="resetBtn" class="btn small ghost" title="Reset Known">♻️ Reset</button>
+      </div>
+    </div>
+
+    <div class="card-stage">
+      <div class="card-wrap" id="cardWrap">
+        <div id="card" class="card" tabindex="0" role="button" aria-pressed="false" aria-label="Flashcard. Press Space to flip.">
+          <div class="card-face front" id="cardFront" aria-hidden="false">
+            <div class="card-content" id="frontText"></div>
+            <div class="meta">
+              <div id="cardIndex">1 / 20</div>
+              <div id="tagStatus" class="tag-unknown">Unknown</div>
+            </div>
+          </div>
+          <div class="card-face back" id="cardBack" aria-hidden="true">
+            <div class="card-content" id="backText"></div>
+            <div class="meta">
+              <div>Flip back to continue</div>
+              <div class="row">
+                <button id="knownBtn" class="btn small primary" title="Mark Known (K)">✅ Known</button>
+                <button id="unknownBtn" class="btn small ghost" title="Mark Unknown (U)">❌ Unknown</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions" role="group" aria-label="Card controls">
+      <button id="prevBtn" class="btn ghost" title="Previous (←)">◀ Prev</button>
+      <button id="flipBtn" class="btn" title="Flip (Space)">🔁 Flip</button>
+      <button id="nextBtn" class="btn ghost" title="Next (→)">Next ▶</button>
+    </div>
+
+    <div class="counter" id="progressInfo" aria-live="polite">Progress: <span id="knownCount">0</span>/<span id="totalCount">0</span> known</div>
+    <progress id="progress" value="0" max="100" aria-hidden="true"></progress>
+  </section>
+
+  <aside class="controls" aria-labelledby="controls-title">
+    <h3 id="controls-title">Controls & Card List</h3>
+
+    <div class="row" style="margin-bottom:12px;">
+      <button id="studyKnownOnly" class="btn small">Show Unknown Only</button>
+      <button id="downloadBtn" class="btn small">⤓ Export Progress</button>
+      <button id="printBtn" class="btn small">🖨 Print</button>
+    </div>
+
+    <div class="row" style="margin-bottom:8px;">
+      <div style="flex:1">
+        <div style="font-size:13px; color:var(--muted)">Progress</div>
+        <progress id="sideProgress" value="0" max="100"></progress>
+        <div style="display:flex; justify-content:space-between; margin-top:6px; font-size:13px; color:var(--muted);">
+          <div><span id="sideKnown">0</span> known</div>
+          <div><span id="sideTotal">0</span> total</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-list" id="cardList" tabindex="0" aria-label="List of cards">
+      <!-- populated by JS -->
+    </div>
+
+    <div style="margin-top:12px; font-size:13px; color:var(--muted)">
+      <div style="margin-bottom:6px;">Keyboard shortcuts</div>
+      <div class="row"><span class="kbd">←</span> Prev</div>
+      <div class="row"><span class="kbd">→</span> Next</div>
+      <div class="row"><span class="kbd">Space</span> Flip</div>
+      <div class="row"><span class="kbd">K</span> Mark Known</div>
+      <div class="row"><span class="kbd">U</span> Mark Unknown</div>
+      <div class="row"><span class="kbd">S</span> Shuffle</div>
+    </div>
+  </aside>
+</div>
+
+<script>
+/*
+  Rust Ownership & Borrowing Flashcards
+  - Single-file app
+  - Cards are defined in `cards` array
+  - State persisted into localStorage under 'rust_flashcards_progress_v1'
+*/
+
+const cards = [
+{ id: 1, front: "What is the key difference between var, let, and const?", back: "var is function/global scoped and can be redeclared, let and const are block scoped. let can be reassigned, const cannot." },
+{ id: 2, front: "What is function scope vs block scope?", back: "Function scope means a variable is available throughout the function. Block scope confines a variable to the nearest enclosing {} block." },
+{ id: 3, front: "What happens if you access a var variable before it is declared?", back: "It returns undefined because of hoisting." },
+{ id: 4, front: "What happens if you access a let or const variable before declaration?", back: "Throws ReferenceError due to the temporal dead zone." },
+{ id: 5, front: "When should you use const vs let?", back: "Use const by default to declare variables that shouldn't change; use let if reassignment is needed." },
+{ id: 6, front: "Give an example of closure in JavaScript.", back: "function outer() { let counter=0; return function() { return ++counter; } } const count = outer(); count(); // 1" },
+{ id: 7, front: "What is a closure?", back: "A function remembering variables from its enclosing scope even after the outer function has finished execution." },
+{ id: 8, front: "How is closure used in event listeners?", back: "Event handler functions access variables from the outer scope that existed when they were defined." },
+{ id: 9, front: "Explain this keyword inside an event handler.", back: "`this` refers to the element that received the event (e.g., the button)." },
+{ id: 10, front: "Explain this keyword inside a constructor function.", back: "`this` refers to the new instance created by the constructor." },
+{ id: 11, front: "How does this behave differently in arrow functions?", back: "Arrow functions don't bind their own this; they inherit from the enclosing scope." },
+{ id: 12, front: "What is variable hoisting in JavaScript?", back: "Variables declared with var are hoisted and initialized with undefined, let and const are hoisted but uninitialized." },
+{ id: 13, front: "What is the temporal dead zone?", back: "The phase between block start and variable declaration where let/const can't be accessed." },
+{ id: 14, front: "How do you add a click event listener to all elements with class 'btn'?", back: "document.querySelectorAll('.btn').forEach(btn => btn.addEventListener('click', () => alert('Clicked!')));" },
+{ id: 15, front: "How do you create and append a new list item to a ul with id 'list'?", back: "const li = document.createElement('li'); li.textContent = 'Item 1'; document.getElementById('list').appendChild(li);" },
+{ id: 16, front: "What is the difference between splice and slice?", back: "splice modifies the original array, slice returns a new array without modifying the original." },
+{ id: 17, front: "Explain function vs block scope with var and let example.", back: "var is function scoped, so inside if(var x=5), x accessible outside if block; let is block scoped, not accessible outside {}." },
+{ id: 18, front: "How does this keyword behave in object methods?", back: "In non-arrow function methods, this refers to the object owning the method." },
+{ id: 19, front: "Why use closures? Give a practical use case.", back: "To create private variables or remember state, e.g., counters, event handlers accessing outer variables." },
+{ id: 20, front: "What happens when you reassign a const variable?", back: "It throws a TypeError because const variables cannot be reassigned." },
+{ id: 21, front: "What does querySelector return?", back: "First matching element or null if none found." },
+{ id: 22, front: "What does querySelectorAll return?", back: "NodeList (array-like) of all matching elements." },
+{ id: 23, front: "Difference between getElementById vs querySelector?", back: "getElementById is faster, only by ID; querySelector uses CSS selectors." },
+{ id: 24, front: "How do you remove an element from DOM?", back: "element.remove() or parent.removeChild(element)" },
+{ id: 25, front: "What is event bubbling?", back: "Event triggers on target, then bubbles up to parent elements." },
+{ id: 26, front: "How to stop event bubbling?", back: "event.stopPropagation()" },
+{ id: 27, front: "What is event.preventDefault()?", back: "Prevents default browser behavior (form submit, link navigation)." },
+{ id: 28, front: "Closure example: private counter", back: "function createCounter() { let count=0; return { inc: () => ++count, get: () => count } }" },
+{ id: 29, front: "`this` in arrow function inside object method?", back: "Inherits from enclosing scope, NOT the object (lexical this)." },
+{ id: 30, front: "What is lexical this?", back: "Arrow functions use `this` from the scope where they were defined." },
+{ id: 31, front: "How to bind this correctly?", back: "myMethod.call(obj), myMethod.bind(obj), or arrow functions." },
+{ id: 32, front: "What happens with var in for loop with setTimeout?", back: "All timeouts use same i value due to function scope." },
+{ id: 33, front: "Fix for var setTimeout loop problem?", back: "Use let (block scope) or closure: for(var i=0; i<3; i++) (function(j){setTimeout(()=>console.log(j),1000)})(i)" },
+{ id: 34, front: "What is addEventListener vs onclick?", back: "addEventListener allows multiple listeners, onclick overwrites." },
+{ id: 35, front: "How to toggle a CSS class?", back: "element.classList.toggle('active')" },
+{ id: 36, front: "Difference between innerHTML vs textContent?", back: "innerHTML parses HTML, textContent treats as plain text only." },
+{ id: 37, front: "What does createElement return?", back: "New DOM element that needs to be appended to use." },
+{ id: 38, front: "Closure use case: module pattern", back: "function MyModule() { let privateVar; return { publicMethod: () => privateVar } }" },
+{ id: 39, front: "Why does `const obj = {a:1}; obj.a=2` work?", back: "const prevents reassignment of obj reference, not mutation of object properties." },
+{ id: 40, front: "What is the Temporal Dead Zone (TDZ)?", back: "Period from block start to let/const declaration where access throws ReferenceError." }
+
+];
+
+// DOM refs
+const frontText = document.getElementById('frontText');
+const backText = document.getElementById('backText');
+const cardEl = document.getElementById('card');
+const cardIndexEl = document.getElementById('cardIndex');
+const tagStatus = document.getElementById('tagStatus');
+const progress = document.getElementById('progress');
+const sideProgress = document.getElementById('sideProgress');
+const knownCountEl = document.getElementById('knownCount');
+const totalCountEl = document.getElementById('totalCount');
+const sideKnown = document.getElementById('sideKnown');
+const sideTotal = document.getElementById('sideTotal');
+const cardList = document.getElementById('cardList');
+const progressInfo = document.getElementById('progressInfo');
+
+const STORAGE_KEY = 'rust_flashcards_progress_v1';
+
+// state
+let order = cards.map(c => c.id); // current order of card ids
+let currentIndex = 0; // index into order
+let flipped = false;
+let progressState = {}; // { id: 'known' | 'unknown' }
+let filterUnknownOnly = false;
+
+// load saved progress
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      progressState = parsed.progressState || {};
+      // keep order if provided (allow consistent resume)
+      if (Array.isArray(parsed.order) && parsed.order.length === cards.length) {
+        order = parsed.order;
+      }
+      currentIndex = parsed.currentIndex || 0;
+    }
+  } catch(e){
+    console.warn("Could not load saved progress", e);
+  }
+}
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ progressState, order, currentIndex }));
+}
+
+// helpers
+function getCardById(id) { return cards.find(c => c.id === id); }
+function getVisibleOrder(){
+  if(!filterUnknownOnly) return order.slice();
+  // only ids that are unknown or not known
+  return order.filter(id => progressState[id] !== 'known');
+}
+
+function renderCardList() {
+  const visible = getVisibleOrder();
+  cardList.innerHTML = visible.map((id,idx) => {
+    const c = getCardById(id);
+    const status = progressState[id] === 'known' ? 'Known' : 'Unknown';
+    const tag = progressState[id] === 'known' ? 'tag-known' : 'tag-unknown';
+    return `
+      <div class="card-item" data-id="${id}" role="button" tabindex="0" aria-label="Card ${idx+1}: ${c.front}">
+        <div style="display:flex; gap:8px; align-items:center;">
+          <div style="width:34px; font-weight:700; color:var(--muted)">${idx+1}</div>
+          <div style="min-width:0;">
+            <div style="font-weight:700; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(c.front)}</div>
+            <div style="font-size:12px; color:var(--muted)">${escapeHtml(c.back).slice(0,80)}${c.back.length>80?'…':''}</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <div class="${tag}">${status}</div>
+          <button class="btn small ghost viewBtn" data-id="${id}" title="Go to card">Go</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+  // attach listeners for go buttons and items
+  cardList.querySelectorAll('.viewBtn').forEach(b => {
+    b.addEventListener('click', (e) => {
+      const id = parseInt(e.currentTarget.dataset.id,10);
+      goToCard(id);
+    });
+  });
+  cardList.querySelectorAll('.card-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const id = parseInt(item.dataset.id,10);
+      goToCard(id);
+    });
+    item.addEventListener('keydown', (ev) => {
+      if(ev.key === 'Enter' || ev.key === ' ') {
+        ev.preventDefault();
+        const id = parseInt(item.dataset.id,10);
+        goToCard(id);
+      }
+    });
+  });
+}
+
+function escapeHtml(s){
+  return (s+'').replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  })[c]);
+}
+
+function renderCurrent() {
+  const visible = getVisibleOrder();
+  if(visible.length === 0){
+    frontText.innerHTML = "<strong>All cards filtered out.</strong><div style='margin-top:8px;color:var(--muted)'>Toggle Unknown Only.</div>";
+    backText.innerHTML = "";
+    cardIndexEl.textContent = "— / —";
+    tagStatus.textContent = "";
+    progress.value = 100;
+    sideProgress.value = 100;
+    return;
+  }
+  if(currentIndex >= visible.length) currentIndex = visible.length - 1;
+  if(currentIndex < 0) currentIndex = 0;
+
+  const id = visible[currentIndex];
+  const card = getCardById(id);
+  frontText.innerHTML = escapeHtml(card.front);
+  backText.innerHTML = escapeHtml(card.back);
+  cardIndexEl.textContent = `${currentIndex + 1} / ${visible.length}`;
+
+  // status tag based on progressState
+  const state = progressState[id];
+  tagStatus.textContent = state === 'known' ? 'Known' : 'Unknown';
+  tagStatus.className = state === 'known' ? 'tag-known' : 'tag-unknown';
+
+  updateProgressIndicators();
+  // ensure card is unflipped when navigating
+  setFlip(false);
+}
+
+function updateProgressIndicators() {
+  const total = cards.length;
+  const known = Object.values(progressState).filter(v => v === 'known').length;
+  const pct = Math.round((known / total) * 100);
+  progress.value = pct;
+  sideProgress.value = pct;
+  knownCountEl.textContent = known;
+  totalCountEl.textContent = total;
+  sideKnown.textContent = known;
+  sideTotal.textContent = total;
+}
+
+function setFlip(v) {
+  flipped = !!v;
+  if(flipped) {
+    cardEl.classList.add('is-flipped');
+    cardEl.setAttribute('aria-pressed','true');
+    document.getElementById('cardFront').setAttribute('aria-hidden','true');
+    document.getElementById('cardBack').setAttribute('aria-hidden','false');
+  } else {
+    cardEl.classList.remove('is-flipped');
+    cardEl.setAttribute('aria-pressed','false');
+    document.getElementById('cardFront').setAttribute('aria-hidden','false');
+    document.getElementById('cardBack').setAttribute('aria-hidden','true');
+  }
+  save();
+}
+
+function nextCard() {
+  const visible = getVisibleOrder();
+  if(visible.length === 0) return;
+  currentIndex = Math.min(visible.length - 1, currentIndex + 1);
+  renderCurrent();
+  save();
+}
+
+function prevCard() {
+  const visible = getVisibleOrder();
+  if(visible.length === 0) return;
+  currentIndex = Math.max(0, currentIndex - 1);
+  renderCurrent();
+  save();
+}
+
+function goToCard(id) {
+  const visible = getVisibleOrder();
+  const idx = visible.indexOf(id);
+  if(idx === -1) return;
+  currentIndex = idx;
+  renderCurrent();
+  // focus card for keyboard interaction
+  cardEl.focus();
+  save();
+}
+
+function markCurrent(state) {
+  const visible = getVisibleOrder();
+  if(visible.length === 0) return;
+  const id = visible[currentIndex];
+  progressState[id] = state;
+  // if filterUnknownOnly AND state is known, we should keep the same index but it will refer to next visible
+  // so clamp index
+  const visibleAfter = getVisibleOrder();
+  if(filterUnknownOnly) {
+    if(visibleAfter.length === 0) { currentIndex = 0; }
+    else currentIndex = Math.min(currentIndex, visibleAfter.length - 1);
+  }
+  renderCardList();
+  renderCurrent();
+  save();
+}
+
+function shuffleOrder(seedless=true) {
+  // Fisher-Yates
+  for(let i = order.length -1; i>0; i--){
+    const j = Math.floor(Math.random() * (i+1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  currentIndex = 0;
+  renderCardList();
+  renderCurrent();
+  save();
+}
+
+function resetProgress() {
+  if(!confirm("Reset known/unknown progress for all cards?")) return;
+  progressState = {};
+  renderCardList();
+  renderCurrent();
+  save();
+}
+
+// export progress as JSON file
+function exportProgress() {
+  const payload = { progressState, order, timestamp: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type:'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'rust_flashcards_progress.json';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+
+// keyboard
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'ArrowRight') { e.preventDefault(); nextCard(); }
+  if(e.key === 'ArrowLeft') { e.preventDefault(); prevCard(); }
+  if(e.code === 'Space') { e.preventDefault(); setFlip(!flipped); }
+  if(e.key.toLowerCase() === 'k') { markCurrent('known'); }
+  if(e.key.toLowerCase() === 'u') { markCurrent('unknown'); }
+  if(e.key.toLowerCase() === 's') { shuffleOrder(); }
+});
+
+// DOM events
+document.getElementById('nextBtn').addEventListener('click', nextCard);
+document.getElementById('prevBtn').addEventListener('click', prevCard);
+document.getElementById('flipBtn').addEventListener('click', () => setFlip(!flipped));
+cardEl.addEventListener('click', () => setFlip(!flipped));
+document.getElementById('knownBtn').addEventListener('click', () => markCurrent('known'));
+document.getElementById('unknownBtn').addEventListener('click', () => markCurrent('unknown'));
+document.getElementById('shuffleBtn').addEventListener('click', shuffleOrder);
+document.getElementById('resetBtn').addEventListener('click', resetProgress);
+document.getElementById('downloadBtn').addEventListener('click', exportProgress);
+document.getElementById('printBtn').addEventListener('click', () => window.print());
+document.getElementById('studyKnownOnly').addEventListener('click', () => {
+  filterUnknownOnly = !filterUnknownOnly;
+  document.getElementById('studyKnownOnly').textContent = filterUnknownOnly ? 'Show All' : 'Show Unknown Only';
+  currentIndex = 0;
+  renderCardList();
+  renderCurrent();
+  save();
+});
+
+// click outside card to focus for keyboard
+document.getElementById('cardWrap').addEventListener('keydown', (e) => {
+  if(e.key === 'Enter') setFlip(!flipped);
+});
+
+// init app
+(function init(){
+  load();
+  // ensure order contains all ids even if changed
+  const ids = cards.map(c => c.id);
+  if(order.length !== ids.length || !order.every(id => ids.includes(id))) {
+    order = ids.slice();
+  }
+  renderCardList();
+  renderCurrent();
+  // set counters and aria
+  document.getElementById('totalCount').textContent = cards.length;
+})();
+//recalc height on rotation
+ function fixVH() {
+        document.documentElement.style.setProperty('--vh', (window.innerHeight * 0.01) + 'px');
+    }
+    window.addEventListener('resize', fixVH);
+    window.addEventListener('orientationchange', fixVH);
+    fixVH();
+
+</script>
+</body>
+</html>

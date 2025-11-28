@@ -1,0 +1,84 @@
+/* =======================================
+   UNIVERSAL RESET & SMOOTH RESPONSIVENESS
+========================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    width: 100%;
+    padding: 20px;
+    padding-top: calc(60px + env(safe-area-inset-top)) !important;
+
+    height: auto !important;
+    min-height: auto !important;
+}
+
+/* =======================================
+   GRID RESPONSIVE BEHAVIOR
+========================================== */
+
+.flashcards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 25px;
+    margin-top: 20px !important;
+}
+
+/* For tablets */
+@media (max-width: 900px) {
+    .flashcards {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .flashcard {
+        padding: 20px !important;
+        font-size: 1rem;
+    }
+
+    h1 {
+        font-size: 1.9rem;
+        text-align: center;
+    }
+}
+
+/* For large phones */
+@media (max-width: 600px) {
+    .flashcards {
+        grid-template-columns: 1fr;
+    }
+
+    .flashcard {
+        padding: 18px !important;
+        font-size: 1rem;
+        margin: 0 auto;
+        width: 90%;
+    }
+
+    h1 {
+        font-size: 1.7rem;
+    }
+}
+
+/* For small phones */
+@media (max-width: 400px) {
+    .flashcard {
+        width: 100%;
+        padding: 16px !important;
+        font-size: 0.95rem;
+    }
+
+    h1 {
+        font-size: 1.4rem;
+    }
+}
+
+:root {
+    --vh: 1vh;
+}

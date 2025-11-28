@@ -1,0 +1,739 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>JavaScript Functions — Flashcards</title>
+<link rel="stylesheet" href="flashcards-responsive.css">
+
+<style>
+  :root{
+    --bg1: #071426;
+    --bg2: #0e2a4f;
+    --card-front: linear-gradient(135deg,#0f172a 0%, #112240 60%);
+    --accent: #7dd3fc;
+    --accent-2: #60a5fa;
+    --glass: rgba(255,255,255,0.06);
+    --muted: rgba(255,255,255,0.75);
+    --success: #16a34a;
+    --danger: #ef4444;
+    --card-width: min(880px, 86vw);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+                 Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji",
+                 "Segoe UI Emoji", "Segoe UI Symbol";
+  }
+
+  html,body{height:100%;}
+  body{
+    margin:0;
+    /* min-height:auto; */
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background: radial-gradient(1200px 600px at 10% 10%, rgba(96,165,250,0.06), transparent 8%),
+                linear-gradient(180deg,var(--bg1), var(--bg2));
+    color: #f8fafc;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    padding:32px;
+  }
+
+  .app {
+    width: var(--card-width);
+    max-width:100%;
+    display:grid;
+    grid-template-columns: 1fr 320px;
+    gap:20px;
+    align-items:start;
+  }
+
+  /* Left: flashcard area */
+  .study {
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 10px 30px rgba(2,6,23,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
+    min-height: 420px;
+  }
+
+  .header {
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom: 16px;
+  }
+  .brand {
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .logo {
+    width:56px; height:56px;
+    border-radius:12px;
+    background: linear-gradient(135deg,var(--accent),var(--accent-2));
+    display:grid; place-items:center;
+    font-weight:700; color:#02203a;
+    box-shadow:0 6px 18px rgba(17,24,39,0.5);
+  }
+  .title {
+    font-size:18px;
+    line-height:1;
+  }
+  .subtitle {
+    font-size:12px;
+    color:var(--muted);
+  }
+
+  .card-stage{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px 12px;
+  }
+
+  /* card */
+  .card-wrap {
+    perspective:1400px;
+    width:100%;
+    max-width:700px;
+    height:320px;
+    margin: 0 auto;
+    position:relative;
+  }
+  .card {
+    width:100%;
+    height:100%;
+    transform-style: preserve-3d;
+    transition: transform 560ms cubic-bezier(.2,.9,.2,1);
+    cursor:pointer;
+    border-radius:12px;
+    box-shadow: 0 20px 40px rgba(2,6,23,0.6);
+    position:relative;
+  }
+
+  .card.is-flipped {
+    transform: rotateY(180deg) scale(1.02);
+  }
+
+  .card-face {
+    position:absolute;
+    inset:0;
+    backface-visibility: hidden;
+    border-radius:12px;
+    padding:28px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:10px;
+  }
+
+  .front {
+    background: var(--card-front);
+    border: 1px solid rgba(255,255,255,0.04);
+  }
+  .back {
+    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+    transform: rotateY(180deg);
+    border: 1px solid rgba(255,255,255,0.03);
+  }
+
+  .card-content {
+    font-size:20px;
+    line-height:1.3;
+    max-height: 70%;
+    overflow:auto;
+  }
+
+  .meta {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    margin-top:12px;
+    color:var(--muted);
+    font-size:13px;
+  }
+
+  /* Right column (controls + list) */
+  .controls {
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+    border-radius: 12px;
+    padding:18px;
+    box-shadow: 0 8px 30px rgba(2,6,23,0.5);
+    height:fit-content;
+  }
+
+  .btn {
+    background:var(--glass);
+    color:var(--muted);
+    border: none;
+    padding:10px 12px;
+    border-radius:10px;
+    cursor:pointer;
+    min-width:44px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    font-weight:600;
+  }
+  .btn:hover { transform: translateY(-2px); }
+  .btn.primary {
+    background: linear-gradient(90deg,var(--accent),var(--accent-2));
+    color:#031124;
+    box-shadow: 0 8px 24px rgba(96,165,250,0.12);
+  }
+  .btn.ghost {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.04);
+  }
+  .btn.small { padding:8px 10px; font-size:13px; min-width:38px; }
+
+  .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+
+  progress {
+    width:100%;
+    height:10px;
+    accent-color: #7dd3fc;
+    border-radius:999px;
+    overflow:hidden;
+    -webkit-appearance:none;
+  }
+  progress::-webkit-progress-bar { background: rgba(255,255,255,0.03); border-radius:999px; }
+  progress::-webkit-progress-value { background: linear-gradient(90deg,var(--accent),var(--accent-2)); border-radius:999px; }
+
+  .counter { font-size:13px; color:var(--muted); margin-top:10px; }
+
+  .controls h3 { margin:6px 0 12px; font-size:15px; }
+
+  .card-list {
+    margin-top:12px;
+    max-height:260px;
+    overflow:auto;
+    border-radius:8px;
+    background: rgba(255,255,255,0.02);
+    padding:10px;
+    font-size:13px;
+  }
+
+  .card-item {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:8px;
+    border-radius:8px;
+    margin-bottom:6px;
+    transition: background .15s;
+  }
+  .card-item:hover{ background: rgba(255,255,255,0.02); }
+  .tag-known { color:var(--success); font-weight:700; }
+  .tag-unknown { color:var(--danger); font-weight:700; }
+
+  /* footer controls under card */
+  .actions { display:flex; gap:8px; justify-content:center; margin-top:14px; }
+
+  /* focus states */
+  button:focus, .card:focus { outline: 3px solid rgba(125,211,252,0.12); outline-offset:4px; }
+
+  /* small screens */
+  @media (max-width:960px){
+    .app { grid-template-columns: 1fr; padding-bottom:46px;}
+    .controls{ order: -1; margin-bottom:10px; }
+    .card-stage { padding-top:8px; }
+  }
+
+  /* print */
+  @media print{
+    body { background: white; color: black; }
+    .controls, .header, .meta, .actions, .logo { display:none !important; }
+    .card { box-shadow:none; transform:none !important; }
+    .card-face { transform:none !important; }
+    .card-content { font-size:16px; color:black; }
+  }
+
+  /* small helper */
+  .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace; font-size:12px; padding:6px 8px; background: rgba(255,255,255,0.03); border-radius:6px; border:1px solid rgba(255,255,255,0.02);}
+</style>
+</head>
+<body>
+<div class="app" role="application" aria-label="Rust Ownership flashcards">
+  <section class="study" aria-labelledby="study-title">
+    <div class="header">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">JS</div>
+        <div>
+          <div class="title" id="study-title">JavaScript Functions</div>
+          <div class="subtitle">Interactive flashcards • Keyboard: ← → flip: Space • Mark: K/U • Shuffle: S</div>
+        </div>
+      </div>
+      <div style="margin-left:auto; display:flex; gap:8px;">
+        <button id="shuffleBtn" class="btn small ghost" title="Shuffle (S)">🔀 Shuffle</button>
+        <button id="resetBtn" class="btn small ghost" title="Reset Known">♻️ Reset</button>
+      </div>
+    </div>
+
+    <div class="card-stage">
+      <div class="card-wrap" id="cardWrap">
+        <div id="card" class="card" tabindex="0" role="button" aria-pressed="false" aria-label="Flashcard. Press Space to flip.">
+          <div class="card-face front" id="cardFront" aria-hidden="false">
+            <div class="card-content" id="frontText"></div>
+            <div class="meta">
+              <div id="cardIndex">1 / 20</div>
+              <div id="tagStatus" class="tag-unknown">Unknown</div>
+            </div>
+          </div>
+          <div class="card-face back" id="cardBack" aria-hidden="true">
+            <div class="card-content" id="backText"></div>
+            <div class="meta">
+              <div>Flip back to continue</div>
+              <div class="row">
+                <button id="knownBtn" class="btn small primary" title="Mark Known (K)">✅ Known</button>
+                <button id="unknownBtn" class="btn small ghost" title="Mark Unknown (U)">❌ Unknown</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions" role="group" aria-label="Card controls">
+      <button id="prevBtn" class="btn ghost" title="Previous (←)">◀ Prev</button>
+      <button id="flipBtn" class="btn" title="Flip (Space)">🔁 Flip</button>
+      <button id="nextBtn" class="btn ghost" title="Next (→)">Next ▶</button>
+    </div>
+
+    <div class="counter" id="progressInfo" aria-live="polite">Progress: <span id="knownCount">0</span>/<span id="totalCount">0</span> known</div>
+    <progress id="progress" value="0" max="100" aria-hidden="true"></progress>
+  </section>
+
+  <aside class="controls" aria-labelledby="controls-title">
+    <h3 id="controls-title">Controls & Card List</h3>
+
+    <div class="row" style="margin-bottom:12px;">
+      <button id="studyKnownOnly" class="btn small">Show Unknown Only</button>
+      <button id="downloadBtn" class="btn small">⤓ Export Progress</button>
+      <button id="printBtn" class="btn small">🖨 Print</button>
+    </div>
+
+    <div class="row" style="margin-bottom:8px;">
+      <div style="flex:1">
+        <div style="font-size:13px; color:var(--muted)">Progress</div>
+        <progress id="sideProgress" value="0" max="100"></progress>
+        <div style="display:flex; justify-content:space-between; margin-top:6px; font-size:13px; color:var(--muted);">
+          <div><span id="sideKnown">0</span> known</div>
+          <div><span id="sideTotal">0</span> total</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-list" id="cardList" tabindex="0" aria-label="List of cards">
+      <!-- populated by JS -->
+    </div>
+
+    <div style="margin-top:12px; font-size:13px; color:var(--muted)">
+      <div style="margin-bottom:6px;">Keyboard shortcuts</div>
+      <div class="row"><span class="kbd">←</span> Prev</div>
+      <div class="row"><span class="kbd">→</span> Next</div>
+      <div class="row"><span class="kbd">Space</span> Flip</div>
+      <div class="row"><span class="kbd">K</span> Mark Known</div>
+      <div class="row"><span class="kbd">U</span> Mark Unknown</div>
+      <div class="row"><span class="kbd">S</span> Shuffle</div>
+    </div>
+  </aside>
+</div>
+
+<script>
+/*
+  Rust Ownership & Borrowing Flashcards
+  - Single-file app
+  - Cards are defined in `cards` array
+  - State persisted into localStorage under 'rust_flashcards_progress_v1'
+*/
+
+const cards = [
+{ id:1, front:"What does charAt(index) do?", back:"Returns the character at the specified index." },
+{ id:2, front:"What does concat(str) do?", back:"Joins two or more strings." },
+{ id:3, front:"What does includes(substring) check?", back:"Checks if the substring exists in the string." },
+{ id:4, front:"What does indexOf(substring) return?", back:"The first index where the substring appears." },
+{ id:5, front:"What does lastIndexOf(substring) return?", back:"The last index where the substring appears." },
+{ id:6, front:"What does slice(start, end) do for strings?", back:"Extracts a portion of the string." },
+{ id:7, front:"What does substring(start, end) do?", back:"Extracts part of a string (no negative indexes)." },
+{ id:8, front:"What does toLowerCase() do?", back:"Converts all characters to lowercase." },
+{ id:9, front:"What does toUpperCase() do?", back:"Converts all characters to uppercase." },
+{ id:10, front:"What does trim() remove?", back:"Removes whitespace from both ends." },
+{ id:11, front:"What does replace(search, replace) do?", back:"Replaces text inside a string." },
+{ id:12, front:"What does split(delimiter) return?", back:"An array split from the string." },
+
+{ id:13, front:"What does Number(value) do?", back:"Converts a value into a number." },
+{ id:14, front:"What does parseInt(value) do?", back:"Parses value into an integer." },
+{ id:15, front:"What does parseFloat(value) do?", back:"Parses value into a float." },
+{ id:16, front:"What does isNaN(value) check?", back:"Checks if the value is Not a Number." },
+{ id:17, front:"What does isFinite(value) check?", back:"Checks if the value is finite." },
+{ id:18, front:"What does toFixed(n) do?", back:"Returns number rounded to n decimals as a string." },
+{ id:19, front:"What does toString() do for a number?", back:"Converts number to string." },
+
+{ id:20, front:"What does Math.abs(x) return?", back:"The absolute value of x." },
+{ id:21, front:"What does Math.ceil(x) do?", back:"Rounds x upward." },
+{ id:22, front:"What does Math.floor(x) do?", back:"Rounds x downward." },
+{ id:23, front:"What does Math.round(x) do?", back:"Rounds to nearest integer." },
+{ id:24, front:"What does Math.max() return?", back:"Largest number passed in." },
+{ id:25, front:"What does Math.min() return?", back:"Smallest number passed in." },
+{ id:26, front:"What does Math.random() generate?", back:"Random number 0–1." },
+{ id:27, front:"What does Math.sqrt(x) compute?", back:"Square root of x." },
+{ id:28, front:"What does Math.pow(a,b) compute?", back:"a raised to b." },
+{ id:29, front:"What does Math.trunc(x) do?", back:"Removes decimal part of number." },
+
+{ id:30, front:"What does push(item) do?", back:"Adds item to end of array." },
+{ id:31, front:"What does pop() do?", back:"Removes last element." },
+{ id:32, front:"What does shift() do?", back:"Removes first element." },
+{ id:33, front:"What does unshift(item) do?", back:"Adds item to beginning." },
+{ id:34, front:"What does concat(arr) do for arrays?", back:"Joins two arrays." },
+{ id:35, front:"What does slice(start,end) do for arrays?", back:"Returns part of array." },
+{ id:36, front:"What does splice(start,count) do?", back:"Adds/removes elements." },
+{ id:37, front:"What does includes(value) check for arrays?", back:"If array contains value." },
+{ id:38, front:"What does map(fn) return?", back:"New array of transformed values." },
+{ id:39, front:"What does filter(fn) return?", back:"Array of elements passing test." },
+{ id:40, front:"What does reduce(fn,start) do?", back:"Reduces array to one value." },
+{ id:41, front:"What does find(fn) return?", back:"First matching element." },
+{ id:42, front:"What does some(fn) do?", back:"Checks if any element matches." },
+{ id:43, front:"What does every(fn) check?", back:"If all elements match." },
+{ id:44, front:"What does sort() do?", back:"Sorts array (alphabetically default)." },
+{ id:45, front:"What does reverse() do?", back:"Reverses array." },
+
+{ id:46, front:"What does new Date() create?", back:"A new date object." },
+{ id:47, front:"What does getFullYear() return?", back:"4-digit year." },
+{ id:48, front:"What does getMonth() return?", back:"Month (0–11)." },
+{ id:49, front:"What does getDate() return?", back:"Day of month." },
+{ id:50, front:"What does getDay() return?", back:"Weekday (0–6)." },
+{ id:51, front:"What does getHours() return?", back:"Hour (0–23)." },
+{ id:52, front:"What does getMinutes() return?", back:"Minutes (0–59)." },
+{ id:53, front:"What does getSeconds() return?", back:"Seconds (0–59)." },
+{ id:54, front:"What does getTime() return?", back:"Timestamp in ms." },
+{ id:55, front:"What does toISOString() return?", back:"ISO formatted date string." },
+
+{ id:56, front:"What does alert(msg) do?", back:"Shows popup alert." },
+{ id:57, front:"What does prompt(msg) do?", back:"Asks user for input." },
+{ id:58, front:"What does confirm(msg) do?", back:"Shows OK/Cancel dialog." },
+{ id:59, front:"What does setTimeout(fn,ms) do?", back:"Runs function once after delay." },
+{ id:60, front:"What does setInterval(fn,ms) do?", back:"Repeats function every interval." },
+{ id:61, front:"What does clearTimeout(id) do?", back:"Stops a timeout." },
+{ id:62, front:"What does clearInterval(id) do?", back:"Stops an interval." },
+{ id:63, front:"What does encodeURI() do?", back:"Encodes a URI string." },
+{ id:64, front:"What does decodeURI() do?", back:"Decodes encoded URI." },
+{ id:65, front:"What does JSON.parse() do?", back:"Converts JSON string to object." },
+{ id:66, front:"What does JSON.stringify() do?", back:"Converts object to JSON string." },
+
+{ id:67, front:"What does Object.keys(obj) return?", back:"Array of keys." },
+{ id:68, front:"What does Object.values(obj) return?", back:"Array of values." },
+{ id:69, front:"What does Object.entries(obj) return?", back:"Array of key-value pairs." },
+{ id:70, front:"What does Object.assign(target,source) do?", back:"Copies properties to target." },
+{ id:71, front:"What does Object.freeze(obj) do?", back:"Makes object immutable." },
+{ id:72, front:"What does Object.hasOwn(obj,key) do?", back:"Checks if property exists directly." },
+
+{ id:73, front:"What does typeof value return?", back:"The value's type." },
+{ id:74, front:"What does Array.isArray(value) check?", back:"If value is an array." },
+{ id:75, front:"What does instanceof check?", back:"If object was created by constructor." },
+{ id:76, front:"What does Boolean(value) do?", back:"Converts value to true/false." },
+{ id:77, front:"What does String(value) do?", back:"Converts value to string." }
+];
+
+// DOM refs
+const frontText = document.getElementById('frontText');
+const backText = document.getElementById('backText');
+const cardEl = document.getElementById('card');
+const cardIndexEl = document.getElementById('cardIndex');
+const tagStatus = document.getElementById('tagStatus');
+const progress = document.getElementById('progress');
+const sideProgress = document.getElementById('sideProgress');
+const knownCountEl = document.getElementById('knownCount');
+const totalCountEl = document.getElementById('totalCount');
+const sideKnown = document.getElementById('sideKnown');
+const sideTotal = document.getElementById('sideTotal');
+const cardList = document.getElementById('cardList');
+const progressInfo = document.getElementById('progressInfo');
+
+const STORAGE_KEY = 'rust_flashcards_progress_v1';
+
+// state
+let order = cards.map(c => c.id); // current order of card ids
+let currentIndex = 0; // index into order
+let flipped = false;
+let progressState = {}; // { id: 'known' | 'unknown' }
+let filterUnknownOnly = false;
+
+// load saved progress
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      progressState = parsed.progressState || {};
+      // keep order if provided (allow consistent resume)
+      if (Array.isArray(parsed.order) && parsed.order.length === cards.length) {
+        order = parsed.order;
+      }
+      currentIndex = parsed.currentIndex || 0;
+    }
+  } catch(e){
+    console.warn("Could not load saved progress", e);
+  }
+}
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ progressState, order, currentIndex }));
+}
+
+// helpers
+function getCardById(id) { return cards.find(c => c.id === id); }
+function getVisibleOrder(){
+  if(!filterUnknownOnly) return order.slice();
+  // only ids that are unknown or not known
+  return order.filter(id => progressState[id] !== 'known');
+}
+
+function renderCardList() {
+  const visible = getVisibleOrder();
+  cardList.innerHTML = visible.map((id,idx) => {
+    const c = getCardById(id);
+    const status = progressState[id] === 'known' ? 'Known' : 'Unknown';
+    const tag = progressState[id] === 'known' ? 'tag-known' : 'tag-unknown';
+    return `
+      <div class="card-item" data-id="${id}" role="button" tabindex="0" aria-label="Card ${idx+1}: ${c.front}">
+        <div style="display:flex; gap:8px; align-items:center;">
+          <div style="width:34px; font-weight:700; color:var(--muted)">${idx+1}</div>
+          <div style="min-width:0;">
+            <div style="font-weight:700; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(c.front)}</div>
+            <div style="font-size:12px; color:var(--muted)">${escapeHtml(c.back).slice(0,80)}${c.back.length>80?'…':''}</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <div class="${tag}">${status}</div>
+          <button class="btn small ghost viewBtn" data-id="${id}" title="Go to card">Go</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+  // attach listeners for go buttons and items
+  cardList.querySelectorAll('.viewBtn').forEach(b => {
+    b.addEventListener('click', (e) => {
+      const id = parseInt(e.currentTarget.dataset.id,10);
+      goToCard(id);
+    });
+  });
+  cardList.querySelectorAll('.card-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const id = parseInt(item.dataset.id,10);
+      goToCard(id);
+    });
+    item.addEventListener('keydown', (ev) => {
+      if(ev.key === 'Enter' || ev.key === ' ') {
+        ev.preventDefault();
+        const id = parseInt(item.dataset.id,10);
+        goToCard(id);
+      }
+    });
+  });
+}
+
+function escapeHtml(s){
+  return (s+'').replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  })[c]);
+}
+
+function renderCurrent() {
+  const visible = getVisibleOrder();
+  if(visible.length === 0){
+    frontText.innerHTML = "<strong>All cards filtered out.</strong><div style='margin-top:8px;color:var(--muted)'>Toggle Unknown Only.</div>";
+    backText.innerHTML = "";
+    cardIndexEl.textContent = "— / —";
+    tagStatus.textContent = "";
+    progress.value = 100;
+    sideProgress.value = 100;
+    return;
+  }
+  if(currentIndex >= visible.length) currentIndex = visible.length - 1;
+  if(currentIndex < 0) currentIndex = 0;
+
+  const id = visible[currentIndex];
+  const card = getCardById(id);
+  frontText.innerHTML = escapeHtml(card.front);
+  backText.innerHTML = escapeHtml(card.back);
+  cardIndexEl.textContent = `${currentIndex + 1} / ${visible.length}`;
+
+  // status tag based on progressState
+  const state = progressState[id];
+  tagStatus.textContent = state === 'known' ? 'Known' : 'Unknown';
+  tagStatus.className = state === 'known' ? 'tag-known' : 'tag-unknown';
+
+  updateProgressIndicators();
+  // ensure card is unflipped when navigating
+  setFlip(false);
+}
+
+function updateProgressIndicators() {
+  const total = cards.length;
+  const known = Object.values(progressState).filter(v => v === 'known').length;
+  const pct = Math.round((known / total) * 100);
+  progress.value = pct;
+  sideProgress.value = pct;
+  knownCountEl.textContent = known;
+  totalCountEl.textContent = total;
+  sideKnown.textContent = known;
+  sideTotal.textContent = total;
+}
+
+function setFlip(v) {
+  flipped = !!v;
+  if(flipped) {
+    cardEl.classList.add('is-flipped');
+    cardEl.setAttribute('aria-pressed','true');
+    document.getElementById('cardFront').setAttribute('aria-hidden','true');
+    document.getElementById('cardBack').setAttribute('aria-hidden','false');
+  } else {
+    cardEl.classList.remove('is-flipped');
+    cardEl.setAttribute('aria-pressed','false');
+    document.getElementById('cardFront').setAttribute('aria-hidden','false');
+    document.getElementById('cardBack').setAttribute('aria-hidden','true');
+  }
+  save();
+}
+
+function nextCard() {
+  const visible = getVisibleOrder();
+  if(visible.length === 0) return;
+  currentIndex = Math.min(visible.length - 1, currentIndex + 1);
+  renderCurrent();
+  save();
+}
+
+function prevCard() {
+  const visible = getVisibleOrder();
+  if(visible.length === 0) return;
+  currentIndex = Math.max(0, currentIndex - 1);
+  renderCurrent();
+  save();
+}
+
+function goToCard(id) {
+  const visible = getVisibleOrder();
+  const idx = visible.indexOf(id);
+  if(idx === -1) return;
+  currentIndex = idx;
+  renderCurrent();
+  // focus card for keyboard interaction
+  cardEl.focus();
+  save();
+}
+
+function markCurrent(state) {
+  const visible = getVisibleOrder();
+  if(visible.length === 0) return;
+  const id = visible[currentIndex];
+  progressState[id] = state;
+  // if filterUnknownOnly AND state is known, we should keep the same index but it will refer to next visible
+  // so clamp index
+  const visibleAfter = getVisibleOrder();
+  if(filterUnknownOnly) {
+    if(visibleAfter.length === 0) { currentIndex = 0; }
+    else currentIndex = Math.min(currentIndex, visibleAfter.length - 1);
+  }
+  renderCardList();
+  renderCurrent();
+  save();
+}
+
+function shuffleOrder(seedless=true) {
+  // Fisher-Yates
+  for(let i = order.length -1; i>0; i--){
+    const j = Math.floor(Math.random() * (i+1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  currentIndex = 0;
+  renderCardList();
+  renderCurrent();
+  save();
+}
+
+function resetProgress() {
+  if(!confirm("Reset known/unknown progress for all cards?")) return;
+  progressState = {};
+  renderCardList();
+  renderCurrent();
+  save();
+}
+
+// export progress as JSON file
+function exportProgress() {
+  const payload = { progressState, order, timestamp: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type:'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'rust_flashcards_progress.json';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+
+// keyboard
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'ArrowRight') { e.preventDefault(); nextCard(); }
+  if(e.key === 'ArrowLeft') { e.preventDefault(); prevCard(); }
+  if(e.code === 'Space') { e.preventDefault(); setFlip(!flipped); }
+  if(e.key.toLowerCase() === 'k') { markCurrent('known'); }
+  if(e.key.toLowerCase() === 'u') { markCurrent('unknown'); }
+  if(e.key.toLowerCase() === 's') { shuffleOrder(); }
+});
+
+// DOM events
+document.getElementById('nextBtn').addEventListener('click', nextCard);
+document.getElementById('prevBtn').addEventListener('click', prevCard);
+document.getElementById('flipBtn').addEventListener('click', () => setFlip(!flipped));
+cardEl.addEventListener('click', () => setFlip(!flipped));
+document.getElementById('knownBtn').addEventListener('click', () => markCurrent('known'));
+document.getElementById('unknownBtn').addEventListener('click', () => markCurrent('unknown'));
+document.getElementById('shuffleBtn').addEventListener('click', shuffleOrder);
+document.getElementById('resetBtn').addEventListener('click', resetProgress);
+document.getElementById('downloadBtn').addEventListener('click', exportProgress);
+document.getElementById('printBtn').addEventListener('click', () => window.print());
+document.getElementById('studyKnownOnly').addEventListener('click', () => {
+  filterUnknownOnly = !filterUnknownOnly;
+  document.getElementById('studyKnownOnly').textContent = filterUnknownOnly ? 'Show All' : 'Show Unknown Only';
+  currentIndex = 0;
+  renderCardList();
+  renderCurrent();
+  save();
+});
+
+// click outside card to focus for keyboard
+document.getElementById('cardWrap').addEventListener('keydown', (e) => {
+  if(e.key === 'Enter') setFlip(!flipped);
+});
+
+// init app
+(function init(){
+  load();
+  // ensure order contains all ids even if changed
+  const ids = cards.map(c => c.id);
+  if(order.length !== ids.length || !order.every(id => ids.includes(id))) {
+    order = ids.slice();
+  }
+  renderCardList();
+  renderCurrent();
+  // set counters and aria
+  document.getElementById('totalCount').textContent = cards.length;
+})();
+//recalc height on rotation
+ function fixVH() {
+        document.documentElement.style.setProperty('--vh', (window.innerHeight * 0.01) + 'px');
+    }
+    window.addEventListener('resize', fixVH);
+    window.addEventListener('orientationchange', fixVH);
+    fixVH();
+
+</script>
+</body>
+</html>
