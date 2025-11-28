@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>JavaScript Functions — Flashcards</title>
 <link rel="stylesheet" href="../examples/flashcards-responsive.css">
-
 <style>
   :root{
     --bg1: #071426;
@@ -391,8 +390,17 @@ const cards = [
 { id: 37, front: "What does createElement return?", back: "New DOM element that needs to be appended to use." },
 { id: 38, front: "Closure use case: module pattern", back: "function MyModule() { let privateVar; return { publicMethod: () => privateVar } }" },
 { id: 39, front: "Why does `const obj = {a:1}; obj.a=2` work?", back: "const prevents reassignment of obj reference, not mutation of object properties." },
-{ id: 40, front: "What is the Temporal Dead Zone (TDZ)?", back: "Period from block start to let/const declaration where access throws ReferenceError." }
-
+{ id: 40, front: "What is the Temporal Dead Zone (TDZ)?", back: "Period from block start to let/const declaration where access throws ReferenceError." },
+{ id: 41, front: "When using an arrow function like `inventors.map(inv => {inv.first, inv.last})`, why does it not return the object, and how do you fix it?", back: "It fails because the curly braces `{}` are interpreted as the **function body** (a block of code), causing the function to return `undefined`. **Fix:** Wrap the object literal in **parentheses** `()` to force JavaScript to treat it as an expression to be returned: `inv => ({first: inv.first, last: inv.last})`." },
+  { id: 42, front: "What is the crucial role of the `initialValue` in the `reduce()` method, and what happens if you omit it?", back: "The `initialValue` sets the starting type and value for the **accumulator** (`acc`). **If omitted**, the accumulator defaults to the **first element** of the array (an object in our case), and iteration starts with the second element. This leads to errors (like $\\text{NaN}$) when the first element's type doesn't match the expected numeric accumulation." },
+  { id: 43, front: "In `reduce()`, why is it essential for the callback function to return a value, and what does that returned value represent?", back: "The **return value** of the callback becomes the new value of the **accumulator** (`acc`) for the *next* iteration. If you don't explicitly return a value, the function implicitly returns `undefined`, and all subsequent calculations will fail." },
+  { id: 44, front: "To calculate the total years lived using `reduce()`, why is the division by `inventors.length` done *after* the `reduce()` method, not inside it?", back: "The `reduce()` method should only calculate the **sum** (the total lifespan of all inventors). If you divide by `inventors.length` *inside* the callback, you divide on every single step, which is mathematically incorrect for calculating a final average." },
+  { id: 45, front: "Why must you use a **compare function** (`(a, b) => a - b`) when sorting an array of numbers or objects with `sort()`?", back: "The default `sort()` method treats all elements as **strings** and sorts them alphabetically (lexicographically). For example, '100' comes before '2'. The compare function forces a **numerical comparison** based on the difference between the two values." },
+  { id: 46, front: "In the context of sorting inventors by lifespan (`a.passed - a.year`), what does the final return value `lifespanA - lifespanB` achieve?", back: "This returns a **negative** number if `A` lived less than `B`, placing `A` *before* `B*. This achieves **ascending order** (shortest lifespan first). To get descending (longest first), you would use `lifespanB - lifespanA`." },
+  { id: 47, front: "If you need to get the text a user sees in an `<a>` tag, what DOM property should you use, and why not the URL property?", back: "Use **`.textContent`**. This property returns the content between the opening and closing `<a>` tags. The `.href` property, by contrast, retrieves the URL the link points to, which is not what the user visually clicks on." },
+  { id: 48, front: "When using `document.querySelectorAll('a')`, why can't you directly access the text content or use array methods like `filter()`?", back: "`querySelectorAll()` returns a **NodeList** (a live list of elements). A NodeList does not inherit full `Array.prototype` methods like `filter()`, nor does it have a single `.textContent` property, as it represents multiple elements." },
+  { id: 49, front: "What is the crucial first step to use array methods like `.filter()` or `.map()` on the result of `document.querySelectorAll()`?", back: "You must convert the **NodeList** into a true JavaScript **Array** using **`Array.from(nodeList)`**. This gives you access to the full suite of array manipulation methods." },
+  { id: 50, front: "After converting a NodeList to an array, how is the `.filter()` method used to check for a case-insensitive match (like 'de')?", back: "Inside the filter, you must explicitly convert the text content to a consistent case (e.g., lowercase) before checking for inclusion: `anchor.textContent.toLowerCase().includes('de')`." }
 ];
 
 // DOM refs
