@@ -1,0 +1,775 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>JavaScript array methods</title>
+<link rel="stylesheet" href="../examples/flashcards-responsive.css">
+<style>
+  :root{
+    --bg1: #071426;
+    --bg2: #0e2a4f;
+    --card-front: linear-gradient(135deg,#0f172a 0%, #112240 60%);
+    --accent: #7dd3fc;
+    --accent-2: #60a5fa;
+    --glass: rgba(255,255,255,0.06);
+    --muted: rgba(255,255,255,0.75);
+    --success: #16a34a;
+    --danger: #ef4444;
+    --card-width: min(880px, 86vw);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+                 Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji",
+                 "Segoe UI Emoji", "Segoe UI Symbol";
+  }
+
+  html,body{height:100%;}
+  body{
+    margin:0;
+    /* min-height:auto; */
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background: radial-gradient(1200px 600px at 10% 10%, rgba(96,165,250,0.06), transparent 8%),
+                linear-gradient(180deg,var(--bg1), var(--bg2));
+    color: #f8fafc;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    padding:32px;
+  }
+
+  .app {
+    width: var(--card-width);
+    max-width:100%;
+    display:grid;
+    grid-template-columns: 1fr 320px;
+    gap:20px;
+    align-items:start;
+  }
+
+  /* Left: flashcard area */
+  .study {
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 10px 30px rgba(2,6,23,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
+    min-height: 420px;
+  }
+
+  .header {
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom: 16px;
+  }
+  .brand {
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .logo {
+    width:56px; height:56px;
+    border-radius:12px;
+    background: linear-gradient(135deg,var(--accent),var(--accent-2));
+    display:grid; place-items:center;
+    font-weight:700; color:#02203a;
+    box-shadow:0 6px 18px rgba(17,24,39,0.5);
+  }
+  .title {
+    font-size:18px;
+    line-height:1;
+  }
+  .subtitle {
+    font-size:12px;
+    color:var(--muted);
+  }
+
+  .card-stage{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px 12px;
+  }
+
+  /* card */
+  .card-wrap {
+    perspective:1400px;
+    width:100%;
+    max-width:700px;
+    height:320px;
+    margin: 0 auto;
+    position:relative;
+  }
+  .card {
+    width:100%;
+    height:100%;
+    transform-style: preserve-3d;
+    transition: transform 560ms cubic-bezier(.2,.9,.2,1);
+    cursor:pointer;
+    border-radius:12px;
+    box-shadow: 0 20px 40px rgba(2,6,23,0.6);
+    position:relative;
+  }
+
+  .card.is-flipped {
+    transform: rotateY(180deg) scale(1.02);
+  }
+
+  .card-face {
+    position:absolute;
+    inset:0;
+    backface-visibility: hidden;
+    border-radius:12px;
+    padding:28px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:10px;
+  }
+
+  .front {
+    background: var(--card-front);
+    border: 1px solid rgba(255,255,255,0.04);
+  }
+  .back {
+    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+    transform: rotateY(180deg);
+    border: 1px solid rgba(255,255,255,0.03);
+  }
+
+  .card-content {
+    font-size:20px;
+    line-height:1.3;
+    max-height: 70%;
+    overflow:auto;
+  }
+
+  .meta {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    margin-top:12px;
+    color:var(--muted);
+    font-size:13px;
+  }
+
+  /* Right column (controls + list) */
+  .controls {
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+    border-radius: 12px;
+    padding:18px;
+    box-shadow: 0 8px 30px rgba(2,6,23,0.5);
+    height:fit-content;
+  }
+
+  .btn {
+    background:var(--glass);
+    color:var(--muted);
+    border: none;
+    padding:10px 12px;
+    border-radius:10px;
+    cursor:pointer;
+    min-width:44px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    font-weight:600;
+  }
+  .btn:hover { transform: translateY(-2px); }
+  .btn.primary {
+    background: linear-gradient(90deg,var(--accent),var(--accent-2));
+    color:#031124;
+    box-shadow: 0 8px 24px rgba(96,165,250,0.12);
+  }
+  .btn.ghost {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.04);
+  }
+  .btn.small { padding:8px 10px; font-size:13px; min-width:38px; }
+
+  .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+
+  progress {
+    width:100%;
+    height:10px;
+    accent-color: #7dd3fc;
+    border-radius:999px;
+    overflow:hidden;
+    -webkit-appearance:none;
+  }
+  progress::-webkit-progress-bar { background: rgba(255,255,255,0.03); border-radius:999px; }
+  progress::-webkit-progress-value { background: linear-gradient(90deg,var(--accent),var(--accent-2)); border-radius:999px; }
+
+  .counter { font-size:13px; color:var(--muted); margin-top:10px; }
+
+  .controls h3 { margin:6px 0 12px; font-size:15px; }
+
+  .card-list {
+    margin-top:12px;
+    max-height:260px;
+    overflow:auto;
+    border-radius:8px;
+    background: rgba(255,255,255,0.02);
+    padding:10px;
+    font-size:13px;
+  }
+
+  .card-item {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:8px;
+    border-radius:8px;
+    margin-bottom:6px;
+    transition: background .15s;
+  }
+  .card-item:hover{ background: rgba(255,255,255,0.02); }
+  .tag-known { color:var(--success); font-weight:700; }
+  .tag-unknown { color:var(--danger); font-weight:700; }
+
+  /* footer controls under card */
+  .actions { display:flex; gap:8px; justify-content:center; margin-top:14px; }
+
+  /* focus states */
+  button:focus, .card:focus { outline: 3px solid rgba(125,211,252,0.12); outline-offset:4px; }
+
+  /* small screens */
+  @media (max-width:960px){
+    .app { grid-template-columns: 1fr; padding-bottom:46px;}
+    .controls{ order: -1; margin-bottom:10px; }
+    .card-stage { padding-top:8px; }
+  }
+
+  /* print */
+  @media print{
+    body { background: white; color: black; }
+    .controls, .header, .meta, .actions, .logo { display:none !important; }
+    .card { box-shadow:none; transform:none !important; }
+    .card-face { transform:none !important; }
+    .card-content { font-size:16px; color:black; }
+  }
+
+  /* small helper */
+  .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace; font-size:12px; padding:6px 8px; background: rgba(255,255,255,0.03); border-radius:6px; border:1px solid rgba(255,255,255,0.02);}
+</style>
+</head>
+<body>
+<div class="app" role="application" aria-label="Rust Ownership flashcards">
+  <section class="study" aria-labelledby="study-title">
+    <div class="header">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">JS</div>
+        <div>
+          <div class="title" id="study-title">Array Methods</div>
+          <div class="subtitle">Interactive flashcards • Keyboard: ← → flip: Space • Mark: K/U • Shuffle: S</div>
+        </div>
+      </div>
+      <div style="margin-left:auto; display:flex; gap:8px;">
+        <button id="shuffleBtn" class="btn small ghost" title="Shuffle (S)">🔀 Shuffle</button>
+        <button id="resetBtn" class="btn small ghost" title="Reset Known">♻️ Reset</button>
+      </div>
+    </div>
+
+    <div class="card-stage">
+      <div class="card-wrap" id="cardWrap">
+        <div id="card" class="card" tabindex="0" role="button" aria-pressed="false" aria-label="Flashcard. Press Space to flip.">
+          <div class="card-face front" id="cardFront" aria-hidden="false">
+            <div class="card-content" id="frontText"></div>
+            <div class="meta">
+              <div id="cardIndex">1 / 20</div>
+              <div id="tagStatus" class="tag-unknown">Unknown</div>
+            </div>
+          </div>
+          <div class="card-face back" id="cardBack" aria-hidden="true">
+            <div class="card-content" id="backText"></div>
+            <div class="meta">
+              <div>Flip back to continue</div>
+              <div class="row">
+                <button id="knownBtn" class="btn small primary" title="Mark Known (K)">✅ Known</button>
+                <button id="unknownBtn" class="btn small ghost" title="Mark Unknown (U)">❌ Unknown</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions" role="group" aria-label="Card controls">
+      <button id="prevBtn" class="btn ghost" title="Previous (←)">◀ Prev</button>
+      <button id="flipBtn" class="btn" title="Flip (Space)">🔁 Flip</button>
+      <button id="nextBtn" class="btn ghost" title="Next (→)">Next ▶</button>
+    </div>
+
+    <div class="counter" id="progressInfo" aria-live="polite">Progress: <span id="knownCount">0</span>/<span id="totalCount">0</span> known</div>
+    <progress id="progress" value="0" max="100" aria-hidden="true"></progress>
+  </section>
+
+  <aside class="controls" aria-labelledby="controls-title">
+    <h3 id="controls-title">Controls & Card List</h3>
+
+    <div class="row" style="margin-bottom:12px;">
+      <button id="studyKnownOnly" class="btn small">Show Unknown Only</button>
+      <button id="downloadBtn" class="btn small">⤓ Export Progress</button>
+      <button id="printBtn" class="btn small">🖨 Print</button>
+    </div>
+
+    <div class="row" style="margin-bottom:8px;">
+      <div style="flex:1">
+        <div style="font-size:13px; color:var(--muted)">Progress</div>
+        <progress id="sideProgress" value="0" max="100"></progress>
+        <div style="display:flex; justify-content:space-between; margin-top:6px; font-size:13px; color:var(--muted);">
+          <div><span id="sideKnown">0</span> known</div>
+          <div><span id="sideTotal">0</span> total</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-list" id="cardList" tabindex="0" aria-label="List of cards">
+      <!-- populated by JS -->
+    </div>
+
+    <div style="margin-top:12px; font-size:13px; color:var(--muted)">
+      <div style="margin-bottom:6px;">Keyboard shortcuts</div>
+      <div class="row"><span class="kbd">←</span> Prev</div>
+      <div class="row"><span class="kbd">→</span> Next</div>
+      <div class="row"><span class="kbd">Space</span> Flip</div>
+      <div class="row"><span class="kbd">K</span> Mark Known</div>
+      <div class="row"><span class="kbd">U</span> Mark Unknown</div>
+      <div class="row"><span class="kbd">S</span> Shuffle</div>
+    </div>
+  </aside>
+</div>
+
+<script>
+/*
+  Rust Ownership & Borrowing Flashcards
+  - Single-file app
+  - Cards are defined in `cards` array
+  - State persisted into localStorage under 'rust_flashcards_progress_v1'
+*/
+
+const cards = [
+{id:1, front:"What does Array.prototype.filter() do?", back:"It creates a new array containing only the elements that pass a test you provide."},
+  {id:2, front:"Filter example: Keep only numbers greater than 10.", back:"[5,12,3,30].filter(n => n > 10) → [12,30]"},
+  {id:3, front:"Filter example: Keep only even numbers.", back:"[1,2,3,4,5].filter(n => n % 2 === 0) → [2,4]"},
+  {id:4, front:"Filter example: Students with grade A.", back:"students.filter(s => s.grade === 'A')"},
+  {id:5, front:"Filter example: Names starting with 'A'.", back:"names.filter(n => n.startsWith('A'))"},
+  {id:6, front:"Filter example: Born in the 1500s.", back:"inventors.filter(inv => inv.year >=1500 && inv.year <1600)"},
+
+  {id:7, front:"What does Array.prototype.map() do?", back:"It transforms every element of an array and returns a new array of the transformed values."},
+  {id:8, front:"Map example: Double each number.", back:"[1,2,3].map(n => n*2) → [2,4,6]"},
+  {id:9, front:"Map example: Extract names.", back:"people.map(p => p.name)"},
+  {id:10, front:"Map example: Get first + last names.", back:"inventors.map(i => `${i.first} ${i.last}`)"},
+  {id:11, front:"Map example: Convert strings to uppercase.", back:"['hello','world'].map(s=>s.toUpperCase())"},
+  {id:12, front:"Map example: Add 10% tax to prices.", back:"prices.map(p => p*1.10)"},
+
+  {id:13, front:"What does Array.prototype.sort() do?", back:"It sorts elements in place according to a comparison function you provide."},
+  {id:14, front:"Sort example: Numbers ascending.", back:"[5,1,3].sort((a,b)=>a-b) → [1,3,5]"},
+  {id:15, front:"Sort example: Numbers descending.", back:"[5,1,3].sort((a,b)=>b-a) → [5,3,1]"},
+  {id:16, front:"Sort example: Alphabetical by last name.", back:"people.sort((a,b)=>a.last.localeCompare(b.last))"},
+  {id:17, front:"Sort example: Oldest to youngest.", back:"inventors.sort((a,b)=>a.year - b.year)"},
+  {id:18, front:"Sort example: Sort by age lived.", back:"inventors.sort((a,b)=>(a.passed-a.year)-(b.passed-b.year))"},
+
+  {id:19, front:"What does Array.prototype.reduce() do?", back:"It reduces an array to a single value by applying an accumulator function."},
+  {id:20, front:"Reduce example: Sum numbers.", back:"[1,2,3].reduce((sum,n)=>sum+n,0) → 6"},
+  {id:21, front:"Reduce example: Product of numbers.", back:"[2,3,4].reduce((prod,n)=>prod*n,1) → 24"},
+  {id:22, front:"Reduce example: Count occurrences.", back:"words.reduce((obj,w)=>{obj[w]=(obj[w]||0)+1; return obj;},{})"},
+  {id:23, front:"Reduce example: Total years lived.", back:"inventors.reduce((total,i)=>total+(i.passed-i.year),0)"},
+  {id:24, front:"Reduce example: Flatten an array.", back:"[[1,2],[3,4]].reduce((a,b)=>a.concat(b),[]) → [1,2,3,4]"},
+
+  {id:25, front:"Boulevards in Paris containing 'de'. What method helps?", back:"filter() on an array of boulevard names."},
+  {id:26, front:"Example: Filter names with 'de'.", back:"boulevards.filter(b=>b.includes('de'))"},
+  {id:27, front:"What is Array.prototype.some()?", back:"Returns true if at least one array element meets the condition."},
+  {id:28, front:"Some example: Is anyone 19 or older?", back:"people.some(p => (2024 - p.year) >=19)"},
+  {id:29, front:"Some example: Any numbers negative?", back:"nums.some(n => n < 0)"},
+  {id:30, front:"Some example: Any completed tasks?", back:"tasks.some(t=>t.done)"},
+
+  {id:31, front:"What is Array.prototype.every()?", back:"Returns true if all array elements meet the condition."},
+  {id:32, front:"Every example: Is everyone an adult?", back:"people.every(p=>p.age>=18)"},
+  {id:33, front:"Every example: All numbers positive?", back:"nums.every(n=>n>0)"},
+  {id:34, front:"Every example: All items in stock?", back:"items.every(i=>i.inStock)"},
+
+  {id:35, front:"What is Array.prototype.find()?", back:"Returns the FIRST item matching your condition."},
+  {id:36, front:"Find example: Find comment with ID 823423.", back:"comments.find(c=>c.id===823423)"},
+  {id:37, front:"Find example: Find first even number.", back:"[1,3,4,6].find(n=>n%2===0) → 4"},
+  {id:38, front:"Find example: Find user 'Alex'.", back:"users.find(u=>u.name==='Alex')"},
+  {id:39, front:"Find example: Find first expensive product.", back:"products.find(p=>p.price>100)"},
+
+  {id:40, front:"What is Array.prototype.findIndex()?", back:"Returns the index of the first matching element, or -1 if none match."},
+  {id:41, front:"FindIndex example: Comment ID 823423.", back:"comments.findIndex(c=>c.id===823423)"},
+  {id:42, front:"FindIndex example: First negative number.", back:"nums.findIndex(n=>n<0)"},
+  {id:43, front:"FindIndex example: Locate user by email.", back:"users.findIndex(u=>u.email==='x@y.com')"},
+  {id:44, front:"Use findIndex to delete an element.", back:"array.splice(index,1)"},
+
+  /* --- More Context Cards --- */
+
+  {id:45, front:"Why use filter instead of a loop?", back:"It's cleaner, avoids push statements, and improves readability."},
+  {id:46, front:"Why map doesn't change the original array?", back:"It always returns a NEW array of transformed values."},
+  {id:47, front:"Why sort modifies the original array?", back:"sort() works IN PLACE; it alters the original array."},
+  {id:48, front:"Why reduce is powerful?", back:"It can produce any type of output: number, object, array, etc."},
+  {id:49, front:"Common mistake in sort?", back:"Sorting numbers without a compare function sorts alphabetically."},
+  {id:50, front:"Common mistake in map?", back:"Forgetting the return in a block-bodied arrow function."},
+
+  {id:51, front:"What is chaining array methods?", back:"Using multiple methods in sequence: array.filter().map().sort()."},
+  {id:52, front:"Chaining example.", back:"users.filter(u=>u.active).map(u=>u.name).sort()"},
+  {id:53, front:"Map vs forEach?", back:"map returns a new array; forEach just loops, returns undefined."},
+  {id:54, front:"Filter vs find?", back:"filter returns ALL matches; find returns ONLY the first match."},
+  {id:55, front:"Find vs findIndex?", back:"find gives the item; findIndex gives the position."},
+  {id:56, front:"Reduce initial value importance.", back:"Without a correct initial value, results may be incorrect."},
+
+  {id:57, front:"Example: Get unique values with reduce.", back:"arr.reduce((a,v)=>a.includes(v)?a:[...a,v],[])"},
+  {id:58, front:"Example: Count votes.", back:"votes.reduce((t,v)=>{t[v]=(t[v]||0)+1;return t;},{})"},
+  {id:59, front:"Example: Create an index by ID.", back:"people.reduce((obj,p)=>({...obj,[p.id]:p}),{})"},
+  {id:60, front:"Example: Average age with reduce.", back:"arr.reduce((s,a)=>s+a,0)/arr.length"},
+  {id:61, front:"Example: Sum object fields.", back:"items.reduce((t,i)=>t+i.quantity,0)"},
+
+  {id:62, front:"Example: Sort by string length.", back:"words.sort((a,b)=>a.length-b.length)"},
+  {id:63, front:"Example: Sort dates newest first.", back:"dates.sort((a,b)=>new Date(b)-new Date(a))"},
+  {id:64, front:"Example: Sort tasks by priority.", back:"tasks.sort((a,b)=>a.priority - b.priority)"},
+  {id:65, front:"Example: Sort users alphabetically.", back:"users.sort((a,b)=>a.name.localeCompare(b.name))"},
+  {id:66, front:"Example: Case-insensitive sort.", back:"arr.sort((a,b)=>a.toLowerCase().localeCompare(b.toLowerCase()))"},
+
+  {id:67, front:"Example: Filter adults.", back:"people.filter(p=>p.age>=18)"},
+  {id:68, front:"Example: Filter incomplete tasks.", back:"tasks.filter(t=>!t.done)"},
+  {id:69, front:"Example: Filter long words.", back:"words.filter(w=>w.length>5)"},
+  {id:70, front:"Example: Filter expensive items.", back:"items.filter(i=>i.price>50)"},
+  {id:71, front:"Example: Filter null values.", back:"arr.filter(v=>v!=null)"},
+
+  {id:72, front:"Example: Map to initials.", back:"names.map(n=>n[0])"},
+  {id:73, front:"Example: Map to ages.", back:"people.map(p=>2024-p.birthYear)"},
+  {id:74, front:"Example: Map to html list items.", back:"items.map(i=>`<li>${i}</li>`)"},
+  {id:75, front:"Example: Map to boolean flags.", back:"nums.map(n=>n>0)"},
+  {id:76, front:"Example: Map to objects.", back:"nums.map(n=>({value:n}))"},
+
+  {id:77, front:"some() vs every(): quick summary.", back:"some → at least one true. every → all must be true."},
+  {id:78, front:"Example: some() with strings.", back:"words.some(w=>w.includes('js'))"},
+  {id:79, front:"Example: every() with lengths.", back:"words.every(w=>w.length>=3)"},
+  {id:80, front:"Example: some() with tasks.", back:"tasks.some(t=>t.urgent)"},
+  {id:81, front:"Example: every() with prices.", back:"prices.every(p=>p>0)"},
+
+  {id:82, front:"Example: find user by username.", back:"users.find(u=>u.username==='sam')"},
+  {id:83, front:"Example: find first long word.", back:"words.find(w=>w.length>8)"},
+  {id:84, front:"Example: find first active task.", back:"tasks.find(t=>t.active)"},
+  {id:85, front:"Example: find book by ISBN.", back:"books.find(b=>b.isbn==='123')"},
+  {id:86, front:"Example: findIndex for removal.", back:"const i = arr.findIndex(x=>x.id===10); arr.splice(i,1);"},
+
+  {id:87, front:"Example: Remove all nulls.", back:"arr = arr.filter(x=>x!==null)"},
+  {id:88, front:"Example: Create list of full names.", back:"people.map(p=>`${p.first} ${p.last}`)"},
+  {id:89, front:"Example: Total salary cost.", back:"employees.reduce((t,e)=>t+e.salary,0)"},
+  {id:90, front:"Example: Sort by height.", back:"players.sort((a,b)=>a.height-b.height)"},
+
+  {id:91, front:"Filter + map combo.", back:"users.filter(u=>u.online).map(u=>u.name)"},
+  {id:92, front:"Map + sort combo.", back:"words.map(w=>w.toLowerCase()).sort()"},
+  {id:93, front:"Find before updating object.", back:"const user = users.find(u=>u.id===5); user.active=true;"},
+  {id:94, front:"Reduce to find max.", back:"arr.reduce((max,n)=>n>max?n:max,arr[0])"},
+  {id:95, front:"Reduce to group by category.", back:"items.reduce((g,i)=>{g[i.cat]=g[i.cat]||[];g[i.cat].push(i);return g;},{})"},
+
+  {id:96, front:"Sort objects by date field.", back:"posts.sort((a,b)=>new Date(a.date)-new Date(b.date))"},
+  {id:97, front:"Filter to remove duplicates by index.", back:"arr.filter((v,i,a)=>a.indexOf(v)===i)"},
+  {id:98, front:"Map to generate IDs.", back:"arr.map((v,i)=>({id:i,value:v}))"},
+  {id:99, front:"FindIndex to detect missing item.", back:"if(arr.findIndex(x=>x.id===target)===-1){/*not found*/}"},
+  {id:100, front:"Reduce to build query string.", back:"params.reduce((s,p)=>s+`${p.key}=${p.value}&`,'')" }
+
+];
+
+// DOM refs
+const frontText = document.getElementById('frontText');
+const backText = document.getElementById('backText');
+const cardEl = document.getElementById('card');
+const cardIndexEl = document.getElementById('cardIndex');
+const tagStatus = document.getElementById('tagStatus');
+const progress = document.getElementById('progress');
+const sideProgress = document.getElementById('sideProgress');
+const knownCountEl = document.getElementById('knownCount');
+const totalCountEl = document.getElementById('totalCount');
+const sideKnown = document.getElementById('sideKnown');
+const sideTotal = document.getElementById('sideTotal');
+const cardList = document.getElementById('cardList');
+const progressInfo = document.getElementById('progressInfo');
+
+const STORAGE_KEY = 'rust_flashcards_progress_v1';
+
+// state
+let order = cards.map(c => c.id); // current order of card ids
+let currentIndex = 0; // index into order
+let flipped = false;
+let progressState = {}; // { id: 'known' | 'unknown' }
+let filterUnknownOnly = false;
+
+// load saved progress
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      progressState = parsed.progressState || {};
+      // keep order if provided (allow consistent resume)
+      if (Array.isArray(parsed.order) && parsed.order.length === cards.length) {
+        order = parsed.order;
+      }
+      currentIndex = parsed.currentIndex || 0;
+    }
+  } catch(e){
+    console.warn("Could not load saved progress", e);
+  }
+}
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ progressState, order, currentIndex }));
+}
+
+// helpers
+function getCardById(id) { return cards.find(c => c.id === id); }
+function getVisibleOrder(){
+  if(!filterUnknownOnly) return order.slice();
+  // only ids that are unknown or not known
+  return order.filter(id => progressState[id] !== 'known');
+}
+
+function renderCardList() {
+  const visible = getVisibleOrder();
+  cardList.innerHTML = visible.map((id,idx) => {
+    const c = getCardById(id);
+    const status = progressState[id] === 'known' ? 'Known' : 'Unknown';
+    const tag = progressState[id] === 'known' ? 'tag-known' : 'tag-unknown';
+    return `
+      <div class="card-item" data-id="${id}" role="button" tabindex="0" aria-label="Card ${idx+1}: ${c.front}">
+        <div style="display:flex; gap:8px; align-items:center;">
+          <div style="width:34px; font-weight:700; color:var(--muted)">${idx+1}</div>
+          <div style="min-width:0;">
+            <div style="font-weight:700; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(c.front)}</div>
+            <div style="font-size:12px; color:var(--muted)">${escapeHtml(c.back).slice(0,80)}${c.back.length>80?'…':''}</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <div class="${tag}">${status}</div>
+          <button class="btn small ghost viewBtn" data-id="${id}" title="Go to card">Go</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+  // attach listeners for go buttons and items
+  cardList.querySelectorAll('.viewBtn').forEach(b => {
+    b.addEventListener('click', (e) => {
+      const id = parseInt(e.currentTarget.dataset.id,10);
+      goToCard(id);
+    });
+  });
+  cardList.querySelectorAll('.card-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const id = parseInt(item.dataset.id,10);
+      goToCard(id);
+    });
+    item.addEventListener('keydown', (ev) => {
+      if(ev.key === 'Enter' || ev.key === ' ') {
+        ev.preventDefault();
+        const id = parseInt(item.dataset.id,10);
+        goToCard(id);
+      }
+    });
+  });
+}
+
+function escapeHtml(s){
+  return (s+'').replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  })[c]);
+}
+
+function renderCurrent() {
+  const visible = getVisibleOrder();
+  if(visible.length === 0){
+    frontText.innerHTML = "<strong>All cards filtered out.</strong><div style='margin-top:8px;color:var(--muted)'>Toggle Unknown Only.</div>";
+    backText.innerHTML = "";
+    cardIndexEl.textContent = "— / —";
+    tagStatus.textContent = "";
+    progress.value = 100;
+    sideProgress.value = 100;
+    return;
+  }
+  if(currentIndex >= visible.length) currentIndex = visible.length - 1;
+  if(currentIndex < 0) currentIndex = 0;
+
+  const id = visible[currentIndex];
+  const card = getCardById(id);
+  frontText.innerHTML = escapeHtml(card.front);
+  backText.innerHTML = escapeHtml(card.back);
+  cardIndexEl.textContent = `${currentIndex + 1} / ${visible.length}`;
+
+  // status tag based on progressState
+  const state = progressState[id];
+  tagStatus.textContent = state === 'known' ? 'Known' : 'Unknown';
+  tagStatus.className = state === 'known' ? 'tag-known' : 'tag-unknown';
+
+  updateProgressIndicators();
+  // ensure card is unflipped when navigating
+  setFlip(false);
+}
+
+function updateProgressIndicators() {
+  const total = cards.length;
+  const known = Object.values(progressState).filter(v => v === 'known').length;
+  const pct = Math.round((known / total) * 100);
+  progress.value = pct;
+  sideProgress.value = pct;
+  knownCountEl.textContent = known;
+  totalCountEl.textContent = total;
+  sideKnown.textContent = known;
+  sideTotal.textContent = total;
+}
+
+function setFlip(v) {
+  flipped = !!v;
+  if(flipped) {
+    cardEl.classList.add('is-flipped');
+    cardEl.setAttribute('aria-pressed','true');
+    document.getElementById('cardFront').setAttribute('aria-hidden','true');
+    document.getElementById('cardBack').setAttribute('aria-hidden','false');
+  } else {
+    cardEl.classList.remove('is-flipped');
+    cardEl.setAttribute('aria-pressed','false');
+    document.getElementById('cardFront').setAttribute('aria-hidden','false');
+    document.getElementById('cardBack').setAttribute('aria-hidden','true');
+  }
+  save();
+}
+
+function nextCard() {
+  const visible = getVisibleOrder();
+  if(visible.length === 0) return;
+  currentIndex = Math.min(visible.length - 1, currentIndex + 1);
+  renderCurrent();
+  save();
+}
+
+function prevCard() {
+  const visible = getVisibleOrder();
+  if(visible.length === 0) return;
+  currentIndex = Math.max(0, currentIndex - 1);
+  renderCurrent();
+  save();
+}
+
+function goToCard(id) {
+  const visible = getVisibleOrder();
+  const idx = visible.indexOf(id);
+  if(idx === -1) return;
+  currentIndex = idx;
+  renderCurrent();
+  // focus card for keyboard interaction
+  cardEl.focus();
+  save();
+}
+
+function markCurrent(state) {
+  const visible = getVisibleOrder();
+  if(visible.length === 0) return;
+  const id = visible[currentIndex];
+  progressState[id] = state;
+  // if filterUnknownOnly AND state is known, we should keep the same index but it will refer to next visible
+  // so clamp index
+  const visibleAfter = getVisibleOrder();
+  if(filterUnknownOnly) {
+    if(visibleAfter.length === 0) { currentIndex = 0; }
+    else currentIndex = Math.min(currentIndex, visibleAfter.length - 1);
+  }
+  renderCardList();
+  renderCurrent();
+  save();
+}
+
+function shuffleOrder(seedless=true) {
+  // Fisher-Yates
+  for(let i = order.length -1; i>0; i--){
+    const j = Math.floor(Math.random() * (i+1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  currentIndex = 0;
+  renderCardList();
+  renderCurrent();
+  save();
+}
+
+function resetProgress() {
+  if(!confirm("Reset known/unknown progress for all cards?")) return;
+  progressState = {};
+  renderCardList();
+  renderCurrent();
+  save();
+}
+
+// export progress as JSON file
+function exportProgress() {
+  const payload = { progressState, order, timestamp: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type:'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'rust_flashcards_progress.json';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+
+// keyboard
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'ArrowRight') { e.preventDefault(); nextCard(); }
+  if(e.key === 'ArrowLeft') { e.preventDefault(); prevCard(); }
+  if(e.code === 'Space') { e.preventDefault(); setFlip(!flipped); }
+  if(e.key.toLowerCase() === 'k') { markCurrent('known'); }
+  if(e.key.toLowerCase() === 'u') { markCurrent('unknown'); }
+  if(e.key.toLowerCase() === 's') { shuffleOrder(); }
+});
+
+// DOM events
+document.getElementById('nextBtn').addEventListener('click', nextCard);
+document.getElementById('prevBtn').addEventListener('click', prevCard);
+document.getElementById('flipBtn').addEventListener('click', () => setFlip(!flipped));
+cardEl.addEventListener('click', () => setFlip(!flipped));
+document.getElementById('knownBtn').addEventListener('click', () => markCurrent('known'));
+document.getElementById('unknownBtn').addEventListener('click', () => markCurrent('unknown'));
+document.getElementById('shuffleBtn').addEventListener('click', shuffleOrder);
+document.getElementById('resetBtn').addEventListener('click', resetProgress);
+document.getElementById('downloadBtn').addEventListener('click', exportProgress);
+document.getElementById('printBtn').addEventListener('click', () => window.print());
+document.getElementById('studyKnownOnly').addEventListener('click', () => {
+  filterUnknownOnly = !filterUnknownOnly;
+  document.getElementById('studyKnownOnly').textContent = filterUnknownOnly ? 'Show All' : 'Show Unknown Only';
+  currentIndex = 0;
+  renderCardList();
+  renderCurrent();
+  save();
+});
+
+// click outside card to focus for keyboard
+document.getElementById('cardWrap').addEventListener('keydown', (e) => {
+  if(e.key === 'Enter') setFlip(!flipped);
+});
+
+// init app
+(function init(){
+  load();
+  // ensure order contains all ids even if changed
+  const ids = cards.map(c => c.id);
+  if(order.length !== ids.length || !order.every(id => ids.includes(id))) {
+    order = ids.slice();
+  }
+  renderCardList();
+  renderCurrent();
+  // set counters and aria
+  document.getElementById('totalCount').textContent = cards.length;
+})();
+//recalc height on rotation
+ function fixVH() {
+        document.documentElement.style.setProperty('--vh', (window.innerHeight * 0.01) + 'px');
+    }
+    window.addEventListener('resize', fixVH);
+    window.addEventListener('orientationchange', fixVH);
+    fixVH();
+
+</script>
+</body>
+</html>
