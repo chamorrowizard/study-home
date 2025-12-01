@@ -467,12 +467,31 @@ const cards = [
   {id:93, front:"Find before updating object.", back:"const user = users.find(u=>u.id===5); user.active=true;"},
   {id:94, front:"Reduce to find max.", back:"arr.reduce((max,n)=>n>max?n:max,arr[0])"},
   {id:95, front:"Reduce to group by category.", back:"items.reduce((g,i)=>{g[i.cat]=g[i.cat]||[];g[i.cat].push(i);return g;},{})"},
-
   {id:96, front:"Sort objects by date field.", back:"posts.sort((a,b)=>new Date(a.date)-new Date(b.date))"},
   {id:97, front:"Filter to remove duplicates by index.", back:"arr.filter((v,i,a)=>a.indexOf(v)===i)"},
   {id:98, front:"Map to generate IDs.", back:"arr.map((v,i)=>({id:i,value:v}))"},
   {id:99, front:"FindIndex to detect missing item.", back:"if(arr.findIndex(x=>x.id===target)===-1){/*not found*/}"},
-  {id:100, front:"Reduce to build query string.", back:"params.reduce((s,p)=>s+`${p.key}=${p.value}&`,'')" }
+  {id:100, front:"Reduce to build query string.", back:"params.reduce((s,p)=>s+`${p.key}=${p.value}&`,'')" },
+  { id:101, front:"What does `new Date().getFullYear()` do?", back:"It gets the current year as a full four-digit number." },
+{ id:102, front:"In JavaScript, what is an 'arrow function'?", back:"A more concise way to write anonymous functions, often used for callbacks." },
+{ id:103, front:"What is an 'implicit return' in an arrow function?", back:"When the function body is a single expression, you can omit the curly braces and `return` keyword, and the expression's result is automatically returned." },
+{ id:104, front:"If `people.some(person => person.age >= 18)` returns `true`, what does it tell you about the `people` array?", back:"At least one person in the `people` array is 18 years old or older." },
+{ id:105, front:"If `people.every(person => person.age >= 18)` returns `false`, what does it tell you about the `people` array?", back:"Not every person in the `people` array is 18 years old or older; at least one person is younger than 18." },
+{ id:106, front:"When would you use `.find()` over `.filter()`?", back:"When you only need the first item that matches a condition, rather than a list of all matching items." },
+{ id:107, front:"If you use `.find()` on an array of objects and the condition `item.id === 123` is met, what will `.find()` return?", back:"The first object in the array where the `id` property is equal to 123." },
+{ id:108, front:"What type of value does a `.some()` or `.every()` method typically return?", back:"A Boolean value (`true` or `false`)." },
+{ id:109, front:"Explain the difference between `some` and `every`.", back:"`some` checks if *any* element satisfies a condition, while `every` checks if *all* elements satisfy a condition." },
+{ id:110, front:"How can you console log a variable's name along with its value in JavaScript?", back:"By wrapping the variable in curly brackets inside `console.log()`, e.g., `console.log({variableName})`." },
+{ id:111, front:"What happens if you try to `splice()` an array using an invalid index (e.g., an index out of bounds)?", back:"It will not throw an error but might not remove anything, or it will remove from the start/end if the index is negative or past the end." },
+{ id:112, front:"What is a common use case for `.findIndex()`?", back:"To get the position of an item in an array so you can remove or update it." },
+{ id:113, front:"When creating a new array from an old one without modifying the original, what JavaScript feature is often used with `.slice()`?", back:"The spread operator (`...`)." },
+{ id:114, front:"If `comments.find(comment => comment.author === 'Alice')` finds a match, what is returned?", back:"The entire comment object where the author is 'Alice'." },
+{ id:115, front:"If `comments.findIndex(comment => comment.text.includes('urgent'))` finds a match, what is returned?", back:"The numerical index (position) of the first comment whose text includes 'urgent'." },
+{ id:116, front:"What does `array.slice(start, end)` do?", back:"It returns a *new array* containing a shallow copy of a portion of an array into a new array object selected from `start` to `end` (end not included)." },
+{ id:117, front:"How can you copy an entire array using `.slice()`?", back:"By calling `array.slice(0)` or simply `array.slice()`." },
+{ id:118, front:"What is one benefit of creating a new array instead of modifying an existing one (e.g., using `splice`)?", back:"It promotes immutability, which can make state management predictable in applications (common in libraries like Redux)." },
+{ id:119, front:"If you have an array `[1, 2, 3]` and use the spread operator like `[0, ...arr, 4]`, what will the new array be?", back:"`[0, 1, 2, 3, 4]`" },
+{ id:120, front:"Can `.some()` or `.every()` methods modify the original array?", back:"No, `.some()` and `.every()` methods do not modify the original array; they only test conditions." }
 
 ];
 
