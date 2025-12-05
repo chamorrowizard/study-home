@@ -265,7 +265,7 @@ async function loadODTFile(file){
     }
 
     const xml = new DOMParser().parseFromString(contentXml, 'application/xml');
-    const officeText = xml.querySelector('office\\:text');
+    const officeText = xml.querySelector('office\\:text') || xml.querySelector('text');
 
     const html = odtNodeToHtml(officeText, images);
 
