@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Mobile Document Reader</title>
+
+<style>
+  :root{
+    --bg1:#071426; --bg2:#0e2a4f;
+    --accent:#7dd3fc; --accent-2:#60a5fa;
+    --muted:rgba(255,255,255,0.75);
+    --maxw:min(900px,98vw);
+    --readerPadding:18px;
+    --headerH:60px; /* New: Height for the fixed header */
+  }
+
+  html,body{
+    height:100%;margin:0;
+    font-family:Inter,ui-sans-serif,system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+    background: linear-gradient(180deg,var(--bg1),var(--bg2));
+    color:#eef6ff;
+  }
+
+  .wrap{max-width:var(--maxw); margin:0 auto;padding:0 var(--readerPadding);}
+  
+  /* Fixed Header for Controls */
+  .toolbar{
+    position:sticky; top:0; z-index:10;
+    display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+    padding:10px 0;
+    background: var(--bg2); /* Solid background for visibility */
+    border-bottom:1px solid rgba(255,255,255,0.05);
+    height: var(--headerH);
+  }
+
+  .btn{
+    background:rgba(255,255,255,0.04);
+    border:1px solid rgba(255,255,255,0.03);
+    color:var(--muted);
+    padding:8px 10px;border-radius:10px;
+    font-weight:600; cursor:pointer;
+    flex-shrink:0; /* Prevents buttons from squishing */
+  }
+  .controls{margin-left:auto;display:flex;gap:8px;align-items:center}
+  
+  /* Reader Content Area */
+  .reader{
+    margin-top:0; /* Adjusted for fixed header */
+    background:transparent; /* Remove outer reader background since we use body gradient */
+    border-radius:12px;padding-bottom:16px;
+    box-shadow:none;
+    min-height: calc(100vh - var(--headerH) - 2 * var(--readerPadding)); /* Fill viewport */
+    overflow:visible;
+  }
+
+  .reader .title{font-size:18px;font-weight:700;margin-bottom:6px}
+  .reader .meta{font-size:13px;color:var(--muted); margin-bottom:12px}
+
+  .content{
+    line-height:1.65;font-size:18px;color:#eaf6ff;
+    overflow:auto; word-wrap:break-word;
+  }
+
+  .content p{margin:0 0 12px}
+  .content h1,.content h2,.content h3{margin:8px 0 12px;line-height:1.18}
+  .content img{max-width:100%;height:auto;border-radius:8px;margin:8px 0}
+
+  /* light theme */
+  body.light { background: #f6f8fb; color:#132028; }
+  body.light .toolbar { background:#f6f8fb; border-bottom:1px solid rgba(18,36,48,0.1); }
+  body.light .btn { color:#16303b; background:rgba(0,0,0,0.05) }
+</style>
+</head>
+
+<body>
+<div class="wrap" role="main">
+  
+  <div class="toolbar" aria-hidden="false">
+    <div style="font-weight:700;">📖 Document Preview</div> 
+
+    <div class="controls">
+      <button id="decFont" class="btn small">A-</button>
+      <button id="incFont" class="btn small">A+</button>
+      <button id="themeToggle" class="btn small">🌓 Theme</button>
+    </div>
+  </div>
+
+  <div id="reader" class="reader" aria-live="polite">
+    <div id="title" class="title">My Converted ODT Document</div>
+    <div id="meta" class="meta">Optimized for Mobile Reading</div>
+    
+    <div id="content" class="content" tabindex="0">
+      <!-- Insert new content here -->
+    </div>
+
+<script>
+  let baseFont = 18; // Starting font size
+  const contentEl = document.getElementById('content');
+
+  // Set initial font size
+  contentEl.style.fontSize = baseFont + 'px';
+
+  // Event listeners for controls
+  document.getElementById('incFont').onclick = () => {
+    baseFont += 2;
+    contentEl.style.fontSize = baseFont + 'px';
+  };
+  document.getElementById('decFont').onclick = () => {
+    baseFont = Math.max(12, baseFont - 2); // Min font size 12px
+    contentEl.style.fontSize = baseFont + 'px';
+  };
+  document.getElementById('themeToggle').onclick = () => {
+    document.body.classList.toggle('light');
+  };
+</script>
+
+</body>
+</html>
