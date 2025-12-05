@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Reader — ODT Preview</title>
+
+<!-- JSZip (browser) — correct version -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"
+        integrity="sha512-3zp1KkhW0nX8Q40LZOHJdk8N6tN5nx9TuHhDJwL6LhHya5w+VgaeUA1cP3xkHlMlx1cNf5s485Tdj0ScH5k5xg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<style>
+  :root{
+    --bg1:#071426; --bg2:#0e2a4f;
+    --accent:#7dd3fc; --accent-2:#60a5fa;
+    --muted:rgba(255,255,255,0.75);
+    --maxw:min(900px,98vw);
+    --readerPadding:18px;
+  }
+
+  html,body{
+    height:100%;margin:0;
+    font-family:Inter,ui-sans-serif,system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+    background: linear-gradient(180deg,var(--bg1),var(--bg2));
+    color:#eef6ff;
+  }
+
+  .wrap{max-width:var(--maxw); margin:18px auto;padding:var(--readerPadding);}
+  .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .btn{
+    background:rgba(255,255,255,0.04);
+    border:1px solid rgba(255,255,255,0.03);
+    color:var(--muted);
+    padding:10px 12px;border-radius:10px;
+    font-weight:600; cursor:pointer
+  }
+  .btn.primary{background:linear-gradient(90deg,var(--accent),var(--accent-2)); color:#041724}
+  input[type=file]{display:none}
+
+  .reader{
+    margin-top:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+    border-radius:12px;padding:16px;
+    box-shadow:0 14px 36px rgba(2,6,23,0.6);
+    max-height:78vh; overflow:auto;
+  }
+
+  .reader .title{font-size:18px;font-weight:700;margin-bottom:6px}
+  .reader .meta{font-size:13px;color:var(--muted); margin-bottom:12px}
+  .controls{margin-left:auto;display:flex;gap:8px;align-items:center}
+
+  .content{
+    line-height:1.65;font-size:18px;color:#eaf6ff;
+    overflow:auto; word-wrap:break-word;
+  }
+
+  .content p{margin:0 0 12px}
+  .content h1,.content h2,.content h3{margin:8px 0 12px;line-height:1.18}
+  .content img{max-width:100%;height:auto;border-radius:8px;margin:8px 0}
+  .notice{font-size:13px;color:var(--muted); margin-top:8px}
+
+  @media (max-width:640px){
+    .content{font-size:18px}
+    .toolbar{gap:6px}
+    .btn{padding:8px 10px}
+  }
+
+  /* light theme */
+  body.light { background: #f6f8fb; color:#132028; }
+  body.light .reader {
+    background:white;color:#132028;
+    border:1px solid rgba(18,36,48,0.06); box-shadow:none;
+  }
+  body.light .btn { color:#16303b; background:rgba(0,0,0,0.05) }
+</style>
+</head>
+
+<body>
+<div class="wrap" role="main">
+  <div class="toolbar" aria-hidden="false">
+    <label class="btn" for="fileInput">📁 Upload .odt</label>
+    <input id="fileInput" type="file" accept=".odt" />
+    <button id="dropHint" class="btn">📥 Drag & Drop</button>
+
+    <div class="controls" style="margin-left:auto">
+      <button id="decFont" class="btn small">A-</button>
+      <button id="incFont" class="btn small">A+</button>
+      <button id="themeToggle" class="btn small">🌓 Theme</button>
+      <a id="exportHtml" class="btn" download="document.html" style="display:none">⤓ Export HTML</a>
+    </div>
+  </div>
+
+  <div id="reader" class="reader" aria-live="polite">
+    <div id="title" class="title">No document loaded</div>
+    <div id="meta" class="meta">Upload a .odt file to preview it. 100% client-side.</div>
+    <div id="content" class="content" tabindex="0"></div>
+    <div id="notice" class="notice"></div>
+  </div>
+</div>
+
+<script>
+/* -------------------------------------------------------------
+   UTILITIES
+------------------------------------------------------------- */
+function normalizeTag(node){
+  const ln = node.localName || node.tagName;
+  return ln.replace(/^.*:/,'').toLowerCase();
+}
+
+function extractText(el){
+  if(!el) return '';
+  return Array.from(el.childNodes).map(n=>{
+    if(n.nodeType === 3) return n.textContent;
+    if(n.nodeType === 1) return extractText(n);
+    return '';
+  }).join('');
+}
+
+function escapeHtml(s){
+  return (s||'').replace(/[&<>"']/g,c=>({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+
+function escapeAttr(s){
+  return (s||'').replace(/"/g,'&quot;');
+}
+
+/* -------------------------------------------------------------
+   MAIN ODT → HTML PROCESSOR
+------------------------------------------------------------- */
+
+function convertInline(node, images){
+  const parts = [];
+  for(const n of Array.from(node.childNodes)){
+    if(n.nodeType === 3){
+      parts.push(escapeHtml(n.textContent || ''));
+    }
+    else if(n.nodeType === 1){
+      const tag = normalizeTag(n);
+
+      if(tag === 'span'){
+        const style = n.getAttribute('text:style-name') || '';
+        const txt = escapeHtml(n.textContent || '');
+        if(/bold/i.test(style)) parts.push(`<strong>${txt}</strong>`);
+        else if(/italic/i.test(style)) parts.push(`<em>${txt}</em>`);
+        else parts.push(txt);
+      }
+
+      else if(tag === 'a'){
+        const href = n.getAttribute('xlink:href') || '#';
+        parts.push(`<a href="${escapeAttr(href)}" target="_blank">${escapeHtml(n.textContent || href)}</a>`);
+      }
+
+      else if(tag === 'br' || tag === 'line-break'){
+        parts.push('<br/>');
+      }
+
+      else if(tag === 'image'){
+        const href = n.getAttribute('xlink:href') || '';
+        if(href && images[href]) parts.push(`<img src="${images[href]}" alt="">`);
+      }
+
+      else {
+        parts.push(convertInline(n, images));
+      }
+    }
+  }
+  return parts.join('');
+}
+
+function convertList(node, images){
+  const items = [];
+  const liNodes = node.getElementsByTagName('text:list-item');
+
+  for(const li of Array.from(liNodes)){
+    const p = li.querySelector('text\\:p, p');
+    const html = p ? convertInline(p, images) : escapeHtml(extractText(li));
+    items.push(`<li>${html}</li>`);
+  }
+
+  return `<ul>${items.join('')}</ul>`;
+}
+
+function odtNodeToHtml(node, images){
+  const out = [];
+  for(const child of Array.from(node.childNodes)){
+    if(child.nodeType === 1){
+      const tag = normalizeTag(child);
+
+      if(tag === 'h'){
+        const level = child.getAttribute('text:outline-level') || 1;
+        const txt = extractText(child);
+        out.push(`<h${level}>${escapeHtml(txt)}</h${level}>`);
+      }
+
+      else if(tag === 'p'){
+        out.push(`<p>${convertInline(child, images)}</p>`);
+      }
+
+      else if(tag === 'list'){
+        out.push(convertList(child, images));
+      }
+
+      else if(tag === 'section'){
+        out.push(odtNodeToHtml(child, images));
+      }
+
+      else {
+        out.push(odtNodeToHtml(child, images));
+      }
+    }
+
+    else if(child.nodeType === 3){
+      out.push(escapeHtml(child.textContent));
+    }
+  }
+  return out.join('');
+}
+
+/* -------------------------------------------------------------
+   FILE HANDLING
+------------------------------------------------------------- */
+const fileInput = document.getElementById('fileInput');
+const titleEl = document.getElementById('title');
+const metaEl = document.getElementById('meta');
+const contentEl = document.getElementById('content');
+const noticeEl = document.getElementById('notice');
+const exportBtn = document.getElementById('exportHtml');
+
+let baseFont = 18;
+let currentHtml = '';
+
+document.getElementById('incFont').onclick = ()=>{ baseFont+=2; contentEl.style.fontSize = baseFont+'px'; };
+document.getElementById('decFont').onclick = ()=>{ baseFont=Math.max(12,baseFont-2); contentEl.style.fontSize = baseFont+'px'; };
+document.getElementById('themeToggle').onclick = ()=> document.body.classList.toggle('light');
+
+fileInput.addEventListener('change', e=>{
+  if(e.target.files[0]) loadODTFile(e.target.files[0]);
+});
+
+document.addEventListener('dragover', ev=>ev.preventDefault());
+document.addEventListener('drop', ev=>{
+  ev.preventDefault();
+  const f = ev.dataTransfer.files[0];
+  if(f) loadODTFile(f);
+});
+
+async function loadODTFile(file){
+  titleEl.textContent = file.name;
+  metaEl.textContent = `Size: ${Math.round(file.size/1024)} KB — parsing…`;
+  contentEl.innerHTML = '';
+  noticeEl.textContent = '';
+
+  try {
+    const buf = await file.arrayBuffer();
+    const zip = await JSZip.loadAsync(buf);
+
+    const contentXml = await zip.files['content.xml'].async('text');
+
+    const images = {};
+    for(const name in zip.files){
+      if(name.startsWith('Pictures/')){
+        const blob = await zip.files[name].async('blob');
+        images[name] = URL.createObjectURL(blob);
+      }
+    }
+
+    const xml = new DOMParser().parseFromString(contentXml, 'application/xml');
+    const officeText = xml.querySelector('office\\:text');
+
+    const html = odtNodeToHtml(officeText, images);
+
+    currentHtml = `
+      <!doctype html><html><head>
+      <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+      <title>${escapeHtml(file.name)}</title></head><body>${html}</body></html>
+    `;
+
+    contentEl.innerHTML = html;
+    metaEl.textContent = `Rendered ${file.name}`;
+    noticeEl.textContent = 'Note: Complex tables and advanced formatting may be simplified.';
+
+    exportBtn.style.display = 'inline-block';
+    exportBtn.href = URL.createObjectURL(new Blob([currentHtml], {type:'text/html'}));
+  }
+
+  catch(err){
+    console.error(err);
+    titleEl.textContent = 'Parse error';
+    metaEl.textContent = 'Failed to parse document';
+    noticeEl.textContent = err.message;
+  }
+}
+</script>
+
+</body>
+</html>
