@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rust Mastery: Common Programming Concepts</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #f46623; /* Rust Orange */
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text: #f1f5f9;
+            --text-muted: #94a3b8;
+            --accent: #38bdf8;
+            --code-bg: #000000;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(244, 102, 35, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(56, 189, 248, 0.1) 0%, transparent 20%);
+            color: var(--text);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 5rem;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, var(--primary), #fb923c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .sub-header {
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Section Styling */
+        section {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 3rem;
+            margin-bottom: 4rem;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        h2 {
+            color: var(--primary);
+            font-size: 2rem;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        h2::before {
+            content: '';
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            background: var(--accent);
+            border-radius: 50%;
+        }
+
+        h3 {
+            color: var(--accent);
+            margin-top: 2rem;
+            border-left: 4px solid var(--accent);
+            padding-left: 1rem;
+        }
+
+        p, li {
+            font-size: 1.05rem;
+            color: #cbd5e1;
+        }
+
+        code {
+            font-family: 'Fira Code', monospace;
+            background: var(--code-bg);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            color: #f87171;
+            font-size: 0.95rem;
+        }
+
+        pre {
+            background: var(--code-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            overflow-x: auto;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        pre code {
+            color: #e2e8f0;
+            padding: 0;
+            background: none;
+        }
+
+        .highlight-box {
+            background: rgba(56, 189, 248, 0.1);
+            border-left: 4px solid var(--accent);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 0 12px 12px 0;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .grid { grid-template-columns: 1fr; }
+            h1 { font-size: 2.5rem; }
+            section { padding: 1.5rem; }
+        }
+
+        footer {
+            text-align: center;
+            padding: 4rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Rust Chapter 3</h1>
+        <p class="sub-header">A comprehensive guide to Variables, Data Types, Functions, Comments, and Control Flow.</p>
+    </header>
+
+    <section id="variables">
+        <h2>3.1 Variables and Mutability</h2>
+        <p>In Rust, variables are <strong>immutable by default</strong>. This encourages safety and concurrency.</p>
+        
+        <h3>Mutability</h3>
+        <p>To make a variable mutable, you must use the <code>mut</code> keyword. This signals to future readers (and the compiler) that this value will change.</p>
+        <pre><code>let mut x = 5;
+println!("The value is: {x}");
+x = 6; // This is only allowed because of 'mut'</code></pre>
+
+        <h3>Constants</h3>
+        <p>Unlike immutable variables, constants (<code>const</code>) are <em>always</em> immutable. They must be annotated with a type and can be set only to a constant expression.</p>
+        
+        <h3>Shadowing</h3>
+        <p>You can declare a new variable with the same name as a previous one. This is called <strong>shadowing</strong>. It allows you to change the type of a value while keeping the same name.</p>
+        <pre><code>let spaces = "   ";
+let spaces = spaces.len(); // Shadowing changes type from string to integer</code></pre>
+    </section>
+
+    <section id="datatypes">
+        <h2>3.2 Data Types</h2>
+        <p>Rust is a statically typed language; it must know the types of all variables at compile time.</p>
+
+        <div class="grid">
+            <div>
+                <h3>Scalar Types</h3>
+                <ul>
+                    <li><strong>Integers:</strong> Signed (<code>i8-i128</code>) and Unsigned (<code>u8-u128</code>).</li>
+                    <li><strong>Floating-Point:</strong> <code>f32</code> and <code>f64</code> (default).</li>
+                    <li><strong>Boolean:</strong> <code>true</code> and <code>false</code>.</li>
+                    <li><strong>Character:</strong> <code>char</code> (4-byte Unicode scalar value).</li>
+                </ul>
+            </div>
+            <div>
+                <h3>Compound Types</h3>
+                <ul>
+                    <li><strong>Tuples:</strong> Group multiple values of different types into one type. Fixed length.</li>
+                    <li><strong>Arrays:</strong> Group multiple values of the <em>same</em> type. Fixed length, stored on the stack.</li>
+                </ul>
+            </div>
+        </div>
+        <pre><code>let tup: (i32, f64, u8) = (500, 6.4, 1);
+let (x, y, z) = tup; // Destructuring</code></pre>
+    </section>
+
+    <section id="functions">
+        <h2>3.3 Functions</h2>
+        <p>Function signatures must declare the type of each parameter. This is a deliberate design choice in Rust.</p>
+
+        <h3>Statements vs. Expressions</h3>
+        <ul>
+            <li><strong>Statements:</strong> Instructions that perform an action and do not return a value.</li>
+            <li><strong>Expressions:</strong> Evaluate to a resulting value. They do not end in semicolons.</li>
+        </ul>
+
+        <div class="highlight-box">
+            <strong>Return Values:</strong> Functions return the value of the final expression in their block. You can return early using the <code>return</code> keyword.
+        </div>
+        <pre><code>fn plus_one(x: i32) -> i32 {
+    x + 1 // Note: No semicolon makes this an expression!
+}</code></pre>
+    </section>
+
+    <section id="comments">
+        <h2>3.4 Comments</h2>
+        <p>Rust uses <code>//</code> for line comments. For documentation, Rust uses <code>///</code> (which supports Markdown!), but for general logic explanation, standard line comments are the convention.</p>
+    </section>
+
+    <section id="controlflow">
+        <h2>3.5 Control Flow</h2>
+        <p>Rust provides <code>if</code> expressions and several types of loops to control execution.</p>
+
+        <h3>if Expressions</h3>
+        <p>The condition must be a <code>bool</code>. Rust will not automatically try to convert non-Boolean types to a Boolean (unlike JS or C).</p>
+
+        <h3>Loops</h3>
+        <ul>
+            <li><strong>loop:</strong> Executes forever until you explicitly <code>break</code>.</li>
+            <li><strong>while:</strong> Runs while a condition remains true.</li>
+            <li><strong>for:</strong> The most common loop. Ideal for iterating through collections.</li>
+        </ul>
+
+        <pre><code>let a = [10, 20, 30];
+for element in a {
+    println!("Value: {element}");
+}</code></pre>
+    </section>
+
+    <footer>
+        Deep Dive into the Rust Programming Language — Chapter 3 Study Guide
+    </footer>
+</div>
+
+</body>
+</html>

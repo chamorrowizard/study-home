@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rust Mastery | Structs & Related Data</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #fafafa;
+            --surface: #ffffff;
+            --border: #e1e4e8;
+            --primary: #f46623;
+            --secondary: #2c3e50;
+            --accent: #0969da;
+            --text: #24292f;
+            --text-muted: #57606a;
+            --code-bg: #f6f8fa;
+            --sidebar-width: 280px;
+        }
+
+        [data-theme="dark"] {
+            --bg: #0d1117;
+            --surface: #161b22;
+            --border: #30363d;
+            --text: #c9d1d9;
+            --text-muted: #8b949e;
+            --code-bg: #000000;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            display: grid;
+            grid-template-columns: var(--sidebar-width) 1fr;
+            transition: background 0.3s;
+        }
+
+        /* Navigation */
+        nav {
+            height: 100vh;
+            position: sticky;
+            top: 0;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            padding: 2.5rem 1.5rem;
+        }
+
+        .nav-header { font-weight: 800; color: var(--primary); margin-bottom: 2rem; display: block; }
+        .nav-links { list-style: none; padding: 0; }
+        .nav-links a {
+            display: block;
+            padding: 0.8rem 0;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover { color: var(--primary); }
+
+        /* Main Content */
+        main { padding: 4rem 6rem; max-width: 1200px; }
+        header { margin-bottom: 5rem; border-left: 5px solid var(--primary); padding-left: 2rem; }
+        h1 { font-size: 3.5rem; letter-spacing: -0.05em; margin: 0; color: var(--secondary); }
+        [data-theme="dark"] h1 { color: #f0f6fc; }
+
+        section { margin-bottom: 7rem; scroll-margin-top: 3rem; }
+        h2 { font-size: 2.2rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 2rem; }
+        h3 { color: var(--accent); margin-top: 3rem; font-size: 1.4rem; }
+
+        /* Layout Components */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; }
+
+        code { font-family: 'Fira Code', monospace; background: var(--code-bg); padding: 0.2rem 0.4rem; border-radius: 4px; color: #d73a49; }
+        pre { background: var(--code-bg); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border); overflow-x: auto; }
+        pre code { color: var(--text); background: none; padding: 0; }
+
+        .definition { border-left: 4px solid var(--accent); background: rgba(9, 105, 218, 0.05); padding: 1.5rem; margin: 2rem 0; border-radius: 0 8px 8px 0; }
+        .important { border-left: 4px solid var(--primary); background: rgba(244, 102, 35, 0.05); padding: 1.5rem; margin: 2rem 0; border-radius: 0 8px 8px 0; }
+
+        @media (max-width: 1000px) {
+            body { grid-template-columns: 1fr; }
+            nav { display: none; }
+            main { padding: 2rem; }
+            .grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <span class="nav-header">RUST CHAPTER 5</span>
+    <ul class="nav-links">
+        <li><a href="#defining">5.1 Defining Structs</a></li>
+        <li><a href="#instantiating">Instantiating & Mutability</a></li>
+        <li><a href="#shorthand">Shorthand & Update Syntax</a></li>
+        <li><a href="#tuple-unit">Tuple & Unit-Like Structs</a></li>
+        <li><a href="#example">5.2 Struct Example</a></li>
+        <li><a href="#methods">5.3 Method Syntax</a></li>
+    </ul>
+</nav>
+
+<main>
+    <header>
+        <h1>Using Structs</h1>
+        <p>Grouping related data together to create meaningful custom types.</p>
+    </header>
+
+    <section id="defining">
+        <h2>5.1 Defining and Instantiating Structs</h2>
+        <p>A <strong>struct</strong> (short for structure) is a custom data type that lets you package together and name multiple related values that make up a meaningful group.</p>
+
+        <div class="definition">
+            <strong>Key Difference from Tuples:</strong> Unlike tuples, you name each piece of data (fields) so it's clear what the values mean.
+        </div>
+
+        <pre><code>struct User {
+    active: bool,
+    username: String,
+    email: String,
+    sign_in_count: u64,
+}</code></pre>
+
+        <h3 id="instantiating">Instantiation and Mutability</h3>
+        <p>To use a struct, we create an <em>instance</em> by specifying values for each field.</p>
+        <div class="important">
+            <strong>Mutability Rule:</strong> If the instance is mutable, the entire instance is mutable. Rust does not allow only certain fields to be marked as mutable.
+        </div>
+
+        <h3 id="shorthand">Shorthand and Update Syntax</h3>
+        <p><strong>Field Init Shorthand:</strong> If the variable name and struct field name are exactly the same, you can use the shorthand.</p>
+        <p><strong>Struct Update Syntax:</strong> Use <code>..</code> to create a new instance using values from another instance.</p>
+        <pre><code>let user2 = User {
+    email: String::from("another@example.com"),
+    ..user1 // Use remaining fields from user1
+};</code></pre>
+
+        <h3 id="tuple-unit">Tuple and Unit-Like Structs</h3>
+        <p><strong>Tuple Structs:</strong> Structs that have the added meaning the struct name provides but don’t have names associated with their fields; rather, they just have the types of the fields.</p>
+        <p><strong>Unit-Like Structs:</strong> Structs that have no fields at all! They behave similarly to <code>()</code>, the unit type.</p>
+    </section>
+
+    <section id="example">
+        <h2>5.2 An Example Program Using Structs</h2>
+        <p>By using structs, we add <strong>metadata</strong> to our data. Instead of passing two separate integers for width and height, we pass a single <code>Rectangle</code> struct.</p>
+
+        <div class="card">
+            <h3>Adding Useful Functionality with Traits</h3>
+            <p>To print out a struct for debugging, we add the <code>#[derive(Debug)]</code> attribute above the struct definition.</p>
+            <pre><code>#[derive(Debug)]
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+fn main() {
+    let rect = Rectangle { width: 30, height: 50 };
+    println!("rect is {:?}", rect);
+}</code></pre>
+        </div>
+    </section>
+
+    <section id="methods">
+        <h2>5.3 Method Syntax</h2>
+        <p>Methods are similar to functions, but they are defined within the context of a struct (or an enum or a trait object), and their first parameter is always <code>self</code>.</p>
+
+        <pre><code>impl Rectangle {
+    fn area(&self) -> u32 {
+        self.width * self.height
+    }
+}</code></pre>
+
+        <h3>Associated Functions</h3>
+        <p>All functions defined within an <code>impl</code> block are called <strong>associated functions</strong>. Associated functions that <em>don’t</em> take <code>self</code> as a parameter are often used as constructors (like <code>String::from</code>).</p>
+
+        <div class="important">
+            <strong>Multiple impl Blocks:</strong> Each struct is allowed to have multiple <code>impl</code> blocks, though usually they are grouped together.
+        </div>
+    </section>
+
+    <footer style="margin-top: 5rem; padding: 2rem; border-top: 1px solid var(--border); text-align: center; color: var(--text-muted); font-size: 0.8rem;">
+        Notes derived from The Rust Programming Language, Chapter 5.
+    </footer>
+</main>
+
+</body>
+</html>

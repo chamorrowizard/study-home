@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rust Mastery | Understanding Ownership</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0b0e14;
+            --surface: #151921;
+            --border: #2d333b;
+            --primary: #f46623;
+            --accent: #58a6ff;
+            --text: #adbac7;
+            --text-bold: #cdd9e5;
+            --code-bg: #000000;
+            --sidebar-width: 260px;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            display: grid;
+            grid-template-columns: var(--sidebar-width) 1fr;
+            line-height: 1.6;
+        }
+
+        /* Nav Sidebar */
+        nav {
+            height: 100vh;
+            position: sticky;
+            top: 0;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            padding: 2rem 1.5rem;
+        }
+
+        .nav-brand {
+            font-weight: 800;
+            font-size: 1.2rem;
+            color: var(--primary);
+            margin-bottom: 2rem;
+            display: block;
+        }
+
+        .nav-links { list-style: none; padding: 0; }
+        .nav-links a {
+            display: block;
+            padding: 0.6rem 0;
+            color: var(--text);
+            text-decoration: none;
+            font-size: 0.9rem;
+            border-bottom: 1px solid transparent;
+        }
+        .nav-links a:hover { color: var(--accent); }
+
+        /* Main Area */
+        main { padding: 3rem 5rem; max-width: 1100px; }
+        header { margin-bottom: 4rem; }
+        h1 { font-size: 3rem; color: var(--text-bold); letter-spacing: -0.04em; margin: 0; }
+        .badge { background: var(--primary); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+
+        section { margin-bottom: 6rem; scroll-margin-top: 2rem; }
+        h2 { font-size: 2rem; color: var(--text-bold); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+        h3 { color: var(--accent); margin-top: 2.5rem; }
+
+        /* Content Blocks */
+        .info-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+        }
+
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+
+        code { font-family: 'Fira Code', monospace; background: var(--code-bg); padding: 0.2rem 0.4rem; border-radius: 4px; color: #e57373; font-size: 0.9em; }
+        pre { background: var(--code-bg); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border); overflow-x: auto; position: relative; }
+        pre code { color: #c9d1d9; background: none; padding: 0; }
+
+        .pro-tip {
+            border-left: 4px solid var(--primary);
+            background: rgba(244, 102, 35, 0.05);
+            padding: 1.5rem;
+            margin: 2rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .warning {
+            border-left: 4px solid #f85149;
+            background: rgba(248, 81, 73, 0.05);
+            padding: 1.5rem;
+            margin: 2rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid var(--border); }
+        th { color: var(--text-bold); font-size: 0.9rem; text-transform: uppercase; }
+
+        @media (max-width: 900px) {
+            body { grid-template-columns: 1fr; }
+            nav { display: none; }
+            main { padding: 2rem; }
+            .grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <span class="nav-brand">RUST CHAPTER 4</span>
+    <ul class="nav-links">
+        <li><a href="#ownership">4.1 What is Ownership?</a></li>
+        <li><a href="#rules">The Three Rules</a></li>
+        <li><a href="#memory">Stack vs. Heap</a></li>
+        <li><a href="#borrowing">4.2 Borrowing & Refs</a></li>
+        <li><a href="#slices">4.3 The Slice Type</a></li>
+    </ul>
+</nav>
+
+<main>
+    <header>
+        <span class="badge">MEMORY MANAGEMENT</span>
+        <h1>Understanding Ownership</h1>
+        <p>Ownership is Rust’s most unique feature. It enables memory safety without a garbage collector.</p>
+    </header>
+
+    <section id="ownership">
+        <h2>4.1 What is Ownership?</h2>
+        <p>In other languages, memory is managed via a Garbage Collector (Java/JS) or manually (C/C++). Rust uses a third approach: <strong>Ownership</strong>.</p>
+        
+        <div class="info-card" id="rules">
+            <h3>The Three Golden Rules</h3>
+            <ol>
+                <li>Each value in Rust has an <strong>owner</strong>.</li>
+                <li>There can only be <strong>one owner</strong> at a time.</li>
+                <li>When the owner goes <strong>out of scope</strong>, the value will be dropped.</li>
+            </ol>
+        </div>
+
+        <h3 id="memory">Stack vs. Heap</h3>
+        <div class="grid">
+            <div class="info-card">
+                <strong>The Stack (Fast)</strong>
+                <ul>
+                    <li>Stores data with fixed, known size.</li>
+                    <li>LIFO (Last In, First Out) structure.</li>
+                    <li>Pushing data is fast; no searching required.</li>
+                </ul>
+            </div>
+            <div class="info-card">
+                <strong>The Heap (Flexible)</strong>
+                <ul>
+                    <li>Stores data with dynamic size (e.g., <code>String</code>).</li>
+                    <li>OS finds a hole and returns a <strong>pointer</strong>.</li>
+                    <li>Slower access due to pointer following.</li>
+                </ul>
+            </div>
+        </div>
+
+        <h3>Variable Move vs. Clone</h3>
+        <p>When you assign a heap-allocated variable to another, Rust performs a <strong>Move</strong>, not a shallow copy.</p>
+        <pre><code>let s1 = String::from("hello");
+let s2 = s1; // s1 is MOVED to s2. s1 is now INVALID.
+// println!("{}", s1); // This would cause a compile error!</code></pre>
+        
+        <div class="pro-tip">
+            <strong>Deep Copy:</strong> If you actually want to copy the heap data, use <code>let s2 = s1.clone();</code>.
+        </div>
+    </section>
+
+    <section id="borrowing">
+        <h2>4.2 References and Borrowing</h2>
+        <p>References (<code>&</code>) allow you to refer to a value without taking ownership of it.</p>
+        
+        <div class="info-card">
+            <h3>Mutable vs. Immutable References</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Syntax</th>
+                        <th>Capability</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Immutable</td>
+                        <td><code>&T</code></td>
+                        <td>Read-only. Unlimited number allowed.</td>
+                    </tr>
+                    <tr>
+                        <td>Mutable</td>
+                        <td><code>&mut T</code></td>
+                        <td>Read/Write. <strong>Only one</strong> allowed in scope.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="warning">
+            <strong>The Big Restriction:</strong> You cannot have a mutable reference if you already have immutable references to the same value. This prevents <strong>Data Races</strong>.
+        </div>
+
+        <pre><code>fn main() {
+    let mut s = String::from("hello");
+    change(&mut s);
+}
+
+fn change(some_string: &mut String) {
+    some_string.push_str(", world");
+}</code></pre>
+
+        <h3>Dangling References</h3>
+        <p>Rust prevents "Dangling Pointers" by ensuring the data outlives the reference. You cannot return a reference to a variable created inside a function.</p>
+    </section>
+
+    <section id="slices">
+        <h2>4.3 The Slice Type</h2>
+        <p>Slices let you reference a contiguous sequence of elements in a collection rather than the whole collection. They are a form of <strong>Reference</strong>.</p>
+
+        <pre><code>let s = String::from("hello world");
+
+let hello = &s[0..5]; // Range [start_index..end_index]
+let world = &s[6..11];</code></pre>
+
+        <div class="info-card">
+            <h3>String Slices as Parameters</h3>
+            <p>Experienced Rustaceans use <code>&str</code> instead of <code>&String</code> in function signatures because it allows the function to accept both <code>String</code> references and string literals.</p>
+            <pre><code>fn first_word(s: &str) -> &str { ... }</code></pre>
+        </div>
+    </section>
+
+    <footer>
+        <p>© 2026 Rust Learning Series | Based on the <a href="https://doc.rust-lang.org/stable/book/" style="color: var(--primary);">Official Rust Book</a></p>
+    </footer>
+</main>
+
+</body>
+</html>
