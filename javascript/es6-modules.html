@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ES6 Modules Cheat Sheet</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --accent: #38bdf8;
+            --code-bg: #000000;
+            --border: #334155;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 900px;
+            padding: 40px 0;
+        }
+
+        header {
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 20px;
+            margin-bottom: 40px;
+        }
+
+        h1 { font-size: 2.5rem; margin: 0; color: var(--accent); }
+        h2 { font-size: 1.8rem; margin-top: 40px; border-left: 4px solid var(--accent); padding-left: 15px; }
+        h3 { color: var(--accent); font-size: 1.2rem; margin-bottom: 10px; }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        code {
+            font-family: 'Fira Code', monospace;
+            background: var(--code-bg);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #f472b6;
+        }
+
+        pre {
+            background: var(--code-bg);
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+        }
+
+        pre code {
+            color: #cbd5e1;
+            padding: 0;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .tag {
+            display: inline-block;
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th { color: var(--accent); }
+
+        @media (max-width: 768px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+
+.container { 
+    max-width: 1000px; /* Widened to accommodate detailed tables */
+    margin: 0 auto; 
+}
+
+header { 
+    text-align: center; 
+    margin-bottom: 60px; 
+    padding-bottom: 40px; 
+    border-bottom: 1px solid var(--border);
+}
+
+h1 { font-size: 3rem; color: var(--accent); margin: 0; }
+
+/* Enhanced Section Titles */
+h2 { 
+    font-size: 1.8rem; 
+    color: var(--accent); 
+    margin: 40px 0 20px; 
+    border-left: 4px solid var(--accent); 
+    padding-left: 15px; 
+}
+
+h3 { font-size: 1.3rem; margin-top: 0; color: var(--text-main); }
+
+.card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.grid { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 30px; /* Increased gap for complex code blocks */
+}
+
+code { 
+    font-family: 'Fira Code', monospace; 
+    background: var(--code-bg); 
+    padding: 3px 6px; 
+    border-radius: 4px; 
+    color: var(--highlight); 
+}
+
+pre {
+    background: var(--code-bg);
+    padding: 20px;
+    border-radius: 12px;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    margin: 15px 0;
+}
+
+.tag {
+    background: var(--accent-soft);
+    color: var(--accent);
+    padding: 4px 14px;
+    border-radius: 99px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Detailed Comparison Table Styles */
+table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+th, td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border); }
+th { color: var(--accent); font-weight: 700; background: rgba(255,255,255,0.02); }
+
+/* New: Note Box for Pro-Tips and Security Warnings */
+.note-box {
+    background: rgba(244, 114, 182, 0.05);
+    border-left: 4px solid var(--highlight);
+    padding: 20px;
+    border-radius: 0 12px 12px 0;
+    margin: 20px 0;
+}
+
+@media (max-width: 850px) { 
+    .grid { grid-template-columns: 1fr; } 
+}
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>ES6 Modules Cheat Sheet</h1>
+        <p style="color: var(--text-dim)">Based on <a href="https://www.theodinproject.com/lessons/javascript-es6-modules" style="color: var(--accent)">The Odin Project</a> curriculum.</p>
+    </header>
+
+    <section>
+        <div class="card">
+            <span class="tag">Fundamentals</span>
+            <h3>What are ES6 Modules?</h3>
+            <p>ES6 Modules (ESM) allow you to split your JavaScript into multiple files. Unlike the global scope problem of the past, ESM provides each file with its own <strong>private scope</strong>.</p>
+            <ul>
+                <li><strong>Automatic Defer:</strong> <code>type="module"</code> scripts are deferred by default.</li>
+                <li><strong>No Global Pollution:</strong> Variables are not accessible in the global scope.</li>
+            </ul>
+        </div>
+    </section>
+
+    <h2>Export & Import Patterns</h2>
+    <div class="grid">
+        <div class="card">
+            <h3>Named Exports</h3>
+            <p>Use for multiple exports per file. Names must match during import.</p>
+            <pre><code>// math.js
+export const add = (a, b) => a + b;
+
+// main.js
+import { add } from './math.js';</code></pre>
+        </div>
+        <div class="card">
+            <h3>Default Exports</h3>
+            <p>Use for a single primary export. You can name the import anything.</p>
+            <pre><code>// User.js
+export default class User {...}
+
+// main.js
+import Person from './User.js';</code></pre>
+        </div>
+    </div>
+
+    <section>
+        <h2>Comparison: ESM vs. CommonJS</h2>
+        <div class="card">
+            <p>While ESM is for the browser, <strong>CommonJS (CJS)</strong> is the standard for Node.js.</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>ES6 Modules (ESM)</th>
+                        <th>CommonJS (CJS)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Keywords</td>
+                        <td><code>import / export</code></td>
+                        <td><code>require / module.exports</code></td>
+                    </tr>
+                    <tr>
+                        <td>Environment</td>
+                        <td>Browsers & Modern Node</td>
+                        <td>Node.js Legacy/Standard</td>
+                    </tr>
+                    <tr>
+                        <td>Loading</td>
+                        <td>Asynchronous</td>
+                        <td>Synchronous</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section>
+        <h2>Implementation</h2>
+        <div class="card">
+            <h3>Linking in HTML</h3>
+            <p>You only need to link the <strong>entry point</strong>. The browser handles the rest.</p>
+            <pre><code>&lt;script src="main.js" type="module"&gt;&lt;/script&gt;</code></pre>
+            <p style="font-size: 0.9rem; color: var(--text-dim);"><em>Note: Requires a local server (like Live Preview) to run due to security restrictions.</em></p>
+        </div>
+    </section>
+     <section>
+        <div class="card">
+            <span class="tag">Advanced Concepts</span>
+            <h2>1. Beyond Basic Imports</h2>
+            <p>While standard imports are common, real-world projects often require more flexible syntax for handling naming collisions and large libraries.</p>
+            
+            <div class="grid">
+                <div>
+                    <h3>Namespace Imports</h3>
+                    <p>Import every export from a file as a single object. Great for utility libraries.</p>
+                    <pre><code>// Importing everything as 'MathObj'
+import * as MathObj from './math.js';
+
+console.log(MathObj.add(1, 2));
+console.log(MathObj.subtract(5, 2));</code></pre>
+                </div>
+                <div>
+                    <h3>Aliases (Renaming)</h3>
+                    <p>Use <code>as</code> to rename imports and avoid conflicts with local variables.</p>
+                    <pre><code>// Renaming 'speak' to 'talk'
+import { speak as talk } from './user.js';
+
+const speak = "I am a local string";
+talk(); // Calls the imported function</code></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>2. Technical Mechanics</h2>
+        <div class="grid">
+            <div class="card">
+                <h3>Execution Timing</h3>
+                <p>Modules are <strong>singleton</strong>. If you import the same module into 5 different files, the code inside that module only executes <strong>once</strong>.</p>
+                <div class="note-box">
+                    <strong>Pro Tip:</strong> Use modules for configuration files or API clients where you want a single shared instance across your app.
+                </div>
+            </div>
+            <div class="card">
+                <h3>Static vs Dynamic</h3>
+                <p>Standard <code>import</code> statements are <strong>static</strong>. They must be at the top level and cannot be inside <code>if</code> statements or loops.</p>
+                <pre><code>// ❌ This will throw an error
+if (userLoggedIn) {
+   import { dashboard } from './ui.js';
+}</code></pre>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>3. CommonJS vs. ESM: Deep Comparison</h2>
+        <div class="card">
+            <p>Understanding these differences is critical for Full Stack developers moving between Node.js and the Browser.</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>ES6 Modules (ESM)</th>
+                        <th>CommonJS (CJS)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Standard</strong></td>
+                        <td>Official JS standard (ES6+)</td>
+                        <td>Node.js custom standard</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Keywords</strong></td>
+                        <td><code>import</code> / <code>export</code></td>
+                        <td><code>require()</code> / <code>module.exports</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Evaluation</strong></td>
+                        <td>Pre-parsed (Static)</td>
+                        <td>Executed at runtime (Dynamic)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Strict Mode</strong></td>
+                        <td>Always <code>'use strict'</code></td>
+                        <td>Optional</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Top-level 'this'</strong></td>
+                        <td><code>undefined</code></td>
+                        <td>Points to <code>exports</code> object</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section>
+        <h2>4. Critical Implementation Rules</h2>
+        <div class="card">
+            <span class="tag">Security & Browsers</span>
+            <h3>The CORS Hurdle</h3>
+            <p>Because modules are loaded as separate files via HTTP requests, browsers enforce <strong>CORS security</strong>. This means you <strong>cannot</strong> test modules by double-clicking an <code>index.html</code> file.</p>
+            <p>You must use a local development server such as:</p>
+            <ul>
+                <li>[Live Preview](https://marketplace.visualstudio.com/items?itemName=ms-vscode.live-server) for VS Code</li>
+                <li>Python's <code>http.server</code></li>
+                <li>Node's <code>live-server</code></li>
+            </ul>
+        </div>
+    </section>
+</div>
+</div>
+
+</body>
+</html>
