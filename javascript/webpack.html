@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Webpack — Job-Ready Front-End Guide</title>
+
+  <style>
+    :root {
+      --bg: #0b0f14;
+      --card: #121826;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #60a5fa;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --border: #1f2937;
+      --code: #020617;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, Ubuntu, sans-serif;
+      background: linear-gradient(180deg, #020617, #0b0f14);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    header {
+      padding: 3rem 1.5rem;
+      max-width: 1100px;
+      margin: auto;
+    }
+
+    header h1 {
+      font-size: clamp(2rem, 4vw, 3rem);
+      margin-bottom: 0.75rem;
+    }
+
+    header p {
+      max-width: 850px;
+      color: var(--muted);
+      font-size: 1.05rem;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: auto;
+      padding: 0 1.5rem 4rem;
+      display: grid;
+      gap: 2rem;
+    }
+
+    section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 2rem;
+    }
+
+    h2 {
+      margin-top: 0;
+      font-size: 1.6rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.5rem;
+    }
+
+    h3 {
+      margin-top: 1.5rem;
+      font-size: 1.2rem;
+      color: var(--accent);
+    }
+
+    ul {
+      padding-left: 1.2rem;
+    }
+
+    li {
+      margin-bottom: 0.5rem;
+    }
+
+    code {
+      background: var(--code);
+      padding: 0.15rem 0.35rem;
+      border-radius: 4px;
+      font-size: 0.9em;
+    }
+
+    pre {
+      background: var(--code);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem;
+      overflow-x: auto;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+    }
+
+    .callout {
+      border-left: 4px solid var(--accent);
+      padding: 1rem;
+      background: rgba(96, 165, 250, 0.08);
+      border-radius: 8px;
+      margin: 1.25rem 0;
+    }
+
+    .warning {
+      border-left-color: var(--warning);
+      background: rgba(245, 158, 11, 0.1);
+    }
+
+    .danger {
+      border-left-color: var(--danger);
+      background: rgba(239, 68, 68, 0.1);
+    }
+
+    .success {
+      border-left-color: var(--success);
+      background: rgba(34, 197, 94, 0.1);
+    }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      padding: 2rem 1rem;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Webpack — Job-Ready Front-End Guide</h1>
+  <p>
+    A senior-level, production-focused explanation of Webpack.
+    This guide translates <strong>The Odin Project Webpack lesson</strong>
+    into real-world knowledge expected of junior and mid-level front-end developers.
+  </p>
+</header>
+
+<main>
+
+  <!-- 1. Why Webpack -->
+  <section>
+    <h2>1. Why Webpack Exists</h2>
+
+    <ul>
+      <li>Browsers don’t understand modules, assets, and dependencies the way developers write them.</li>
+      <li>Webpack bundles your project into optimized files the browser can run.</li>
+      <li>It solves dependency management, performance, and scalability.</li>
+    </ul>
+
+    <div class="callout">
+      Webpack is not magic — it’s a configurable pipeline that turns source code into production assets.
+    </div>
+  </section>
+
+  <!-- 2. Core Concepts -->
+  <section>
+    <h2>2. Core Webpack Concepts</h2>
+
+    <h3>Entry</h3>
+    <ul>
+      <li>The starting point of your application.</li>
+      <li>Webpack builds a dependency graph from here.</li>
+    </ul>
+
+    <pre><code>entry: "./src/index.js"</code></pre>
+
+    <h3>Output</h3>
+    <ul>
+      <li>Where the bundled files are emitted.</li>
+    </ul>
+
+    <pre><code>output: {
+  filename: "bundle.js",
+  path: __dirname + "/dist"
+}</code></pre>
+
+    <h3>Loaders</h3>
+    <ul>
+      <li>Transform non-JS files into modules Webpack understands.</li>
+      <li>CSS, images, fonts, JSX, TypeScript.</li>
+    </ul>
+
+    <h3>Plugins</h3>
+    <ul>
+      <li>Extend Webpack’s capabilities.</li>
+      <li>Used for optimization, environment variables, HTML generation.</li>
+    </ul>
+  </section>
+
+  <!-- 3. Basic Setup -->
+  <section>
+    <h2>3. Basic Webpack Setup</h2>
+
+    <h3>Install Dependencies</h3>
+    <pre><code>npm install --save-dev webpack webpack-cli</code></pre>
+
+    <h3>Project Structure</h3>
+    <pre><code>project/
+├─ src/
+│  └─ index.js
+├─ dist/
+│  └─ index.html
+├─ webpack.config.js
+└─ package.json</code></pre>
+
+    <h3>Minimal Config</h3>
+    <pre><code>module.exports = {
+  entry: "./src/index.js",
+  output: {
+    filename: "bundle.js",
+    path: __dirname + "/dist"
+  }
+};</code></pre>
+  </section>
+
+  <!-- 4. CSS & Assets -->
+  <section>
+    <h2>4. Handling CSS & Assets</h2>
+
+    <h3>CSS Loaders</h3>
+    <pre><code>npm install --save-dev style-loader css-loader</code></pre>
+
+    <pre><code>{
+  test: /\.css$/,
+  use: ["style-loader", "css-loader"]
+}</code></pre>
+
+    <h3>Images & Fonts</h3>
+    <ul>
+      <li>Webpack can bundle images and fonts automatically.</li>
+      <li>Improves caching and performance.</li>
+    </ul>
+  </section>
+
+  <!-- 5. Development vs Production -->
+  <section>
+    <h2>5. Development vs Production</h2>
+
+    <h3>Mode</h3>
+    <pre><code>mode: "development"
+// or
+mode: "production"</code></pre>
+
+    <ul>
+      <li>Development: readable output, faster builds.</li>
+      <li>Production: minification, optimization.</li>
+    </ul>
+
+    <div class="warning callout">
+      Forgetting to switch to production mode is a common junior mistake.
+    </div>
+  </section>
+
+  <!-- 6. Dev Server -->
+  <section>
+    <h2>6. Webpack Dev Server</h2>
+
+    <pre><code>npm install --save-dev webpack-dev-server</code></pre>
+
+    <pre><code>devServer: {
+  static: "./dist",
+  open: true
+}</code></pre>
+
+    <ul>
+      <li>Hot reload during development.</li>
+      <li>Faster feedback loop.</li>
+    </ul>
+  </section>
+
+  <!-- 7. Real-World Concepts -->
+  <section>
+    <h2>7. Real-World Webpack Concepts</h2>
+
+    <ul>
+      <li>Code splitting</li>
+      <li>Tree shaking</li>
+      <li>Environment variables</li>
+      <li>Caching strategies</li>
+      <li>Source maps</li>
+    </ul>
+
+    <div class="callout success">
+      You don’t need to memorize configs — you need to understand why they exist.
+    </div>
+  </section>
+
+  <!-- 8. Common Pitfalls -->
+  <section>
+    <h2>8. Common Pitfalls</h2>
+
+    <ul>
+      <li>Over-configuring Webpack too early</li>
+      <li>Not understanding loaders vs plugins</li>
+      <li>Debugging without source maps</li>
+      <li>Mixing dev and prod configs</li>
+    </ul>
+  </section>
+
+  <!-- 9. Interview Readiness -->
+  <section>
+    <h2>9. Interview & Job Readiness</h2>
+
+    <h3>Questions You Should Answer Comfortably</h3>
+    <ul>
+      <li>Why do we need Webpack?</li>
+      <li>What are loaders and plugins?</li>
+      <li>How does Webpack improve performance?</li>
+    </ul>
+
+    <h3>What Hiring Managers Expect</h3>
+    <ul>
+      <li>Basic setup understanding</li>
+      <li>Ability to debug build issues</li>
+      <li>Awareness of alternatives (Vite, Parcel)</li>
+    </ul>
+  </section>
+
+  <!-- 10. Job-Ready Checklist -->
+  <section>
+    <h2>10. Job-Ready Checklist</h2>
+
+    <ul>
+      <li>✅ Can explain entry, output, loaders, plugins</li>
+      <li>✅ Can bundle JS, CSS, and assets</li>
+      <li>✅ Understand dev vs prod builds</li>
+      <li>✅ Can debug common build errors</li>
+      <li>✅ Know when Webpack is overkill</li>
+    </ul>
+  </section>
+
+  <!-- ============================= -->
+<!-- Cheat Sheet: Webpack Snippets -->
+<!-- ============================= -->
+<section>
+  <h2>Cheat Sheet: Webpack Snippets</h2>
+
+  <p>
+    Common, production-ready Webpack snippets you should recognize, understand,
+    and be able to explain in an interview. You do not need to memorize these —
+    you need to know <strong>why</strong> they exist.
+  </p>
+
+  <h3>1. Minimal Webpack Config</h3>
+  <pre><code>module.exports = {
+  entry: "./src/index.js",
+  output: {
+    filename: "bundle.js",
+    path: __dirname + "/dist"
+  }
+};</code></pre>
+
+  <h3>2. Development vs Production Mode</h3>
+  <pre><code>mode: "development"
+// or
+mode: "production"</code></pre>
+
+  <ul>
+    <li>Development → readable output, faster builds</li>
+    <li>Production → minification, optimizations, tree shaking</li>
+  </ul>
+
+  <h3>3. CSS Support</h3>
+  <pre><code>{
+  test: /\.css$/,
+  use: ["style-loader", "css-loader"]
+}</code></pre>
+
+  <h3>4. Asset Modules (Images & Fonts)</h3>
+  <pre><code>{
+  test: /\.(png|jpg|jpeg|svg|gif)$/i,
+  type: "asset/resource"
+}</code></pre>
+
+  <h3>5. HTML Generation</h3>
+  <pre><code>const HtmlWebpackPlugin = require("html-webpack-plugin");
+
+plugins: [
+  new HtmlWebpackPlugin({
+    template: "./src/index.html"
+  })
+]</code></pre>
+
+  <h3>6. Webpack Dev Server</h3>
+  <pre><code>devServer: {
+  static: "./dist",
+  open: true,
+  hot: true
+}</code></pre>
+
+  <h3>7. Source Maps (Debugging)</h3>
+  <pre><code>devtool: "source-map"</code></pre>
+
+  <div class="callout warning">
+    Not using source maps makes debugging unnecessarily painful.
+  </div>
+
+  <h3>8. Environment Variables</h3>
+  <pre><code>new webpack.DefinePlugin({
+  "process.env.NODE_ENV": JSON.stringify("production")
+})</code></pre>
+
+  <h3>9. Multiple Entry Points</h3>
+  <pre><code>entry: {
+  main: "./src/index.js",
+  admin: "./src/admin.js"
+}</code></pre>
+
+  <h3>10. Code Splitting (Dynamic Imports)</h3>
+  <pre><code>import("./module").then(module =&gt; {
+  module.default();
+});</code></pre>
+
+  <h3>11. Clean Dist Folder</h3>
+  <pre><code>const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+
+plugins: [new CleanWebpackPlugin()]</code></pre>
+
+  <h3>12. Babel (Modern JS Support)</h3>
+  <pre><code>{
+  test: /\.js$/,
+  exclude: /node_modules/,
+  use: {
+    loader: "babel-loader"
+  }
+}</code></pre>
+
+  <h3>13. Tree Shaking (Production Only)</h3>
+  <pre><code>// package.json
+{
+  "sideEffects": false
+}</code></pre>
+
+  <h3>14. Split Dev & Prod Configs</h3>
+  <pre><code>// webpack.common.js
+// webpack.dev.js
+// webpack.prod.js</code></pre>
+
+  <h3>15. Performance Rule of Thumb</h3>
+  <ul>
+    <li>Small app → minimal config</li>
+    <li>Growing app → split configs</li>
+    <li>Large app → optimize intentionally</li>
+  </ul>
+
+  <div class="callout success">
+    If you understand these snippets and when to use them,
+    you are Webpack-competent at a junior-to-mid level.
+  </div>
+</section>
+
+<!-- ========================================= -->
+<!-- How All of This Fits Together (Mental Model) -->
+<!-- ========================================= -->
+<section>
+  <h2>How All of This Fits Together (The Webpack Mental Model)</h2>
+
+  <p>
+    Webpack can feel overwhelming because it introduces many new concepts at once.
+    In reality, everything you’ve learned fits into a single, predictable pipeline.
+    This section explains how the pieces connect so you can reason about Webpack
+    instead of memorizing it.
+  </p>
+
+  <h3>1. Webpack Is a Build Pipeline</h3>
+  <ul>
+    <li>You write modern JavaScript, CSS, and assets.</li>
+    <li>Webpack transforms them into browser-ready files.</li>
+    <li>The browser never sees your source code — only the output.</li>
+  </ul>
+
+  <h3>2. Entry Starts the Dependency Graph</h3>
+  <ul>
+    <li>The <code>entry</code> file is where Webpack begins.</li>
+    <li>Every <code>import</code> or <code>require</code> creates a dependency.</li>
+    <li>Webpack follows these imports recursively.</li>
+  </ul>
+
+  <div class="callout">
+    Think of entry as the root of a tree and imports as branches.
+  </div>
+
+  <h3>3. Loaders Transform Files</h3>
+  <ul>
+    <li>Webpack only understands JavaScript by default.</li>
+    <li>Loaders teach Webpack how to handle other file types.</li>
+    <li>CSS loaders turn CSS into JS modules.</li>
+    <li>Asset loaders turn images and fonts into usable URLs.</li>
+  </ul>
+
+  <h3>4. Plugins Operate on the Entire Build</h3>
+  <ul>
+    <li>Plugins run before, during, or after bundling.</li>
+    <li>They handle tasks loaders can’t.</li>
+    <li>Examples: HTML generation, cleaning folders, environment variables.</li>
+  </ul>
+
+  <h3>5. Output Is What the Browser Receives</h3>
+  <ul>
+    <li>The <code>output</code> config defines the final bundle.</li>
+    <li>This is the only code your users actually download.</li>
+    <li>Everything else exists only during development and build time.</li>
+  </ul>
+
+  <h3>6. Development vs Production Explains Most Confusion</h3>
+  <ul>
+    <li>Development mode favors speed and debugging.</li>
+    <li>Production mode favors performance and file size.</li>
+    <li>Many “Webpack bugs” come from using the wrong mode.</li>
+  </ul>
+
+  <h3>7. Dev Server Is for Feedback, Not Deployment</h3>
+  <ul>
+    <li>The dev server runs in memory.</li>
+    <li>It is never shipped to users.</li>
+    <li>Its job is fast iteration, not correctness.</li>
+  </ul>
+
+  <h3>8. Optimization Happens Automatically (When Configured Correctly)</h3>
+  <ul>
+    <li>Tree shaking removes unused code.</li>
+    <li>Code splitting loads only what’s needed.</li>
+    <li>Caching improves repeat visits.</li>
+  </ul>
+
+  <div class="callout success">
+    Most optimization comes from understanding imports, not tweaking settings.
+  </div>
+
+  <h3>9. Why You Don’t Memorize Webpack</h3>
+  <ul>
+    <li>Configs vary wildly between projects.</li>
+    <li>What matters is recognizing patterns.</li>
+    <li>You should know how to debug, not recall syntax.</li>
+  </ul>
+
+  <h3>10. The Job-Ready Mindset</h3>
+  <ul>
+    <li>You understand why Webpack exists.</li>
+    <li>You can explain loaders vs plugins clearly.</li>
+    <li>You know when Webpack is the wrong tool.</li>
+    <li>You can read and modify an existing config.</li>
+  </ul>
+
+  <div class="callout success">
+    If you can explain this section in your own words,
+    you are Webpack job-ready.
+  </div>
+</section>
+
+
+</main>
+
+<footer>
+  <p>Webpack Guide • Built for real-world front-end developers</p>
+</footer>
+
+</body>
+</html>
