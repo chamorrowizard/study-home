@@ -79,6 +79,22 @@ fn area(rectangle: &Rectangle) -> u32 {
         <li><strong>Standard Debug:</strong> Use <code>{:?}</code> in <code>println!</code> to show data on one line.</li>
         <li><strong>Pretty Print:</strong> Use <code>{:#?}</code> for a multi-line, more readable format.</li>
     </ul>
+    <pre>
+        #[derive(Debug)]
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+fn main() {
+    let rect1 = Rectangle {
+        width: 30,
+        height: 50,
+    };
+
+    println!("rect1 is {rect1:?}");
+}
+    </pre>
 
     <h2>5. The <code>dbg!</code> Macro</h2>
     <p>The <code>dbg!</code> macro is a powerful tool that differs from <code>println!</code> in key ways:</p>
@@ -87,6 +103,23 @@ fn area(rectangle: &Rectangle) -> u32 {
         <li>It prints the <strong>file and line number</strong>.</li>
         <li>It <strong>takes and returns ownership</strong>, meaning you can wrap it around an expression without breaking your code logic.</li>
     </ul>
+    <pre>
+        #[derive(Debug)]
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+fn main() {
+    let scale = 2;
+    let rect1 = Rectangle {
+        width: dbg!(30 * scale),
+        height: 50,
+    };
+
+    dbg!(&rect1);
+}
+    </pre>
 
 </body>
 </html>
