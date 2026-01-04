@@ -109,6 +109,104 @@ impl Rectangle {
     <div class="explanation">
         <strong>Pro Tip:</strong> In your code, <code>rect.width</code> refers to the <strong>field</strong>, while <code>rect.width()</code> refers to the <strong>method</strong>.
     </div>
+    <h2>Practice</h2>
+    <p><li>Define a Struct: Create a Circle struct with a radius field (use f64 for decimals).</li></p>  
+    <p><li>Implement a Method: Use an impl Circle block to define an area method.</li></p>  
+    <p><li>Use Self: Remember that your method must take &self as its first parameter to read the radius.</li></p>
+    <p><li>Math Tip: You can use std::f64::consts::PI for the value of $\pi$.</li></p>
+    <ol>
+        <li>Encapsulation: It keeps the math logic (area) right next to the data (radius), making your code easier to maintain.</li>
+        <li>Ergonomics: Using c1.area() is often more intuitive than calling a standalone function like calculate_area(&c1).</li>
+        <li>Automatic Borrowing: You don't have to worry about adding & manually when calling the method; Rust handles it for you.</li>
+    </ol>
+    <pre>
+    struct Circle {
+    radius: f64,
+}
 
+impl Circle {
+    // Write your area method here
+    // It should return f64
+}
+
+fn main() {
+    let c1 = Circle { radius: 10.0 };
+    // Call your method here using c1.area()
+}</pre>
+<p>Try to write a method called can_hold within your impl Rectangle block. This method should:</p>
+<li>Take &self to access the current rectangle's dimensions.</li>
+<li>Take a second parameter, other: &Rectangle, which is a reference to another rectangle.</li>
+<li>Return a bool (true if the current rectangle is large enough to contain the other one).</li>
+<pre>
+    #[derive(Debug)]
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+impl Rectangle {
+    // Method 1: Existing area method
+    fn area(&self) -> u32 {
+        self.width * self.height
+    }
+
+    // Method 2: Your task! 
+    // Return true if self's width and height are BOTH 
+    // greater than other's width and height.
+    fn can_hold(&self, other: &Rectangle) -> bool {
+        // Write logic here
+    }
+}
+
+fn main() {
+    let rect1 = Rectangle { width: 30, height: 50 };
+    let rect2 = Rectangle { width: 10, height: 40 };
+    
+    println!("Can rect1 hold rect2? {}", rect1.can_hold(&rect2));
+}
+</pre>
+<h2>Key Concepts to Remember</h2>
+<ul>
+    <li>The & Sign: We use &Rectangle for the other parameter so that main keeps ownership of the second rectangle and we can use it again later.</li>
+    <li>Automatic Referencing: When you call rect1.can_hold(&rect2), Rust automatically handles the complex pointer work for you.</li>
+    <li>Getters: Note how the web page shows you can have a method and a field with the same name, like width(); parentheses tell Rust you want the method, not the data field.</li>
+</ul>
+<pre>
+    #[derive(Debug)]
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+impl Rectangle {
+    fn area(&self) -> u32 {
+        self.width * self.height
+    }
+
+    // The answer: comparing self to another rectangle
+    fn can_hold(&self, other: &Rectangle) -> bool {
+        self.width > other.width && self.height > other.height
+    }
+}
+
+fn main() {
+    let rect1 = Rectangle { width: 30, height: 50 };
+    let rect2 = Rectangle { width: 10, height: 40 };
+    let rect3 = Rectangle { width: 60, height: 45 };
+
+    println!("Can rect1 hold rect2? {}", rect1.can_hold(&rect2)); // Output: true
+    println!("Can rect1 hold rect3? {}", rect1.can_hold(&rect3)); // Output: false
+}
+</pre>
+<h2>How it Works</h2>
+<ol><h4>The Signature: fn can_hold(&self, other: &Rectangle) -> bool.</h4>
+    <li>&self lets us read the dimensions of the first rectangle.</li>
+    <li>other: &Rectangle lets us read the dimensions of the second rectangle without taking ownership of it.</li>
+</ol>
+<h2>Key Concepts from this Section</h2><ol>
+<li>Method Syntax: We call the logic using rect1.can_hold(&rect2).</li>
+<li>Automatic Borrowing: Rust automatically handles the references so you don't have to use complex pointer symbols like -> found in other languages.</li>
+<li>Multiple impl blocks: While we put both methods in one block here, Rust allows you to use multiple impl blocks for the same struct if you want to separate them later.</li>
+</ol>
 </body>
 </html>
