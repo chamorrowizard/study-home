@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rust Notes: Chapter 5.3 - Method Syntax</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 900px; margin: 20px auto; padding: 0 20px; background-color: #fdfdfd; }
+        h1 { border-bottom: 3px solid #ce412b; color: #ce412b; padding-bottom: 10px; }
+        h2 { color: #2e6da4; border-bottom: 1px solid #ddd; margin-top: 40px; }
+        h3 { color: #444; background: #f0f0f0; padding: 5px 10px; border-radius: 4px; }
+        code { background: #f4f4f4; padding: 2px 5px; border-radius: 3px; font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; font-size: 0.9em; }
+        pre { background: #2d2d2d; color: #ccc; padding: 15px; border-radius: 6px; overflow-x: auto; line-height: 1.4; }
+        .cheatsheet { background: #fff9e6; border: 2px solid #f1c40f; padding: 20px; border-radius: 10px; margin: 30px 0; }
+        .explanation { background: #eef7ff; padding: 15px; border-left: 5px solid #2e6da4; margin: 15px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; background: white; }
+        th, td { text-align: left; padding: 12px; border: 1px solid #ddd; }
+        th { background-color: #2e6da4; color: white; }
+        .rust-keyword { color: #cc99cd; }
+        .rust-func { color: #61afef; }
+    </style>
+</head>
+<body>
+
+    <h1>Chapter 5.3: Method Syntax</h1>
+
+    <p>Methods are similar to functions, but they are defined within the <strong>context</strong> of a struct, enum, or trait object. Their primary differentiator is that their first parameter is always <code>self</code>, representing the instance the method is called on.</p>
+
+    <h2>1. Defining Methods</h2>
+    <p>To define a method, you use an <code>impl</code> (implementation) block for the specific type.</p>
+    
+    <pre>
+impl Rectangle {
+    <span class="rust-keyword">fn</span> <span class="rust-func">area</span>(&<span class="rust-keyword">self</span>) -> u32 {
+        <span class="rust-keyword">self</span>.width * <span class="rust-keyword">self</span>.height
+    }
+}</pre>
+
+    <div class="explanation">
+        <strong>Self vs &self:</strong> 
+        <ul>
+            <li><code>&self</code> is shorthand for <code>self: &Self</code>.</li>
+            <li>In an <code>impl</code> block, <code>Self</code> is an alias for the type the block is for.</li>
+            <li>Use <code>&self</code> to read data (immutable borrow), <code>&mut self</code> to change data, and <code>self</code> (rare) to take ownership/transform the instance.</li>
+        </ul>
+    </div>
+
+    <h2>2. Associated Functions</h2>
+    <p>Functions defined inside an <code>impl</code> block that <strong>do not</strong> take <code>self</code> as a parameter are called <em>associated functions</em>. These are often used as constructors, such as <code>String::from</code>.</p>
+
+    <pre>
+impl Rectangle {
+    <span class="rust-keyword">fn</span> <span class="rust-func">square</span>(size: u32) -> Self {
+        Self { width: size, height: size }
+    }
+}</pre>
+
+    <h2>3. Automatic Referencing and Dereferencing</h2>
+    <p>Unlike C or C++, Rust does not use a separate <code>-></code> operator for pointers. When you call <code>object.something()</code>, Rust automatically adds <code>&</code>, <code>&mut</code>, or <code>*</code> to match the method's signature.</p>
+
+    <div class="cheatsheet">
+        <h2>🚀 Chapter 5.3 Cheatsheet</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Feature</th>
+                    <th>Syntax Example</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Method Call</strong></td>
+                    <td><code>rect.area()</code></td>
+                    <td>Calls a function defined on an instance.</td>
+                </tr>
+                <tr>
+                    <td><strong>Impl Block</strong></td>
+                    <td><code>impl Type { ... }</code></td>
+                    <td>The container for all methods of a type.</td>
+                </tr>
+                <tr>
+                    <td><strong>Associated Func</strong></td>
+                    <td><code>Type::func()</code></td>
+                    <td>Called on the type itself, not an instance (e.g., constructors).</td>
+                </tr>
+                <tr>
+                    <td><strong>Multi-Params</strong></td>
+                    <td><code>fn can_hold(&self, other: &Rect)</code></td>
+                    <td>Methods can take additional arguments after <code>self</code>.</td>
+                </tr>
+                <tr>
+                    <td><strong>Multiple Blocks</strong></td>
+                    <td><code>impl Rect { ... } impl Rect { ... }</code></td>
+                    <td>Valid to have multiple <code>impl</code> blocks for one struct.</td>
+                </tr>
+                <tr>
+                    <td><strong>Getters</strong></td>
+                    <td><code>fn width(&self) -> u32</code></td>
+                    <td>Methods can share names with fields; <code>()</code> distinguishes them.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h2>4. Method Names vs Field Names</h2>
+    <p>Rust allows methods to have the same name as a struct field. This is commonly used to create "getters"—methods that simply return the value of a private field to make it read-only for users of your library.</p>
+
+    <div class="explanation">
+        <strong>Pro Tip:</strong> In your code, <code>rect.width</code> refers to the <strong>field</strong>, while <code>rect.width()</code> refers to the <strong>method</strong>.
+    </div>
+
+</body>
+</html>

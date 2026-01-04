@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rust Notes: Chapter 5.1 - Defining Structs</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 20px auto; padding: 0 20px; }
+        h1 { border-bottom: 2px solid #ce412b; color: #ce412b; }
+        h2 { color: #2e6da4; margin-top: 30px; }
+        code { background: #f4f4f4; padding: 2px 5px; border-radius: 3px; font-family: monospace; }
+        pre { background: #f4f4f4; padding: 15px; border-left: 5px solid #ce412b; overflow-x: auto; }
+        .explanation { background: #eef7ff; padding: 15px; border-radius: 5px; margin: 10px 0; border-left: 5px solid #2e6da4; }
+        .cheatsheet { background: #fff9e6; border: 2px solid #f1c40f; padding: 20px; border-radius: 10px; margin: 30px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { text-align: left; padding: 12px; border: 1px solid #ddd; }
+        th { background-color: #f8f8f8; }
+    </style>
+</head>
+<body>
+
+    <h1>Chapter 5.1: Defining and Instantiating Structs</h1>
+
+    <h2>1. What is a Struct?</h2>
+    <p>Structs are similar to tuples, but with named fields. This makes them more flexible because you don't rely on the order of data to access values.</p>
+    
+    <div class="explanation">
+        <strong>Key Concept:</strong> A struct is like a template for a type. An <em>instance</em> fills that template with concrete data.
+    </div>
+
+    <h2>2. Basic Syntax</h2>
+    <pre>
+struct User {
+    active: bool,
+    username: String,
+    email: String,
+    sign_in_count: u64,
+}</pre>
+    <p>To access fields, use <strong>dot notation</strong> (e.g., <code>user1.email</code>). If the instance is <code>mut</code>, you can use dot notation to assign new values to fields.</p>
+
+    <h2>3. Shorthand Techniques</h2>
+    <ul>
+        <li><strong>Field Init Shorthand:</strong> If a variable and a struct field have the same name, you only need to write the name once (e.g., <code>email</code> instead of <code>email: email</code>).</li>
+        <li><strong>Struct Update Syntax:</strong> Use <code>..instance_name</code> to copy remaining fields from another instance. This must come last.</li>
+    </ul>
+
+    <div class="explanation">
+        <strong>Ownership Warning:</strong> Struct update syntax uses <code>=</code> and moves data. If a field like a <code>String</code> is moved from <code>user1</code> to <code>user2</code>, <code>user1</code> is no longer valid.
+    </div>
+
+    <h2>4. Specialized Structs</h2>
+    <ul>
+        <li><strong>Tuple Structs:</strong> Named types without named fields (e.g., <code>struct Color(i32, i32, i32);</code>). Useful for making a tuple its own distinct type.</li>
+        <li><strong>Unit-Like Structs:</strong> Structs with no fields (e.g., <code>struct AlwaysEqual;</code>). These are used when you need to implement a trait on a type but don't need to store data.</li>
+    </ul>
+
+    <div class="cheatsheet">
+        <h2>🚀 Chapter 5.1 Cheatsheet</h2>
+        <table>
+            <tr>
+                <th>Feature</th>
+                <th>Syntax Example</th>
+                <th>Note</th>
+            </tr>
+            <tr>
+                <td><strong>Definition</strong></td>
+                <td><code>struct Name { f: T }</code></td>
+                <td>Fields are <code>key: type</code></td>
+            </tr>
+            <tr>
+                <td><strong>Instantiation</strong></td>
+                <td><code>Name { f: val }</code></td>
+                <td>Order doesn't matter</td>
+            </tr>
+            <tr>
+                <td><strong>Mutability</strong></td>
+                <td><code>let mut user1 = ...</code></td>
+                <td>The entire instance must be mutable</td>
+            </tr>
+            <tr>
+                <td><strong>Update</strong></td>
+                <td><code>..user1</code></td>
+                <td>Moves data; must be at the end</td>
+            </tr>
+            <tr>
+                <td><strong>Tuple Struct</strong></td>
+                <td><code>struct Pt(i32, i32);</code></td>
+                <td>Access via <code>.0</code>, <code>.1</code></td>
+            </tr>
+            <tr>
+                <td><strong>Unit Struct</strong></td>
+                <td><code>struct Empty;</code></td>
+                <td>No brackets or parentheses</td>
+            </tr>
+        </table>
+    </div>
+
+</body>
+</html>

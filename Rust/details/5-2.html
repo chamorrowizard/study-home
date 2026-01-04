@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rust Notes: Chapter 5.2 - Structs Example</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 20px auto; padding: 0 20px; }
+        h1 { border-bottom: 2px solid #ce412b; color: #ce412b; }
+        h2 { color: #2e6da4; margin-top: 30px; }
+        code { background: #f4f4f4; padding: 2px 5px; border-radius: 3px; font-family: monospace; }
+        pre { background: #f4f4f4; padding: 15px; border-left: 5px solid #ce412b; overflow-x: auto; }
+        .explanation { background: #eef7ff; padding: 15px; border-radius: 5px; margin: 10px 0; border-left: 5px solid #2e6da4; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { text-align: left; padding: 12px; border: 1px solid #ddd; }
+        th { background-color: #f8f8f8; }
+    </style>
+</head>
+<body>
+
+    <h1>Chapter 5.2: An Example Program Using Structs</h1>
+
+    <h2>1. The Goal: Refactoring for Clarity</h2>
+    <p>The chapter demonstrates how to move from disorganized individual variables to a structured approach using <code>structs</code> to calculate the area of a rectangle.</p>
+    
+    <div class="explanation">
+        <strong>Why refactor?</strong> While using individual <code>u32</code> variables works, it doesn't convey that the width and height are related. Structs add meaning by labeling data.
+    </div>
+
+    <h2>2. Refactoring Evolution</h2>
+    <table>
+        <tr>
+            <th>Method</th>
+            <th>Pros</th>
+            <th>Cons</th>
+        </tr>
+        <tr>
+            <td><strong>Individual Variables</strong></td>
+            <td>Simple</td>
+            <td>No clear relationship between data points.</td>
+        </tr>
+        <tr>
+            <td><strong>Tuples</strong></td>
+            <td>Groups data</td>
+            <td>Unclear; requires indexing (e.g., <code>.0</code>, <code>.1</code>).</td>
+        </tr>
+        <tr>
+            <td><strong>Structs</strong></td>
+            <td>Highly readable</td>
+            <td>Requires a formal definition.</td>
+        </tr>
+    </table>
+
+    <h2>3. Implementation with Structs</h2>
+    <pre>
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+fn main() {
+    let rect1 = Rectangle { width: 30, height: 50 };
+    println!("Area: {}", area(&rect1));
+}
+
+fn area(rectangle: &Rectangle) -> u32 {
+    rectangle.width * rectangle.height
+}
+    </pre>
+    <div class="explanation">
+        <strong>Note on Ownership:</strong> The <code>area</code> function uses <code>&Rectangle</code> (an immutable borrow). This allows <code>main</code> to keep ownership of the struct so it can be used again later.
+    </div>
+
+    <h2>4. Debugging with Derived Traits</h2>
+    <p>By default, custom structs cannot be printed. You must opt-in to the <code>Debug</code> trait.</p>
+    
+    <ul>
+        <li><strong>The Attribute:</strong> Add <code>#[derive(Debug)]</code> directly above the struct definition.</li>
+        <li><strong>Standard Debug:</strong> Use <code>{:?}</code> in <code>println!</code> to show data on one line.</li>
+        <li><strong>Pretty Print:</strong> Use <code>{:#?}</code> for a multi-line, more readable format.</li>
+    </ul>
+
+    <h2>5. The <code>dbg!</code> Macro</h2>
+    <p>The <code>dbg!</code> macro is a powerful tool that differs from <code>println!</code> in key ways:</p>
+    <ul>
+        <li>It prints to <strong>Standard Error (stderr)</strong> instead of stdout.</li>
+        <li>It prints the <strong>file and line number</strong>.</li>
+        <li>It <strong>takes and returns ownership</strong>, meaning you can wrap it around an expression without breaking your code logic.</li>
+    </ul>
+
+</body>
+</html>
