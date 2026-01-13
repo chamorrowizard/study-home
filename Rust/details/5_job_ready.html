@@ -338,6 +338,9 @@ fn main(){
   price_in_cents: 1000,
   ..my_product //no comma
   }
+
+  let black = Color(0, 0, 0);
+    let origin = Point(0, 0, 0);
 }
 
 
@@ -364,6 +367,10 @@ impl Product {
     self.stock_count > 0
   }
 }
+
+// Professional use: Creating distinct types for safety
+struct Color(i32, i32, i32);
+struct Point(i32, i32, i32);
 
 </code></pre>
 </html>
