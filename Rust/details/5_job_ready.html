@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rust Engineering: The Ultimate Structs Guide</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/tokyo-night-dark.min.css">
+    <style>
+        :root {
+            --bg-deep: #020617;
+            --bg-surface: #0f172a;
+            --bg-card: #1e293b;
+            --accent-primary: #38bdf8;
+            --accent-secondary: #818cf8;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --success: #10b981;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-deep);
+            color: var(--text-primary);
+            line-height: 1.7;
+            margin: 0;
+            padding: 0;
+        }
+        .navbar {
+            background: var(--bg-surface);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        .hero {
+            text-align: center;
+            padding: 60px 0;
+            background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-deep) 100%);
+        }
+        h1 { font-size: 3rem; margin: 0; background: linear-gradient(90deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        h2 { color: var(--accent-primary); border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-top: 50px; display: flex; align-items: center; }
+        h2::before { content: "›"; margin-right: 10px; color: var(--accent-secondary); }
+        h3 { color: var(--accent-secondary); margin-top: 30px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .card { background: var(--bg-card); padding: 25px; border-radius: 12px; border: 1px solid var(--border); height: fit-content; }
+        .warning { border-left: 4px solid #f59e0b; background: rgba(245, 158, 11, 0.1); padding: 15px; border-radius: 4px; margin: 20px 0; }
+        .success-box { border-left: 4px solid var(--success); background: rgba(16, 185, 129, 0.1); padding: 15px; border-radius: 4px; margin: 20px 0; }
+        pre { border-radius: 8px; font-size: 0.95rem; margin: 15px 0; border: 1px solid #000; }
+        .tag { background: var(--accent-secondary); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; margin-right: 10px; }
+        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <strong>Rust Master Series</strong> | Chapter 5: Data Structures
+</div>
+
+<div class="hero">
+    <h1>Mastering Structs</h1>
+    <p style="color: var(--text-secondary); font-size: 1.2rem;">From Basic Syntax to Production-Grade Architecture</p>
+</div>
+
+<div class="container">
+    
+    <h2>1. The Blueprint: Classic Structs</h2>
+    <div class="grid">
+        <div class="card">
+            <span class="tag">Definition</span>
+            <p>Structs group related data into custom types. Use named fields to clarify values.</p>
+            <pre><code class="language-rust">struct Product {
+    name: String,
+    price_in_cents: u32,
+    is_available: bool,
+    stock_count: u32,
+} // Note: No semicolon after definition</code></pre>
+        </div>
+        <div class="card">
+            <span class="tag">Implementation</span>
+            <p>Instantiation requires values for every field. Mutability affects the entire instance.</p>
+            <pre><code class="language-rust">fn main() {
+    let mut my_product = Product {
+        name: String::from("Wireless Mouse"),
+        price_in_cents: 2500,
+        is_available: true,
+        stock_count: 50,
+    };
+
+    my_product.stock_count = 49;
+    println!("Stock updated: {}", my_product.stock_count);
+}</code></pre>
+        </div>
+    </div>
+
+    <h2>2. Advanced Syntax Patterns</h2>
+    <div class="card">
+        <h3>Field Init Shorthand & Struct Update</h3>
+        <p>If variable names match field names, use the shorthand. Use <code>..</code> to copy remaining fields from another instance.</p>
+        <pre><code class="language-rust">// Shorthand Syntax
+let second_product = Product {
+    name, // shorthand for name: name
+    stock_count: 49,
+    price_in_cents: 1500,
+    is_available: true,
+};
+
+// Struct Update Syntax
+let sale_product = Product {
+    price_in_cents: 1000,
+    ..my_product // No comma after this
+};</code></pre>
+    </div>
+
+    <h2>3. Tuple & Unit-Like Structs</h2>
+    <div class="card">
+        <div class="grid">
+            <div>
+                <h3>Tuple Structs</h3>
+                <p>Named types with unnamed fields. Used for distinct data identification.</p>
+                <pre><code class="language-rust">struct Color(i32, i32, i32);
+struct Point(i32, i32, i32);</code></pre>
+            </div>
+            <div>
+                <h3>Unit-Like Structs</h3>
+                <p>Fields with no data at all. Useful for trait implementation.</p>
+                <pre><code class="language-rust">struct AlwaysEqual;</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <h2>4. The `impl` Block: Methods & Associated Functions</h2>
+    <div class="card">
+        <p>Methods take <code>&self</code> to access instance data. Associated functions do not take <code>self</code> and act as constructors.</p>
+        <pre><code class="language-rust">impl Product {
+    // ASSOCIATED FUNCTION (Constructor)
+    // Called using Product::new()
+    fn new(name: String, price_in_cents: u32) -> Product {
+        Product {
+            name,
+            price_in_cents,
+            is_available: true,
+            stock_count: 0,
+        }
+    }
+
+    // METHODS (Using &self)
+    fn calculate_tax(&self) -> u32 {
+        (self.price_in_cents * 10) / 100
+    }
+
+    fn is_in_stock(&self) -> bool {
+        self.stock_count > 0
+    }
+}</code></pre>
+        <div class="success-box">
+            <strong>Pro Usage:</strong> Use <code>::</code> for associated functions (like <code>Product::new()</code>) and <code>.</code> for methods (like <code>my_item.is_in_stock()</code>).
+        </div>
+    </div>
+
+</div>
+<h2>6. Method Syntax & Self</h2>
+    <div class="card">
+        <p>Methods are functions defined within the context of a struct. Their first parameter is always <code>self</code>, which represents the instance of the struct the method is being called on.</p>
+        
+        <div class="grid">
+            <div>
+                <h3>Defining Methods</h3>
+                <p>Use an <code>impl</code> (implementation) block to house your methods.</p>
+                <pre><code class="language-rust">impl Rectangle {
+    // &self is shorthand for self: &Self
+    fn area(&self) -> u32 {
+        self.width * self.height
+    }
+}</code></pre>
+            </div>
+            <div>
+                <h3>Calling Methods</h3>
+                <p>Methods are called using dot notation on an existing instance of a struct.</p>
+                <pre><code class="language-rust">let rect = Rectangle { width: 30, height: 50 };
+println!("Area: {}", rect.area());</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <h2>7. Associated Functions (Constructors)</h2>
+    <div class="card">
+        <p>All functions within an <code>impl</code> block are <strong>associated functions</strong>. Those that <em>do not</em> take <code>self</code> as a parameter are often used as constructors to create new instances.</p>
+        
+        <div class="grid">
+            <div>
+                <h3>The "Constructor" Pattern</h3>
+                <p>Commonly named <code>new</code> or <code>from</code>, these return a new instance of the struct.</p>
+                <pre><code class="language-rust">impl Rectangle {
+    fn square(size: u32) -> Self {
+        Self {
+            width: size,
+            height: size,
+        }
+    }
+}</code></pre>
+            </div>
+            <div>
+                <h3>Calling Associated Functions</h3>
+                <p>Use the double colon <code>::</code> syntax after the struct name.</p>
+                <pre><code class="language-rust">// Like String::from()
+let sq = Rectangle::square(10);</code></pre>
+            </div>
+        </div>
+
+        <div class="pro-tip">
+            <strong>Multiple impl Blocks:</strong> Each struct can have multiple <code>impl</code> blocks to separate different types of logic, though they are usually grouped together for clarity.
+        </div>
+    </div>
+
+    <h2>8. Debugging with Traits</h2>
+    <div class="card">
+        <p>To print a struct for debugging, add the <code>#[derive(Debug)]</code> attribute above your definition. This adds metadata that allows the <code>{:?}</code> formatter to work.</p>
+        <pre><code class="language-rust">#[derive(Debug)]
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+fn main() {
+    let rect = Rectangle { width: 30, height: 50 };
+    println!("rect is {:?}", rect); // Prints the struct fields
+}</code></pre>
+    </div>
+
+    <h2>6. Deep Dive: Product Inventory Implementation</h2>
+    <div class="card">
+        <p>In a production environment, logic is grouped into <code>impl</code> blocks to maintain clean, readable code. This example demonstrates a standard inventory pattern.</p>
+        
+        <pre><code class="language-rust">impl Product {
+    // ASSOCIATED FUNCTION: Professional Constructor
+    // Called using Product::new()
+    fn new(name: String, price_in_cents: u32) -> Product {
+        Product {
+            name,                // Field Init Shorthand
+            price_in_cents,      // Integers used for currency safety
+            is_available: true,  // Logical default
+            stock_count: 0,      // Start empty
+        }
+    }
+
+    // METHOD: Financial logic using instance data
+    fn calculate_tax(&self) -> u32 {
+        (self.price_in_cents * 10) / 100
+    }
+
+    // METHOD: Getter for state checking
+    fn is_in_stock(&self) -> bool {
+        self.stock_count > 0
+    }
+}</code></pre>
+
+        <div class="grid">
+            <div>
+                <h3>Calling Conventions</h3>
+                <ul>
+                    <li><strong>Static Calls (::):</strong> Used for logic belonging to the type, like <code>Product::new()</code>.</li>
+                    <li><strong>Instance Calls (.):</strong> Used for logic requiring an instance, like <code>my_item.is_in_stock()</code>.</li>
+                </ul>
+            </div>
+            <div>
+                <h3>Advanced Instantiation</h3>
+                <pre><code class="language-rust">// Struct Update Syntax
+let sale_item = Product {
+    price_in_cents: 1000,
+    ..my_product // Copies other fields
+};</code></pre>
+            </div>
+        </div>
+    </div>
+
+    <h2>7. Technical Performance & Debugging</h2>
+    <div class="card">
+        <div class="warning">
+            <strong>Memory Management:</strong> Structs are typically stored on the <strong>Stack</strong>, but fields like <code>String</code> store their data on the <strong>Heap</strong>. Using <code>..update</code> syntax may "move" data.
+        </div>
+        
+        <h3>Debugging with Traits</h3>
+        <p>Use the <code>#[derive(Debug)]</code> attribute to enable struct printing for troubleshooting.</p>
+        <pre><code class="language-rust">#[derive(Debug)]
+struct Product { /* fields */ }
+
+fn main() {
+    let item = Product::new(String::from("Mouse"), 2500);
+    println!("Item data: {:?}", item); // Requires Debug trait
+}</code></pre>
+        
+        <div class="success-box">
+            <strong>The Semicolon Rule:</strong> Do not put a semicolon after <code>struct</code> or <code>impl</code> blocks. However, always use one after a variable assignment (<code>let x = Product { ... };</code>).
+        </div>
+    </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+</body>
+<pre><code class="language-rust">
+    struct Product {
+  name: String,
+  price_in_cents: u32,
+  is_available: bool,
+  stock_count: u32
+}  //no semicolon
+
+fn main(){
+  let mut my_product = Product {
+    name: String::from("Wireless Mouse"),
+    price_in_cents: 2500,
+    is_available: true,
+    stock_count: 50,
+  };
+
+  my_product.stock_count = 49;
+  println!("Stock updated for {}: {}", my_product.name, my_product.stock_count);
+
+  //call assocaiated function using the Struct name and ::
+  let basic_item = Product::new(String::from("Notebook"), 500)
+
+  //use :: to call associated functions
+  let my_item = Product::new(String::from("Laptop"), 99900);
+  println!("Is it in stock {}", my_item.is_in_stock());
+
+  let mut second_product = Product {
+  name,
+  stock_count: 49,
+// fill the rest in
+  }
+  let mut sale_product = Product {
+  price_in_cents: 1000,
+  ..my_product //no comma
+  }
+}
+
+
+
+
+
+impl Product {
+  fn calculate_tax(&self) -> u32 {
+    (self.price_in_cents * 10)/100
+  }
+
+  //Associated Function because it doesn't have &self
+  fn new(name: String, price_in_cents: u32) -> Product {
+    Product {
+      name,
+      price_in_cents,
+      is_available: true, //Default to true
+      stock_count: 0,     //Default to 0
+    }
+  }
+
+  //Getter 
+  fn is_in_stock(&self) -> bool{
+    self.stock_count > 0
+  }
+}
+
+</code></pre>
+</html>
