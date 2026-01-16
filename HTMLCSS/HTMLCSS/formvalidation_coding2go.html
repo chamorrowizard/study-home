@@ -215,7 +215,8 @@
             error_message.innerText = errors.join('. ')
         }
         //remove errors when user inputs text
-        const allInputs = [firstname_input, email_input,password_input, repeat_password_input];
+        //add filter so that login page won't throw errors since firstname doesn't exist their; filter out null(does not exist)
+        const allInputs = [firstname_input, email_input,password_input, repeat_password_input].filter(input => input !== null);
         allInputs.forEach(input => {
             input.addEventListener('input', () =>{
                 if(input.parentElement.classList.contains('incorrect')){
@@ -223,7 +224,19 @@
                 }
             })
         })
-       
+        //Create function for login page
+        function getLoginFormErrors(email, password){
+            let errors = [];
+            if (email === "" || email === null){
+                errors.push('Email is required');
+                email_input.parentElement.classList.add('incorrect')
+            }
+            if (password === "" || password === null){
+                errors.push('Password is required');
+                password_input.parentElement.classList.add('incorrect')
+            }
+            return errors;
+        }
         //write the error detecting for these functions
         //Parameters are the values that the user entered in the form
         function getSignupFormErrors(firstname, email, password, repeatPassword){
@@ -248,9 +261,16 @@
                 errors.push('Password is required');
                 repeat_password_input.parentElement.classList.add('incorrect')
             }
+            //Make password over 8 characters
+            if (password.length < 8){
+                errors.push('Password must be at least 8 characters long');
+                password_input.parentElement.classList.add('incorrect')
+            }
              //verify the passwords match
             if(password !== repeatPassword){
-                errors.push('Password does not match repeated password')
+                errors.push('Password does not match repeated password');
+                repeat_password_input.parentElement.classList.add('incorrect')
+                password_input.parentElement.classList.add('incorrect')
             }
             return errors;
         }
