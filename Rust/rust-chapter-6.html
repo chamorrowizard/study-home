@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rust Mastery: Enums & Pattern Matching</title>
+    <style>
+        :root {
+            --primary: #2d3436;
+            --accent: #d35400;
+            --bg: #f9f9f9;
+            --sidebar-bg: #ffffff;
+            --code-bg: #272822;
+            --success: #00b894;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--primary);
+            background: var(--bg);
+            margin: 0;
+            display: flex;
+        }
+        /* Sticky Sidebar Navigation */
+        nav {
+            width: 260px;
+            height: 100vh;
+            background: var(--sidebar-bg);
+            border-right: 1px solid #ddd;
+            position: sticky;
+            top: 0;
+            padding: 2rem 1rem;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+        nav h2 { font-size: 1.1rem; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
+        nav ul { list-style: none; padding: 0; }
+        nav li { margin: 0.8rem 0; }
+        nav a { text-decoration: none; color: #636e72; font-size: 0.95rem; transition: 0.3s; }
+        nav a:hover { color: var(--accent); padding-left: 5px; }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            padding: 3rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        header { border-bottom: 3px solid var(--accent); margin-bottom: 3rem; padding-bottom: 1rem; }
+        h1 { margin: 0; font-size: 2.8rem; color: var(--primary); }
+        h2 { color: var(--accent); border-bottom: 1px solid #eee; padding-bottom: 0.5rem; margin-top: 2.5rem; }
+
+        /* Bento Modules */
+        .module {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            margin-bottom: 2.5rem;
+        }
+        .pro-tip { border-left: 5px solid var(--success); background: #e8f8f5; padding: 1rem; border-radius: 0 8px 8px 0; margin: 1.5rem 0; }
+        .warning { border-left: 5px solid var(--accent); background: #fff5f0; padding: 1rem; border-radius: 0 8px 8px 0; margin: 1.5rem 0; }
+
+        /* Code Blocks */
+        pre {
+            background: var(--code-bg);
+            color: #f8f8f2;
+            padding: 1.2rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        code { font-family: 'Fira Code', 'Courier New', monospace; }
+
+        /* Grid for Variants */
+        .variant-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .variant-card {
+            background: #f1f2f6;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            nav { width: 100%; height: auto; position: relative; border-right: none; border-bottom: 1px solid #ddd; }
+            main { padding: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <h2>Chapter 6</h2>
+        <ul>
+            <li><strong>6.1 Defining an Enum</strong>
+                <ul>
+                    <li><a href="#enum-values">Enum Values</a></li>
+                    <li><a href="#option-enum">The Option Enum</a></li>
+                </ul>
+            </li>
+            <li><strong>6.2 Match Control Flow</strong>
+                <ul>
+                    <li><a href="#match-basics">Match Basics</a></li>
+                    <li><a href="#patterns-bind">Patterns that Bind</a></li>
+                    <li><a href="#matching-option">Matching Option&lt;T&gt;</a></li>
+                </ul>
+            </li>
+            <li><strong>6.3 Concise Flow</strong>
+                <ul>
+                    <li><a href="#if-let">if let</a></li>
+                    <li><a href="#let-else">let else</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+
+    <main>
+        <header>
+            <h1>Enums and Pattern Matching</h1>
+            <p>A deep dive into Rust's most powerful data structures and control flow tools.</p>
+        </header>
+
+        <section id="defining-enums" class="module">
+            <h2>6.1 Defining an Enum</h2>
+            <p>Enums allow you to define a type by enumerating its possible [variants](https://doc.rust-lang.org/stable/book/ch06-01-defining-an-enum.html#defining-an-enum). Unlike structs, an enum value can only be one variant at a time.</p>
+            
+            <pre><code>enum IpAddr {
+    V4(u8, u8, u8, u8),
+    V6(String),
+}</code></pre>
+
+            <div id="enum-values" class="pro-tip">
+                <strong>Key Insight:</strong> Enum variants are [namespaced](https://doc.rust-lang.org/stable/book/ch06-01-defining-an-enum.html#enum-values) under the identifier using <code>::</code>. Variants can even hold [different types and amounts of data](https://doc.rust-lang.org/stable/book/ch06-01-defining-an-enum.html#listing-6-2).
+            </div>
+
+            <h3 id="option-enum">The Option Enum</h3>
+            <p>Rust solves the ["Billion Dollar Mistake"](https://doc.rust-lang.org/stable/book/ch06-01-defining-an-enum.html#the-option-enum) of null values by using <code>Option&lt;T&gt;</code>. It explicitly marks a value as either present (<code>Some</code>) or absent (<code>None</code>).</p>
+            <div class="warning">
+                <strong>Safety First:</strong> Rust won't let you use an <code>Option&lt;T&gt;</code> as if it were a definite value. You <em>must</em> handle both variants.
+            </div>
+                    </section>
+
+        <section id="match-basics" class="module">
+            <h2>6.2 The match Control Flow Construct</h2>
+            <p>The <code>match</code> expression is an [exhaustive](https://doc.rust-lang.org/stable/book/ch06-02-match.html) tool that allows you to compare a value against a series of patterns.</p>
+            
+            <pre><code>enum Coin {
+    Penny,
+    Nickel,
+    Dime,
+    Quarter(UsState),
+}
+
+fn value_in_cents(coin: Coin) -> u8 {
+    match coin {
+        Coin::Penny => 1,
+        Coin::Nickel => 5,
+        Coin::Dime => 10,
+        Coin::Quarter(state) => {
+            println!("State quarter from {:?}!", state);
+            25
+        }
+    }
+}</code></pre>
+
+            <div id="patterns-bind" class="pro-tip">
+                <strong>Patterns that Bind:</strong> As seen above with <code>Quarter(state)</code>, match arms can [extract values](https://doc.rust-lang.org/stable/book/ch06-02-match.html) from enum variants.
+            </div>
+
+            <h3 id="matching-option">Matching with Option&lt;T&gt;</h3>
+            <p>To use the <code>T</code> inside a <code>Some(T)</code>, you often use <code>match</code> to safely handle both the value and the <code>None</code> case.</p>
+                    </section>
+
+        <section id="if-let" class="module">
+            <h2>6.3 Concise Control Flow</h2>
+            <p>Sometimes <code>match</code> is too wordy for handling only a single variant. Rust provides [concise alternatives](https://doc.rust-lang.org/stable/book/ch06-03-if-let.html).</p>
+
+            <h3>The if let Syntax</h3>
+            <p>Think of <code>if let</code> as syntax sugar for a <code>match</code> that runs code for one pattern and ignores everything else.</p>
+            
+            <pre><code>let config_max = Some(3u8);
+if let Some(max) = config_max {
+    println!("The maximum is configured to be {}", max);
+}</code></pre>
+
+            <h3 id="let-else">The let else Syntax</h3>
+            <p>Introduced for cases where you want to [bind a variable](https://doc.rust-lang.org/stable/book/ch06-03-if-let.html) but "early return" or diverge if the pattern doesn't match.</p>
+            
+            <pre><code>let Some(value) = optional_value else {
+    return Err("Missing value");
+};
+// 'value' is now bound and usable here!</code></pre>
+        </section>
+
+        <section class="quiz" style="background: #dfe6e9; padding: 2rem; border-radius: 12px; margin-top: 3rem;">
+            <h2 style="margin-top: 0;">Quick Knowledge Check</h2>
+            <p>Which statement about Rust Enums is <strong>FALSE</strong>?</p>
+            <form id="quizForm">
+                <input type="radio" name="q" id="o1"> <label for="o1">Variants can hold different data types.</label><br>
+                <input type="radio" name="q" id="o2"> <label for="o2">The <code>match</code> expression must be exhaustive.</label><br>
+                <input type="radio" name="q" id="o3"> <label for="o3">You can add an <code>i8</code> directly to an <code>Option&lt;i8&gt;</code>.</label><br>
+                <button type="button" onclick="checkAnswer()" style="margin-top: 1rem; padding: 0.6rem 1.2rem; background: var(--accent); color: white; border: none; border-radius: 5px; cursor: pointer;">Submit</button>
+            </form>
+            <p id="feedback" style="margin-top: 1rem; font-weight: bold;"></p>
+        </section>
+    </main>
+
+    <script>
+        function checkAnswer() {
+            const feedback = document.getElementById('feedback');
+            if(document.getElementById('o3').checked) {
+                feedback.innerHTML = "Correct! You must handle the Option type before using its inner value.";
+                feedback.style.color = "var(--success)";
+            } else {
+                feedback.innerHTML = "Not quite. Check section 6.1 again!";
+                feedback.style.color = "var(--accent)";
+            }
+        }
+    </script>
+</body>
+</html>
