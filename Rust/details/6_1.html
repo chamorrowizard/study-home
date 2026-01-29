@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rust Enums: Job-Ready Study Guide</title>
+    <style>
+        :root {
+            --bg: #fdfdfd;
+            --text: #2e3440;
+            --accent: #d08770;
+            --code-bg: #2e3440;
+            --code-text: #eceff4;
+            --border: #e5e9f0;
+            --success: #a3be8c;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.7;
+            color: var(--text);
+            background: var(--bg);
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        header {
+            border-bottom: 3px solid var(--accent);
+            margin-bottom: 40px;
+            padding-bottom: 10px;
+        }
+        h1 { margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+        h2 { border-left: 5px solid var(--accent); padding-left: 15px; margin-top: 50px; color: var(--accent); }
+        h3 { margin-top: 0; }
+        .badge {
+            background: var(--success);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            vertical-align: middle;
+        }
+        .todo { background: #ebcb8b; }
+        pre {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Fira Code', 'Courier New', monospace;
+        }
+        .concept-card {
+            border: 1px solid var(--border);
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            background: white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+        ul { padding-left: 20px; }
+        li { margin-bottom: 12px; }
+        .note {
+            background: #f4f6f8;
+            border-left: 4px solid var(--accent);
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Rust Enums Mastery</h1>
+    <p>Deep, Practical Study Guide for Real-World & Job-Ready Rust</p>
+</header>
+
+<section>
+    <h2>Part 1: Core Fundamentals <span class="badge">COMPLETED</span></h2>
+
+    <div class="concept-card">
+        <h3>1. Definition & Instantiation</h3>
+        <p>
+            Enums (short for <em>enumerations</em>) let you define a type that can be <strong>exactly one</strong>
+            of several possible variants at any given time.
+        </p>
+        <p>
+            This is fundamentally different from structs:
+        </p>
+        <ul>
+            <li><strong>Struct:</strong> groups multiple fields together at once</li>
+            <li><strong>Enum:</strong> represents multiple mutually exclusive states</li>
+        </ul>
+
+        <p>
+            In real systems, enums model state machines, events, network responses, user actions,
+            protocol messages, and more.
+        </p>
+
+        <pre>
+enum MessageStatus {
+    Pending,
+    Sent,
+    Failed(String),
+}</pre>
+
+        <p>
+            Here, <code>MessageStatus</code> can only ever be:
+        </p>
+        <ul>
+            <li><code>Pending</code> — message created but not delivered</li>
+            <li><code>Sent</code> — successfully delivered</li>
+            <li><code>Failed(String)</code> — failed with an error message</li>
+        </ul>
+
+        <p>
+            You instantiate enum values using the enum name and variant:
+        </p>
+
+        <pre>
+let status1 = MessageStatus::Pending;
+let status2 = MessageStatus::Failed("Network timeout".to_string());</pre>
+
+        <div class="note">
+            <strong>Job insight:</strong> If you find yourself using booleans like
+            <code>is_error</code>, <code>has_value</code>, or <code>is_loaded</code>,
+            that’s usually a signal an enum would be safer and clearer.
+        </div>
+    </div>
+
+    <div class="concept-card">
+        <h3>2. Handling Absence with Option&lt;T&gt;</h3>
+
+        <p>
+            Rust has no <code>null</code>. Instead, it forces you to represent absence
+            explicitly using the <code>Option&lt;T&gt;</code> enum.
+        </p>
+
+        <pre>
+enum Option<T> {
+    Some(T),
+    None,
+}</pre>
+
+        <p>
+            This design prevents an entire class of runtime crashes
+            (null pointer dereferences) at compile time.
+        </p>
+
+        <pre>
+let user_id: Option<i32> = Some(42);
+let deleted_user: Option<i32> = None;</pre>
+
+        <p>
+            You cannot use an <code>Option</code> directly as if it were the inner value.
+            Rust forces you to handle both cases.
+        </p>
+
+        <pre>
+match user_id {
+    Some(id) => println!("User ID: {}", id),
+    None => println!("No user found"),
+}</pre>
+
+        <div class="note">
+            <strong>Production reality:</strong>
+            APIs, databases, caches, configs, and environment variables
+            all naturally return optional values. <code>Option</code> makes this explicit and safe.
+        </div>
+    </div>
+</section>
+
+<section>
+    <h2>Part 2: Advanced Pattern Matching <span class="badge todo">IN PROGRESS</span></h2>
+
+    <div class="concept-card">
+        <h3>3. Exhaustive <code>match</code></h3>
+
+        <p>
+            The <code>match</code> expression is Rust’s most powerful control flow tool.
+            It combines pattern matching, destructuring, and exhaustiveness checking.
+        </p>
+
+        <p>
+            Exhaustiveness means the compiler guarantees:
+        </p>
+        <ul>
+            <li>Every enum variant is handled</li>
+            <li>No state is silently ignored</li>
+            <li>New variants force code updates</li>
+        </ul>
+
+        <pre>
+match status {
+    MessageStatus::Sent => println!("Delivered"),
+    MessageStatus::Failed(msg) => println!("Error: {}", msg),
+    MessageStatus::Pending => println!("Still processing"),
+}</pre>
+
+        <p>
+            You can also use a wildcard (<code>_</code>) when appropriate,
+            but this trades safety for convenience.
+        </p>
+
+        <div class="note">
+            <strong>Senior-level habit:</strong>
+            Avoid wildcards in core logic. Let the compiler protect you
+            when enums evolve.
+        </div>
+    </div>
+
+    <div class="concept-card">
+        <h3>4. Concise Control Flow with <code>if let</code></h3>
+
+        <p>
+            When you only care about a single pattern and want to ignore everything else,
+            <code>if let</code> is cleaner and more readable than a full <code>match</code>.
+        </p>
+
+        <pre>
+if let MessageStatus::Sent = current_status {
+    println!("Notification sent successfully!");
+}</pre>
+
+        <p>
+            This reads almost like natural language:
+            “If the status is Sent, then do this.”
+        </p>
+
+        <p>
+            You can also extract data:
+        </p>
+
+        <pre>
+if let MessageStatus::Failed(reason) = current_status {
+    log_error(reason);
+}</pre>
+
+        <div class="note">
+            <strong>Rule of thumb:</strong>
+            Use <code>match</code> for branching logic,
+            <code>if let</code> for early exits and happy paths.
+        </div>
+    </div>
+</section>
+
+<section>
+    <h2>Part 3: The Job-Ready Horizon <span class="badge todo">TODO</span></h2>
+
+    <div class="concept-card">
+        <h3>5. Error Handling with Result&lt;T, E&gt;</h3>
+
+        <p>
+            <code>Result</code> is the most important enum in professional Rust code.
+            It represents success or failure explicitly.
+        </p>
+
+        <pre>
+enum Result<T, E> {
+    Ok(T),
+    Err(E),
+}</pre>
+
+        <p>
+            Almost every fallible operation returns a <code>Result</code>:
+        </p>
+        <ul>
+            <li>File I/O</li>
+            <li>Network requests</li>
+            <li>Parsing</li>
+            <li>Database queries</li>
+        </ul>
+
+        <pre>
+fn read_config() -> Result<String, std::io::Error> {
+    std::fs::read_to_string("config.toml")
+}</pre>
+    </div>
+
+    <div class="concept-card">
+        <h3>6. Adding Behavior with <code>impl</code></h3>
+
+        <p>
+            Enums are not just data — they can have methods.
+            This lets you bundle logic with state.
+        </p>
+
+        <pre>
+impl MessageStatus {
+    fn is_terminal(&self) -> bool {
+        matches!(self, MessageStatus::Sent | MessageStatus::Failed(_))
+    }
+}</pre>
+
+        <p>
+            This is how Rust achieves object-like behavior without inheritance.
+        </p>
+    </div>
+
+    <div class="concept-card">
+        <h3>7. Struct-like Enum Variants</h3>
+
+        <p>
+            Variants can store named fields, making them self-documenting
+            and easier to refactor.
+        </p>
+
+        <pre>
+enum Command {
+    Move { x: i32, y: i32 },
+    ChangeColor { r: u8, g: u8, b: u8 },
+    Quit,
+}</pre>
+
+        <p>
+            These shine in protocol design, UI events, and state machines.
+        </p>
+    </div>
+</section>
+
+<footer>
+    <p style="text-align: center; color: #999; margin-top: 60px;">
+        Master enums and you master Rust’s safety model.
+        Write them often. Refactor toward them.
+    </p>
+</footer>
+
+</body>
+</html>
