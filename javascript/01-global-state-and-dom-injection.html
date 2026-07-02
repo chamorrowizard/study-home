@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 01: Global State & DOM Injection Architecture</title>
+    <style>
+        :root {
+            --bg-primary: #0a0f1d;
+            --bg-secondary: #131c31;
+            --accent-glow: #38bdf8;
+            --accent-warm: #fbbf24;
+            --text-main: #f8fafc;
+            --text-muted: #64748b;
+            --border-color: #1e293b;
+            --code-bg: #070b14;
+            --font-mono: 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.7;
+            padding: 3rem 1.5rem;
+        }
+
+        .container {
+            max-width: 1040px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 4rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 2.5rem;
+            position: relative;
+        }
+
+        header .badge {
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent-glow);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: inline-block;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(56, 189, 248, 0.2);
+        }
+
+        header h1 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            line-height: 1.2;
+            color: var(--text-main);
+        }
+
+        header h1 span {
+            color: var(--accent-glow);
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            margin-top: 0.5rem;
+            max-width: 700px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 3rem;
+        }
+
+        .card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .card-title span {
+            font-family: var(--font-mono);
+            color: var(--accent-glow);
+            font-size: 1.1rem;
+        }
+
+        p {
+            color: #cbd5e1;
+            margin-bottom: 1.25rem;
+            font-size: 1.05rem;
+        }
+
+        code-block {
+            display: block;
+            background-color: var(--code-bg);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+            padding: 1.5rem;
+            font-family: var(--font-mono);
+            font-size: 0.95rem;
+            color: #e2e8f0;
+            overflow-x: auto;
+            margin: 1.5rem 0;
+            white-space: pre;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
+        }
+
+        .comment { color: #475569; font-style: italic; }
+        .keyword { color: #f472b6; }
+        .function { color: #60a5fa; }
+        .variable { color: #818cf8; }
+        .string { color: #34d399; }
+        .property { color: #a78bfa; }
+
+        .blueprint-box {
+            background: rgba(251, 191, 36, 0.03);
+            border-left: 4px solid var(--accent-warm);
+            padding: 1.5rem;
+            border-radius: 0 12px 12px 0;
+            margin: 1.5rem 0;
+        }
+
+        .blueprint-box h4 {
+            color: var(--accent-warm);
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .blueprint-box ul {
+            list-style: none;
+            margin-top: 0.75rem;
+        }
+
+        .blueprint-box ul li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: #94a3b8;
+            font-size: 0.95rem;
+        }
+
+        .blueprint-box ul li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--accent-warm);
+            font-weight: bold;
+        }
+
+        .flow-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--code-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            margin: 1.5rem 0;
+            text-align: center;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+        }
+
+        .flow-node {
+            background: var(--bg-secondary);
+            border: 1px solid var(--accent-glow);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            flex: 1;
+            max-width: 220px;
+        }
+
+        .flow-arrow {
+            color: var(--text-muted);
+            padding: 0 1rem;
+            font-size: 1.2rem;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 6rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border-color);
+            padding-top: 2.5rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <div class="badge">Part 1 of 4</div>
+            <h1>Global State & <span>DOM Injection</span></h1>
+            <p>Master UX/UI Engineering Guide: Decoupling structured application datasets from high-performance runtime interface engines.</p>
+        </header>
+
+        <div class="grid">
+            
+            <!-- SECTION 1: THE DATA LAYER -->
+            <div class="card">
+                <h3 class="card-title"><span>01 /</span> The Structured Source Data (The Blueprint)</h3>
+                <p>Before any pixels paint on the screen, your application depends on a predictable, well-organized data model. The <code>database</code> object acts as your single source of truth for items available across categorical paths.</p>
+                
+                <code-block><span class="keyword">const</span> <span class="variable">database</span> = {
+    <span class="property">apps</span>: [
+        { <span class="property">name</span>: <span class="string">"Small Charcuterie Board (2-8 people)"</span>, <span class="property">type</span>: <span class="string">"Appetizer"</span>, <span class="property">desc</span>: <span class="string">"..."</span> },
+    ],
+    <span class="property">rolls</span>: [ <span class="comment">/* Array data */</span> ]
+};</code-block>
+
+                <div class="blueprint-box">
+                    <h4>📐 UX/UI Designer Perspective</h4>
+                    <p>Separating content structures from formatting layers is standard production practice. This arrangement gives you several design advantages:</p>
+                    <ul>
+                        <li><strong>Scalability:</strong> You can quickly scale out menu items or alter descriptions directly in the object layout without breaking display code.</li>
+                        <li><strong>Flexibility:</strong> This model easily converts to accept real-time backend API data streams or headless CMS structures down the road.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- SECTION 2: APPLICATION MEMORY STATE -->
+            <div class="card">
+                <h3 class="card-title"><span>02 /</span> Ephemeral App State Tracking</h3>
+                <p>To record selected items while a user navigates between different visual menus, the application relies on an isolated tracking object in memory.</p>
+                
+                <code-block><span class="comment">// Global session state memory tracking card orders</span>
+<span class="keyword">const</span> <span class="variable">orderSelections</span> = {};</code-block>
+
+                <div class="blueprint-box">
+                    <h4>🧠 Why It's Built This Way</h4>
+                    <p>If you bind order counts directly to HTML element attributes, that selection data vanishes the second those elements are cleared from view. Storing numbers in a dedicated <code>orderSelections</code> key-value map shields your selection memory from any visual updates happening in the browser DOM.</p>
+                </div>
+            </div>
+
+            <!-- SECTION 3: THE WIPE AND INJECT LIFECYCLE -->
+            <div class="card">
+                <h3 class="card-title"><span>03 /</span> The Clear-and-Render Lifecycle Pipeline</h3>
+                <p>The core rendering function <code>loadMenuModule</code> uses an explicit execution sequence: clear old layouts, fetch the fresh category array, and assemble new visual cards.</p>
+                
+                <div class="flow-diagram">
+                    <div class="flow-node">1. Request Category<br><small>(e.g., 'mexican')</small></div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-node" style="border-color: #ef4444;">2. Clear Viewport<br><small>(target.innerHTML = "")</small></div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-node" style="border-color: #22c55e;">3. Loop Array<br><small>(.forEach loop)</small></div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-node">4. Append Cards<br><small>(appendChild)</small></div>
+                </div>
+
+                <code-block><span class="keyword">function</span> <span class="function">loadMenuModule</span>(<span class="variable">categoryKey</span>) {
+    <span class="keyword">const</span> <span class="variable">gridTarget</span> = <span class="variable">document</span>.<span class="function">getElementById</span>(<span class="string">"menu-cards-target"</span>);
+    <span class="variable">gridTarget</span>.<span class="variable">innerHTML</span> = <span class="string">""</span>; <span class="comment">// Instant visual purging</span>
+
+    <span class="variable">database</span>[<span class="variable">categoryKey</span>].<span class="function">forEach</span>(<span class="variable">item</span> => {
+        <span class="keyword">const</span> <span class="variable">card</span> = <span class="variable">document</span>.<span class="function">createElement</span>(<span class="string">"div"</span>);
+        <span class="variable">card</span>.<span class="variable">className</span> = <span class="string">"menu-card"</span>;
+        
+        <span class="comment">// [...] Component generation & fallbacks logic</span>
+        
+        <span class="variable">gridTarget</span>.<span class="function">appendChild</span>(<span class="variable">card</span>);
+    });
+}</code-block>
+
+                <div class="blueprint-box">
+                    <h4>⚡ Performance & UX Breakdown</h4>
+                    <ul>
+                        <li><code>innerHTML = ""</code> rapidly unmounts stale visual blocks, keeping the browser memory footprint small and snappy.</li>
+                        <li><code>document.createElement("div")</code> builds your structural card layers entirely in detached memory, injecting it into the visible page layout only when complete. This prevents layout shift flashes, keeping adjustments smooth for the user.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- SECTION 4: DEFENSIVE UX FALLBACKS -->
+            <div class="card">
+                <h3 class="card-title"><span>04 /</span> Defensive Content Layout Contingencies</h3>
+                <p>Data models aren't always perfect; some fields can arrive incomplete or blank. The injection loop uses defensive fallback strategies to keep the interface looking polished no matter what data it receives.</p>
+                
+                <code-block><span class="keyword">const</span> <span class="variable">currentQty</span> = <span class="variable">orderSelections</span>[<span class="variable">item</span>.<span class="variable">name</span>] || <span class="number">0</span>;
+<span class="keyword">const</span> <span class="variable">itemDesc</span> = <span class="variable">item</span>.<span class="variable">desc</span> ? <span class="variable">item</span>.<span class="variable">desc</span> : <span class="string">"Available for full scale event booking..."</span>;</code-block>
+
+                <div class="blueprint-box">
+                    <h4>🛡️ Protecting the Design Grid</h4>
+                    <p>The <code>|| 0</code> logical operator is an elegant data shield. If an item hasn't been selected yet, the property reads as <code>undefined</code>. The fallback instantly normalizes this into a clean <code>0</code>, preventing raw system errors from leaking out to your visual layout components.</p>
+                </div>
+            </div>
+
+        </div>
+
+        <footer>
+            Master UX/UI Studio Guide • Advanced JavaScript Architecture Series
+        </footer>
+    </div>
+
+</body>
+</html>

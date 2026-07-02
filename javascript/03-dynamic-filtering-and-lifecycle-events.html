@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 03: Dynamic Filtering & Lifecycle Events</title>
+    <style>
+        :root {
+            --bg-primary: #0a0f1d;
+            --bg-secondary: #131c31;
+            --accent-glow: #38bdf8;
+            --accent-warm: #fbbf24;
+            --text-main: #f8fafc;
+            --text-muted: #64748b;
+            --border-color: #1e293b;
+            --code-bg: #070b14;
+            --font-mono: 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.7;
+            padding: 3rem 1.5rem;
+        }
+
+        .container {
+            max-width: 1040px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 4rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 2.5rem;
+        }
+
+        header .badge {
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent-glow);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: inline-block;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(56, 189, 248, 0.2);
+        }
+
+        header h1 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            line-height: 1.2;
+        }
+
+        header h1 span {
+            color: var(--accent-glow);
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            margin-top: 0.5rem;
+            max-width: 700px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 3rem;
+        }
+
+        .card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .card-title span {
+            font-family: var(--font-mono);
+            color: var(--accent-glow);
+            font-size: 1.1rem;
+        }
+
+        p {
+            color: #cbd5e1;
+            margin-bottom: 1.25rem;
+            font-size: 1.05rem;
+        }
+
+        code-block {
+            display: block;
+            background-color: var(--code-bg);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+            padding: 1.5rem;
+            font-family: var(--font-mono);
+            font-size: 0.95rem;
+            color: #e2e8f0;
+            overflow-x: auto;
+            margin: 1.5rem 0;
+            white-space: pre;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
+        }
+
+        .comment { color: #475569; font-style: italic; }
+        .keyword { color: #f472b6; }
+        .function { color: #60a5fa; }
+        .variable { color: #818cf8; }
+        .string { color: #34d399; }
+        .property { color: #a78bfa; }
+
+        .blueprint-box {
+            background: rgba(251, 191, 36, 0.03);
+            border-left: 4px solid var(--accent-warm);
+            padding: 1.5rem;
+            border-radius: 0 12px 12px 0;
+            margin: 1.5rem 0;
+        }
+
+        .blueprint-box ul {
+            list-style: none;
+            margin-top: 0.75rem;
+        }
+
+        .blueprint-box ul li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: #94a3b8;
+            font-size: 0.95rem;
+        }
+
+        .blueprint-box ul li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--accent-warm);
+            font-weight: bold;
+        }
+
+        .state-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            font-size: 0.95rem;
+        }
+
+        .state-table th, .state-table td {
+            border: 1px solid var(--border-color);
+            padding: 0.75rem 1rem;
+            text-align: left;
+        }
+
+        .state-table th {
+            background: var(--code-bg);
+            color: var(--accent-glow);
+            font-weight: 600;
+        }
+
+        .state-table td code {
+            font-family: var(--font-mono);
+            color: var(--accent-warm);
+            background: rgba(0,0,0,0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 6rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border-color);
+            padding-top: 2.5rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <div class="badge">Part 3 of 4</div>
+            <h1>Dynamic Filtering & <span>Lifecycle Events</span></h1>
+            <p>Master UX/UI Engineering Guide: Managing single-page view transitions, coordinating UI state classes, and handling secure DOM initialization.</p>
+        </header>
+
+        <div class="grid">
+            
+            <!-- SECTION 1: THE SINGLE PAGE VIEW ROUTER -->
+            <div class="card">
+                <h3 class="card-title"><span>01 /</span> The Tab Switching State Engine</h3>
+                <p>To deliver a smooth Single-Page Application (SPA) experience without full page reloads, the interface orchestrates tab switches using a decoupled array query pattern combined with explicit visual state tracking.</p>
+                
+                <code-block><span class="keyword">function</span> <span class="function">switchMenuTab</span>(<span class="variable">selectedTabElement</span>) {
+    <span class="comment">// 1. Strip active styling from all sibling tab buttons</span>
+    <span class="variable">document</span>.<span class="function">querySelectorAll</span>(<span class="string">".tab-btn"</span>).<span class="function">forEach</span>(<span class="variable">btn</span> => {
+        <span class="variable">btn</span>.<span class="variable">classList</span>.<span class="function">remove</span>(<span class="string">"active"</span>);
+    });
+
+    <span class="comment">// 2. Elevate the targeted element's visual state</span>
+    <span class="variable">selectedTabElement</span>.<span class="variable">classList</span>.<span class="function">add</span>(<span class="string">"active"</span>);
+
+    <span class="comment">// 3. Pull the category key directly from the DOM dataset marker</span>
+    <span class="keyword">const</span> <span class="variable">targetCategory</span> = <span class="variable">selectedTabElement</span>.<span class="variable">dataset</span>.<span class="variable">category</span>;
+    
+    <span class="comment">// 4. Feed the new category straight to the rendering module</span>
+    <span class="function">loadMenuModule</span>(<span class="variable">targetCategory</span>);
+}</code-block>
+
+                <div class="blueprint-box">
+                    <h4>📐 UX/UI Designer Perspective</h4>
+                    <p>Instead of hardcoding individual function paths for every single category button, leveraging HTML5 custom attributes (<code>data-category="..."</code>) lets you maintain a completely clean separation between markup and runtime logic. The target string lives right on the button element itself, making your JavaScript footprint incredibly lean and scaling effortlessly to handle dozens of menu paths.</p>
+                </div>
+            </div>
+
+            <!-- SECTION 2: DOM LIFECYCLE INITIALIZATION -->
+            <div class="card">
+                <h3 class="card-title"><span>02 /</span> Safe Initialization via DOMContentLoaded</h3>
+                <p>Executing DOM selection methods too early can lead to critical script errors if the browser hasn't finished reading the markup file. Wrapping your startup sequence ensures the script waits until the structure is fully parsed and safe to manipulate.</p>
+                
+                <code-block><span class="variable">document</span>.<span class="function">addEventListener</span>(<span class="string">"DOMContentLoaded"</span>, () => {
+    <span class="comment">// Establish initial landing view securely</span>
+    <span class="keyword">const</span> <span class="variable">defaultTab</span> = <span class="variable">document</span>.<span class="function">querySelector</span>(<span class="string">"[data-category='apps']"</span>);
+    
+    <span class="keyword">if</span> (<span class="variable">defaultTab</span>) {
+        <span class="function">switchMenuTab</span>(<span class="variable">defaultTab</span>);
+    }
+});</code-block>
+
+                <div class="blueprint-box">
+                    <h4>⚡ Lifecycle Event Breakdown</h4>
+                    <table class="state-table">
+                        <thead>
+                            <tr>
+                                <th>Event Type</th>
+                                <th>Trigger Timing</th>
+                                <th>Optimal Use Case</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>DOMContentLoaded</code></td>
+                                <td>Fires when the HTML structure is parsed and ready in memory. Doesn't wait for images or stylesheets.</td>
+                                <td><strong>Ideal for standard app bootstrapping:</strong> parsing layouts, extracting data attributes, and attaching main event loops.</td>
+                            </tr>
+                            <tr>
+                                <td><code>window.onload</code></td>
+                                <td>Fires late, waiting for every single image asset, external tracker, script, and CSS file to finish loading.</td>
+                                <td>Heavy UI calculations, processing complex graphic canvas layers, or managing scroll positions that depend on final layout dimensions.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <footer>
+            Master UX/UI Studio Guide • Advanced JavaScript Architecture Series
+        </footer>
+    </div>
+
+</body>
+</html>
