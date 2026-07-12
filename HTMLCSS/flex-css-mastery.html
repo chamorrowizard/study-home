@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SyntaxMaster // Full HTML & CSS Deep Dive</title>
+    <!-- Tailwind CSS for premium UI styling -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        code, kbd, input.code-input { font-family: 'JetBrains Mono', monospace; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+    <!-- Top Navigation -->
+    <header class="sticky top-0 z-50 backdrop-blur-md bg-slate-900/80 border-b border-slate-800 px-4 py-3 sm:px-6">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-gradient-to-tr from-indigo-500 to-purple-500 p-2 rounded-xl shadow-lg shadow-indigo-500/20">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                </div>
+                <div>
+                    <h1 class="text-sm font-bold tracking-wider text-slate-200 uppercase">SyntaxMaster</h1>
+                    <p class="text-xs text-slate-400">Comprehensive Web Layout Training</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-2">
+                <button onclick="switchTab('all')" id="tab-all" class="px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-indigo-600 text-white shadow-sm">All</button>
+                <button onclick="switchTab('html')" id="tab-html" class="px-3 py-1.5 rounded-lg text-xs font-medium transition-all text-slate-400 hover:text-slate-200">HTML</button>
+                <button onclick="switchTab('css')" id="tab-css" class="px-3 py-1.5 rounded-lg text-xs font-medium transition-all text-slate-400 hover:text-slate-200">CSS</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left Side: Concept Cheatsheet Database -->
+        <section class="lg:col-span-7 space-y-6">
+            <div class="flex items-center justify-between flex-wrap gap-3">
+                <h2 class="text-lg font-semibold text-slate-200 flex items-center gap-2">
+                    <span>Curriculum Database</span>
+                    <span id="item-count" class="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full font-normal">0 items</span>
+                </h2>
+                <div class="relative w-full sm:w-64">
+                    <input type="text" id="search-input" oninput="filterItems()" placeholder="Search properties & details..." class="w-full text-xs bg-slate-900 border border-slate-800 rounded-lg pl-8 pr-3 py-2 text-slate-300 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors">
+                    <svg class="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+            </div>
+
+            <!-- Category Container Grid -->
+            <div id="database-container" class="space-y-6"></div>
+        </section>
+
+        <!-- Right Side: Memory Practice Arena -->
+        <section class="lg:col-span-5 lg:sticky lg:top-24 h-fit">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden backdrop-blur-sm">
+                
+                <!-- Arena Header -->
+                <div class="border-b border-slate-800 p-4 bg-slate-900/50 flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                        <span class="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <h3 class="text-sm font-semibold text-slate-200 tracking-wide uppercase">Typing Arena</h3>
+                    </div>
+                    <span id="arena-type-badge" class="text-[10px] font-bold uppercase tracking-wider bg-slate-800 px-2 py-0.5 rounded-md text-slate-400">Select an item</span>
+                </div>
+
+                <!-- Arena Body -->
+                <div class="p-5 space-y-5">
+                    <div id="arena-empty-state" class="text-center py-12 text-slate-500 space-y-3">
+                        <svg class="w-12 h-12 mx-auto text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path></svg>
+                        <p class="text-sm">Select any module card on the left to initialize the syntax testing script.</p>
+                    </div>
+
+                    <div id="arena-active-state" class="hidden space-y-5">
+                        <div class="flex items-start justify-between gap-4">
+                            <div class="flex-1">
+                                <span id="arena-title" class="text-base font-semibold text-slate-100 block"></span>
+                                <span id="arena-desc" class="text-xs text-slate-400 mt-1 block leading-relaxed"></span>
+                            </div>
+                            <!-- Target Visibility Toggle Switch -->
+                            <button onclick="toggleTargetVisibility()" id="btn-toggle-visibility" class="shrink-0 flex items-center gap-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors select-none">
+                                <svg id="icon-eye-hide" class="w-3.5 h-3.5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"></path></svg>
+                                <svg id="icon-eye-show" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                <span id="text-toggle-visibility">Hide Target</span>
+                            </button>
+                        </div>
+
+                        <!-- Code Prompt Layout Box -->
+                        <div id="target-container" class="bg-slate-950 border border-slate-800/80 rounded-xl p-4 relative overflow-hidden transition-all duration-200 min-h-[56px] flex items-center">
+                            <div class="absolute top-2 right-2 text-[10px] uppercase font-bold tracking-wider text-slate-600 select-none">Target Syntax</div>
+                            <code id="arena-target" class="text-sm text-indigo-400 block break-all whitespace-pre-wrap select-none tracking-wide w-full"></code>
+                            <div id="arena-target-hidden" class="hidden text-xs text-slate-600 italic select-none">Target hidden. Type the correct syntax structure from raw memory!</div>
+                        </div>
+
+                        <!-- User Execution Input Area -->
+                        <div class="space-y-2">
+                            <label for="arena-input" class="block text-xs font-medium text-slate-400">Type the exact string structure below:</label>
+                            <input type="text" id="arena-input" autocomplete="off" spellcheck="false" oninput="checkTyping()" class="code-input w-full bg-slate-950 border-2 border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none tracking-wide transition-all placeholder-slate-700" placeholder="Begin typing syntax rules...">
+                        </div>
+
+                        <!-- Live Feedback HUD Layout -->
+                        <div class="flex items-center justify-between pt-2">
+                            <div id="arena-feedback" class="text-xs font-medium flex items-center gap-1.5 text-slate-500">
+                                <span class="w-1.5 h-1.5 rounded-full bg-slate-600"></span> System ready
+                            </div>
+                            <button onclick="resetArena()" class="text-xs text-slate-400 hover:text-slate-200 flex items-center gap-1 transition-colors">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.253 8H18"></path></svg>
+                                Reset Buffer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <!-- Global App Engine Scripts -->
+    <script>
+        /**
+         * FULL DATA MATRIX STRUCTURE
+         * Contains all notes parsed systematically down into individual testing objectives.
+         */
+        const syntaxDatabase = [
+            // --- GROWING & SHRINKING ---
+            { id: "grow-shorthand", lang: "css", category: "Flex Growing & Shrinking", title: "Flex Shorthand Layout", desc: "Declares three structural variables simultaneously: flex-grow, flex-shrink, and flex-basis. Setting flex: 1 defaults the underlying components directly into 1 1 0%.", code: "flex: 1;" },
+            { id: "grow-factor", lang: "css", category: "Flex Growing & Shrinking", title: "Flex Grow Factor Expansion", desc: "Expects a standalone integer as its value. Determines how much an element expands relative to nearby blocks. Setting this to 2 forces a block to capture twice the relative scale.", code: "flex-grow: 2;" },
+            { id: "shrink-factor", lang: "css", category: "Flex Growing & Shrinking", title: "Flex Shrink Compression", desc: "Determines individual container reduction rules when children items exceed bounds. Defaults structural compression factor down to zero to preserve target dimensions completely.", code: "flex-shrink: 0;" },
+            { id: "shrink-override", lang: "css", category: "Flex Growing & Shrinking", title: "Min-Width Structural Override", desc: "Flex-shrink only compresses items down to their text contents min-width properties. Override default configurations by scaling min-width back to absolute zero.", code: "min-width: 0px;" },
+            { id: "basis-initial", lang: "css", category: "Flex Growing & Shrinking", title: "Flex Basis Baseline Size", desc: "Sets the initial scale configuration of an item prior to any layout processing formulas taking place. Shorthand targets absolute baseline fractions.", code: "flex-basis: 0%;" },
+            { id: "basis-auto", lang: "css", category: "Flex Growing & Shrinking", title: "Flex Basis Width Detection", desc: "Using auto instructs the item framework to inspect structural layout declarations elsewhere, checking explicit width variables.", code: "flex-basis: auto;" },
+            { id: "flex-auto-shorthand", lang: "css", category: "Flex Growing & Shrinking", title: "Flex Auto Declaration Matrix", desc: "Shorthand variant equivalent to setting flex-grow: 1, flex-shrink: 1, and flex-basis: auto inline all at once.", code: "flex: auto;" },
+
+            // --- AXES ---
+            { id: "axis-direction-col", lang: "css", category: "Flexbox Axes Layout", title: "Vertical Flex Direction Column", desc: "Flips layout structures into vertical alignment stacks. Relocates the primary structural main axis to track from top-to-bottom configurations.", code: "flex-direction: column;" },
+            { id: "axis-direction-row", lang: "css", category: "Flexbox Axes Layout", title: "Horizontal Flex Direction Row", desc: "The standard behavior pattern. Lays out container boxes horizontally spanning from left-to-right directions.", code: "flex-direction: row;" },
+
+            // --- INTRO TO CSS ---
+            { id: "css-rule-structure", lang: "css", category: "Intro to CSS Rules", title: "Basic Selector Declaration Block", desc: "A standard CSS block consists of an outer target rule element selector, wrapping semicolon-terminated declaration lists inside matching curly braces.", code: "div { color: red; }" },
+
+            // --- SELECTORS ---
+            { id: "sel-universal", lang: "css", category: "CSS Selector Protocols", title: "Universal Selection Operator", desc: "Applies layout constraints or structural resets universally to elements of any tag type context page-wide.", code: "* {}" },
+            { id: "sel-type", lang: "css", category: "CSS Selector Protocols", title: "Type Element Selector", desc: "Directly isolates markup targets matching raw structural tag keywords like standard div wrappers.", code: "div {}" },
+            { id: "sel-class", lang: "css", category: "CSS Selector Protocols", title: "Class Target Selector", desc: "Applies targeted style rules to any structural element carrying matching classification text strings. Prepend with periods.", code: ".alert-text {}" },
+            { id: "sel-id", lang: "css", category: "CSS Selector Protocols", title: "Unique ID Selector", desc: "Targets individual elements across viewport nodes using case-sensitive identification hashtags.", code: "#title {}" },
+            { id: "sel-group", lang: "css", category: "CSS Selector Protocols", title: "Grouping Selector List", desc: "Combines shared properties across diverse element groups cleanly by separating them with common comma strings to minimize redundant code layout lines.", code: ".read, .unread {}" },
+            { id: "sel-chain", lang: "css", category: "CSS Selector Protocols", title: "Chained Class Selector Structure", desc: "Isolates processing rules exclusively to layout elements containing both classification tokens simultaneously without injecting internal whitespace characters.", code: ".subsection.header {}" },
+            { id: "sel-chain-mix", lang: "css", category: "CSS Selector Protocols", title: "Chained Class and ID Selector", desc: "Combines classification tokens and precise identification markers together directly to calculate high priority targeting thresholds.", code: ".subsection#preview {}" },
+            { id: "sel-descendant", lang: "css", category: "CSS Selector Protocols", title: "Descendant Combinator Layout", desc: "Targets nested children blocks residing anywhere underneath ancestral wrappers using single white-space dividers.", code: ".ancestor .child {}" },
+
+            // --- PROPERTIES ---
+            { id: "prop-colors", lang: "css", category: "Properties & Typography", title: "Color & Background Configuration", desc: "Sets text visibility channels alongside geometric fill boundaries. Supports keyword strings, hex values, rgb groupings, and hsl formats.", code: "color: transparent; background-color: red;" },
+            { id: "prop-font-fam", lang: "css", category: "Properties & Typography", title: "Font Family Fallback Fallback", desc: "A comma-separated list of values that determine what font an element uses. Wrap values containing space characters in literal string quotation marks.", code: 'font-family: "Times New Roman", serif;' },
+            { id: "prop-font-sz", lang: "css", category: "Properties & Typography", title: "Font Size Measurement", desc: "Alters explicit layout typographical height scales without allowing white-space splits inside definition parameters.", code: "font-size: 22px;" },
+            { id: "prop-font-wt", lang: "css", category: "Properties & Typography", title: "Font Weight Intensity", desc: "Configures typographical structural darkness properties using keyword variables or explicit numerical metric tracking indicators.", code: "font-weight: 700;" },
+            { id: "prop-align", lang: "css", category: "Properties & Typography", title: "Horizontal Text Alignment", desc: "Aligns structural text segments horizontally inside their block containers using keywords like center, left, or right.", code: "text-align: center;" },
+            { id: "prop-img-scale", lang: "css", category: "Properties & Typography", title: "Proportional Image Aspect Scaling", desc: "Alters responsive layout imagery scales smoothly by setting height attributes to auto while specifying absolute pixel metrics for width.", code: "img { height: auto; width: 500px; }" },
+
+            // --- ADDING CSS TO HTML ---
+            { id: "add-external", lang: "html", category: "Adding CSS Methods", title: "External Style Sheet Link", desc: "Attaches standalone style sheets using void markup items embedded completely inside document metadata head containers.", code: '<link rel="stylesheet" href="styles.css">' },
+            { id: "add-internal", lang: "html", category: "Adding CSS Methods", title: "Internal style Elements Block", desc: "Embeds rules within the HTML file itself, placing all rules inside an opening and closing tag pair inside document heads.", code: "<style></style>" },
+            { id: "add-inline", lang: "html", category: "Adding CSS Methods", title: "Inline Style Element Override", desc: "Applies design declarations directly to specific element tags, bypassing traditional selector engines and overriding alternate sheets.", code: '<div style="color: white; background-color: black;"></div>' },
+
+            // --- INTRO TO HTML / TAGS ---
+            { id: "html-para-full", lang: "html", category: "HTML Structural Elements", title: "Full Semantic Paragraph Node", desc: "A complete standard text wrapping structure, composed of an opening element tag, enclosed inner copy content strings, and a closing tag.", code: "<p>some text content</p>" },
+            { id: "html-void-br", lang: "html", category: "HTML Structural Elements", title: "Void Self-Closing Line Break", desc: "A void structural item missing downstream closing tag parameters entirely, used to terminate standard inline spacing bounds.", code: "<br/>" },
+
+            // --- HTML BOILERPLATE ---
+            { id: "html-bp-doctype", lang: "html", category: "HTML Document Boilerplate", title: "HTML5 Document Type Declaration", desc: "Forces layout rendering layers to compute files according to modern HTML5 parsing rules on the initial line.", code: "<!DOCTYPE html>" },
+            { id: "html-bp-root", lang: "html", category: "HTML Document Boilerplate", title: "Root Node with Language Attributes", desc: "Houses all document layout assets while providing screen readers with language orientation properties for accessibility formatting.", code: '<html lang="en"></html>' },
+            { id: "html-bp-meta", lang: "html", category: "HTML Document Boilerplate", title: "Character Encoding Metadata Tag", desc: "Configures character formatting layout matrix configurations to support globally standard UTF-8 text processing routines.", code: '<meta charset="UTF-8">' },
+            { id: "html-bp-viewport", lang: "html", category: "HTML Document Boilerplate", title: "Responsive Viewport Configuration", desc: "Configures width parameters to match target display screens dynamically, ensuring mobile layout responsiveness.", code: '<meta name="viewport" content="width=device-width, initial-scale=1.0">' },
+
+            // --- LISTS ---
+            { id: "list-unordered", lang: "html", category: "HTML Lists Elements", title: "Unordered Bullet List Wrapper", desc: "Defines the parent boundaries for bulleted list structures, housing individual child items inside.", code: "<ul><li></li></ul>" },
+            { id: "list-ordered", lang: "html", category: "HTML Lists Elements", title: "Ordered Numbered List Layout", desc: "Defines sequenced list boundaries that automatically calculate incremental numerical prefixes for items.", code: "<ol><li></li></ol>" },
+
+            // --- LINKS AND IMAGES ---
+            { id: "link-anchor-href", lang: "html", category: "Links & Media Assets", title: "Hyperlink Anchor Anchor Reference", desc: "Binds operational uniform resource locator destinations directly to string contents inside opening tag definitions.", code: '<a href="https://www.theodinproject.com/about">About</a>' },
+            { id: "link-tab-secure", lang: "html", category: "Links & Media Assets", title: "Isolated New Window Hyperlink", desc: "Launches external assets securely in separate viewports while isolating tracking channels via noopener/noreferrer protocols.", code: '<a href="URL" target="_blank" rel="noopener noreferrer"></a>' },
+            { id: "link-relative-dir", lang: "html", category: "Links & Media Assets", title: "Relative Path Prepending Navigation", desc: "Instructs layout path lookups to evaluate structures starting locally from within the current base directory zone.", code: '<a href="./pages/about.html">About</a>' },
+            { id: "img-parent-dir", lang: "html", category: "Links & Media Assets", title: "Parent Directory Traversal Target", desc: "Traverses standard directory structures upward by exactly one level before accessing media assets nested elsewhere.", code: '<img src="../images/dog.jpg" alt="desc">' },
+            { id: "img-layout-size", lang: "html", category: "Links & Media Assets", title: "Explicit Canvas Sizing Bounds", desc: "Protects site rendering paths against sudden content jumps or flashes by assigning hard canvas unit fields to imagery nodes.", code: '<img src="file.jpg" alt="desc" height="310" width="310">' },
+
+            // --- THE CASCADE & BOX MODEL ---
+            { id: "box-model-props", lang: "css", category: "Cascade & Layout Mechanics", title: "Box Model Structural Padding", desc: "Standard alignment controls manipulating inner padding spaces, structural boundaries, and adjacent element gaps.", code: "padding: 10px; border: 1px solid black; margin: 10px;" },
+            { id: "layout-inline-block", lang: "css", category: "Cascade & Layout Mechanics", title: "Inline-Block Display Realignment", desc: "Forces default text elements to receive full padding parameters and layout box properties without starting new layout lines.", code: "display: inline-block;" },
+
+            // --- INTRO TO FLEXBOX DEEP DIVE ---
+            { id: "flex-container-init", lang: "css", category: "Advanced Flexbox Mechanics", title: "Flex Container Initialization", desc: "Reconfigures normal tag rendering modes, shifting children layout items into flexible alignment rows or columns.", code: "display: flex;" },
+            { id: "flex-justify-content", lang: "css", category: "Advanced Flexbox Mechanics", title: "Main Axis Distribution Rules", desc: "Defines the horizontal distribution layout mapping rules for child nodes stretched across the container's active main axis.", code: "justify-content: space-between;" },
+            { id: "flex-align-items", lang: "css", category: "Advanced Flexbox Mechanics", title: "Cross Axis Line Alignment", desc: "Controls universal vertical alignment constraints across the active container viewport's cross-axis layout plane.", code: "align-items: center;" },
+            { id: "flex-wrap-layout", lang: "css", category: "Advanced Flexbox Mechanics", title: "Flex Grid Wrapping Activation", desc: "Allows child element rows to break downwards onto secondary lines when horizontal boundary areas get maxed out.", code: "flex-wrap: wrap;" },
+            { id: "flex-reverse-order", lang: "css", category: "Advanced Flexbox Mechanics", title: "Row Reverse Vector Mapping", desc: "Flips horizontal processing matrices completely, shifting operational origin lines from left bounds over to right walls.", code: "flex-direction: row-reverse;" },
+            { id: "flex-item-order", lang: "css", category: "Advanced Flexbox Mechanics", title: "Individual Node Order Priority", desc: "Manipulates individual items layout rankings inside parent stacks without adjusting nearby markup siblings.", code: "order: -1;" },
+            { id: "flex-align-self", lang: "css", category: "Advanced Flexbox Mechanics", title: "Isolated Cross Axis Alignment", desc: "Overrides master cross-axis alignment parameters for single standalone layout items inside flex container stacks.", code: "align-self: flex-end;" },
+            { id: "flex-initial-fallback", lang: "css", category: "Advanced Flexbox Mechanics", title: "Static Initial Dimensions Reset", desc: "Instructs individual flex items to prioritize fallback sizing properties over parent stretching constraints.", code: "flex: initial;" },
+            { id: "flex-margin-auto", lang: "css", category: "Advanced Flexbox Mechanics", title: "Auto-Margin Group Isolation Divider", desc: "Acts as an automated invisible divider, forcing target nodes and their subsequent siblings all the way across layout boundaries.", code: "margin-left: auto;" }
+        ];
+
+        let currentTab = 'all';
+        let activePracticeItem = null;
+        let targetIsVisible = true;
+
+        // Bootstrapping
+        document.addEventListener("DOMContentLoaded", () => {
+            renderDatabase();
+        });
+
+        // Layout Rendering Engine
+        function renderDatabase() {
+            const container = document.getElementById("database-container");
+            const filterText = document.getElementById("search-input").value.toLowerCase();
+            container.innerHTML = "";
+
+            const filteredData = syntaxDatabase.filter(item => {
+                const matchesTab = currentTab === 'all' || item.lang === currentTab;
+                const matchesSearch = item.title.toLowerCase().includes(filterText) || 
+                                      item.desc.toLowerCase().includes(filterText) || 
+                                      item.code.toLowerCase().includes(filterText) || 
+                                      item.category.toLowerCase().includes(filterText);
+                return matchesTab && matchesSearch;
+            });
+
+            document.getElementById("item-count").innerText = `${filteredData.length} item${filteredData.length === 1 ? '' : 's'}`;
+
+            const groups = {};
+            filteredData.forEach(item => {
+                if (!groups[item.category]) groups[item.category] = [];
+                groups[item.category].push(item);
+            });
+
+            if (filteredData.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 border border-dashed border-slate-800 rounded-2xl text-slate-500">
+                        No matches tracked for "${document.getElementById("search-input").value}".
+                    </div>`;
+                return;
+            }
+
+            for (const [categoryName, items] of Object.entries(groups)) {
+                const categorySection = document.createElement("div");
+                categorySection.className = "space-y-3";
+                
+                categorySection.innerHTML = `
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-slate-500 px-1">${categoryName}</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        ${items.map(item => `
+                            <div onclick="loadIntoArena('${item.id}')" 
+                                 class="group bg-slate-900/40 border border-slate-900 hover:border-slate-800 hover:bg-slate-900 rounded-xl p-4 transition-all duration-200 cursor-pointer flex flex-col justify-between space-y-3 relative overflow-hidden">
+                                <div class="absolute top-0 left-0 h-full w-1 ${item.lang === 'html' ? 'bg-orange-500' : 'bg-blue-500'} opacity-70"></div>
+                                <div>
+                                    <div class="flex items-center justify-between">
+                                        <h4 class="text-sm font-semibold text-slate-200 group-hover:text-white transition-colors">${item.title}</h4>
+                                        <span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-slate-950 border border-slate-800 tracking-wider ${item.lang === 'html' ? 'text-orange-400' : 'text-blue-400'}">${item.lang}</span>
+                                    </div>
+                                    <p class="text-xs text-slate-400 mt-1 line-clamp-2 leading-relaxed">${item.desc}</p>
+                                </div>
+                                <div class="bg-slate-950 border border-slate-850 rounded-lg p-2.5 overflow-hidden">
+                                    <code class="text-xs text-slate-300 block truncate group-hover:text-indigo-400 transition-colors">${escapeHtml(item.code)}</code>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                container.appendChild(categorySection);
+            }
+        }
+
+        // Segment Nav Switches
+        function switchTab(tab) {
+            currentTab = tab;
+            ['all', 'html', 'css'].forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                if (t === tab) {
+                    btn.className = "px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-indigo-600 text-white shadow-sm";
+                } else {
+                    btn.className = "px-3 py-1.5 rounded-lg text-xs font-medium transition-all text-slate-400 hover:text-slate-200";
+                }
+            });
+            renderDatabase();
+        }
+
+        function filterItems() {
+            renderDatabase();
+        }
+
+        // Interactive Processing Architecture
+        function loadIntoArena(id) {
+            const item = syntaxDatabase.find(x => x.id === id);
+            if (!item) return;
+
+            activePracticeItem = item;
+
+            document.getElementById("arena-empty-state").classList.add("hidden");
+            document.getElementById("arena-active-state").classList.remove("hidden");
+
+            document.getElementById("arena-type-badge").innerText = `${item.lang} • ${item.category}`;
+            document.getElementById("arena-title").innerText = item.title;
+            document.getElementById("arena-desc").innerText = item.desc;
+            document.getElementById("arena-target").innerText = item.code;
+            
+            resetArena();
+            updateTargetVisibilityUI();
+            
+            setTimeout(() => {
+                const inputField = document.getElementById("arena-input");
+                inputField.focus();
+                inputField.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 80);
+        }
+
+        function toggleTargetVisibility() {
+            targetIsVisible = !targetIsVisible;
+            updateTargetVisibilityUI();
+            document.getElementById("arena-input").focus();
+        }
+
+        function updateTargetVisibilityUI() {
+            const codeEl = document.getElementById("arena-target");
+            const hiddenEl = document.getElementById("arena-target-hidden");
+            const btnText = document.getElementById("text-toggle-visibility");
+            const iconHide = document.getElementById("icon-eye-hide");
+            const iconShow = document.getElementById("icon-eye-show");
+
+            if (targetIsVisible) {
+                codeEl.classList.remove("hidden");
+                hiddenEl.classList.add("hidden");
+                btnText.innerText = "Hide Target";
+                iconHide.classList.add("hidden");
+                iconShow.classList.remove("hidden");
+            } else {
+                codeEl.classList.add("hidden");
+                hiddenEl.classList.remove("hidden");
+                btnText.innerText = "Unhide Target";
+                iconHide.classList.remove("hidden");
+                iconShow.classList.add("hidden");
+            }
+        }
+
+        function resetArena() {
+            const inputField = document.getElementById("arena-input");
+            inputField.value = "";
+            inputField.className = "code-input w-full bg-slate-950 border-2 border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none tracking-wide transition-all placeholder-slate-700";
+            
+            const feedback = document.getElementById("arena-feedback");
+            feedback.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-slate-600"></span> Ready to type';
+            feedback.className = "text-xs font-medium flex items-center gap-1.5 text-slate-500";
+        }
+
+        function checkTyping() {
+            if (!activePracticeItem) return;
+
+            const target = activePracticeItem.code;
+            const currentInput = document.getElementById("arena-input").value;
+            const inputField = document.getElementById("arena-input");
+            const feedback = document.getElementById("arena-feedback");
+
+            if (currentInput === target) {
+                inputField.className = "code-input w-full bg-slate-950 border-2 border-emerald-500/80 rounded-xl px-4 py-3 text-sm text-emerald-400 focus:outline-none tracking-wide transition-all shadow-md shadow-emerald-950/20";
+                feedback.innerHTML = '<svg class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg> <span class="text-emerald-400">Syntax Completed Successfully!</span>';
+                return;
+            }
+
+            if (target.startsWith(currentInput)) {
+                inputField.className = "code-input w-full bg-slate-950 border-2 border-indigo-500 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none tracking-wide transition-all";
+                feedback.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-ping"></span> Typing... (${currentInput.length}/${target.length})`;
+                feedback.className = "text-xs font-medium flex items-center gap-1.5 text-indigo-400";
+            } else {
+                inputField.className = "code-input w-full bg-slate-950 border-2 border-rose-500/80 rounded-xl px-4 py-3 text-sm text-rose-400 focus:outline-none tracking-wide transition-all";
+                feedback.innerHTML = '<svg class="w-3.5 h-3.5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg> <span class="text-rose-400">Syntax mismatch detected. Check characters.</span>';
+            }
+        }
+
+        function escapeHtml(string) {
+            return String(string).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+    </script>
+</body>
+</html>

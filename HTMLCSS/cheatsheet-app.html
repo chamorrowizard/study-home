@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SyntaxMaster // Interactive HTML & CSS Reference</title>
+    <!-- Tailwind CSS for premium UI styling -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        code, kbd, input.code-input { font-family: 'JetBrains Mono', monospace; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+    <!-- Top Navigation -->
+    <header class="sticky top-0 z-50 backdrop-blur-md bg-slate-900/80 border-b border-slate-800 px-4 py-3 sm:px-6">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-gradient-to-tr from-indigo-500 to-purple-500 p-2 rounded-xl shadow-lg shadow-indigo-500/20">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                </div>
+                <div>
+                    <h1 class="text-sm font-bold tracking-wider text-slate-200 uppercase">SyntaxMaster</h1>
+                    <p class="text-xs text-slate-400">Interactive Reference & Practice</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-2">
+                <button onclick="switchTab('all')" id="tab-all" class="px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-indigo-600 text-white shadow-sm">All</button>
+                <button onclick="switchTab('html')" id="tab-html" class="px-3 py-1.5 rounded-lg text-xs font-medium transition-all text-slate-400 hover:text-slate-200">HTML</button>
+                <button onclick="switchTab('css')" id="tab-css" class="px-3 py-1.5 rounded-lg text-xs font-medium transition-all text-slate-400 hover:text-slate-200">CSS</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left Side: Interactive Cheatsheet List -->
+        <section class="lg:col-span-7 space-y-6">
+            <div class="flex items-center justify-between">
+                <h2 class="text-lg font-semibold text-slate-200 flex items-center gap-2">
+                    <span>Syntax Database</span>
+                    <span id="item-count" class="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full font-normal">0 items</span>
+                </h2>
+                <div class="relative w-48 sm:w-64">
+                    <input type="text" id="search-input" oninput="filterItems()" placeholder="Search syntax..." class="w-full text-xs bg-slate-900 border border-slate-800 rounded-lg pl-8 pr-3 py-2 text-slate-300 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors">
+                    <svg class="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+            </div>
+
+            <!-- Dynamic Category Groups Container -->
+            <div id="database-container" class="space-y-6"></div>
+        </section>
+
+        <!-- Right Side: Interactive Typing Arena -->
+        <section class="lg:col-span-5 lg:sticky lg:top-24 h-fit">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden backdrop-blur-sm">
+                
+                <!-- Arena Header -->
+                <div class="border-b border-slate-800 p-4 bg-slate-900/50 flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                        <span class="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <h3 class="text-sm font-semibold text-slate-200 tracking-wide uppercase">Typing Arena</h3>
+                    </div>
+                    <span id="arena-type-badge" class="text-[10px] font-bold uppercase tracking-wider bg-slate-800 px-2 py-0.5 rounded-md text-slate-400">Select an item</span>
+                </div>
+
+                <!-- Arena Body -->
+                <div class="p-5 space-y-5">
+                    <div id="arena-empty-state" class="text-center py-12 text-slate-500 space-y-3">
+                        <svg class="w-12 h-12 mx-auto text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path></svg>
+                        <p class="text-sm">Click any syntax card on the left to load it into the typing trainer.</p>
+                    </div>
+
+                    <div id="arena-active-state" class="hidden space-y-5">
+                        <div class="flex items-start justify-between gap-4">
+                            <div>
+                                <span id="arena-title" class="text-base font-semibold text-slate-100 block"></span>
+                                <span id="arena-desc" class="text-xs text-slate-400 mt-1 block"></span>
+                            </div>
+                            <!-- Target Visibility Toggle Toggle -->
+                            <button onclick="toggleTargetVisibility()" id="btn-toggle-visibility" class="shrink-0 flex items-center gap-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors select-none">
+                                <svg id="icon-eye-hide" class="w-3.5 h-3.5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"></path></svg>
+                                <svg id="icon-eye-show" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                <span id="text-toggle-visibility">Hide Target</span>
+                            </button>
+                        </div>
+
+                        <!-- Target Prompt Display Container -->
+                        <div id="target-container" class="bg-slate-950 border border-slate-800/80 rounded-xl p-4 relative overflow-hidden transition-all duration-200 min-h-[54px] flex items-center">
+                            <div class="absolute top-2 right-2 text-[10px] uppercase font-bold tracking-wider text-slate-600 select-none">Target</div>
+                            
+                            <!-- Visible Syntax Element -->
+                            <code id="arena-target" class="text-sm text-indigo-400 block break-all whitespace-pre-wrap select-none tracking-wide w-full"></code>
+                            
+                            <!-- Hidden State Element Mask -->
+                            <div id="arena-target-hidden" class="hidden text-xs text-slate-600 italic select-none">Target code hidden. Use your memory or click unhide!</div>
+                        </div>
+
+                        <!-- Typing Input Box -->
+                        <div class="space-y-2">
+                            <label for="arena-input" class="block text-xs font-medium text-slate-400">Type the exact syntax below:</label>
+                            <input type="text" id="arena-input" autocomplete="off" spellcheck="false" oninput="checkTyping()" class="code-input w-full bg-slate-950 border-2 border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none tracking-wide transition-all placeholder-slate-700" placeholder="Begin typing here...">
+                        </div>
+
+                        <!-- Feedback HUD -->
+                        <div class="flex items-center justify-between pt-2">
+                            <div id="arena-feedback" class="text-xs font-medium flex items-center gap-1.5 text-slate-500">
+                                <span class="w-1.5 h-1.5 rounded-full bg-slate-600"></span> Ready to type
+                            </div>
+                            <button onclick="resetArena()" class="text-xs text-slate-400 hover:text-slate-200 flex items-center gap-1 transition-colors">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.253 8H18"></path></svg>
+                                Reset
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <!-- Global Data & App Engine -->
+    <script>
+        /**
+         * DATA STORAGE ARRAY:
+         * Easily expand by dropping new objects directly into this array.
+         */
+        const syntaxDatabase = [
+            // --- HTML STRUCTURE ---
+            { id: "html-doctype", lang: "html", category: "Basic Structure", title: "Document Type", desc: "Defines the standard modern document type constraint.", code: "<!DOCTYPE html>" },
+            { id: "html-root", lang: "html", category: "Basic Structure", title: "Root Element", desc: "The top-level wrapping block for all HTML documents.", code: "<html></html>" },
+            { id: "html-head", lang: "html", category: "Basic Structure", title: "Metadata Container", desc: "Houses machine-readable page settings, titles, and styles.", code: "<head></head>" },
+            { id: "html-body", lang: "html", category: "Basic Structure", title: "Visible Content Container", desc: "Encloses all user-facing rendered blocks and elements.", code: "<body></body>" },
+
+            // --- HTML COMMON TEXT / STRUCTURE ---
+            { id: "html-h1", lang: "html", category: "Common Text & Structure", title: "Heading Level 1", desc: "The primary header rank on the page layout.", code: "<h1></h1>" },
+            { id: "html-p", lang: "html", category: "Common Text & Structure", title: "Paragraph", desc: "Standard text block wrapper containing body copy.", code: "<p></p>" },
+            { id: "html-br", lang: "html", category: "Common Text & Structure", title: "Line Break", desc: "Forces a clean line break without margin separation.", code: "<br/>" },
+            { id: "html-hr", lang: "html", category: "Common Text & Structure", title: "Horizontal Divider", desc: "Breaks topic sections visually using a thematic rule line.", code: "<hr/>" },
+            { id: "html-strong", lang: "html", category: "Common Text & Structure", title: "Strong Importance", desc: "Renders enclosed context in structural heavy bolding.", code: "<strong></strong>" },
+            { id: "html-em", lang: "html", category: "Common Text & Structure", title: "Emphasis", desc: "Applies subtle stress emphasis using text italicization.", code: "<em></em>" },
+            { id: "html-span", lang: "html", category: "Common Text & Structure", title: "Inline Container", desc: "A blank inline wrapper targeted for custom styling overrides.", code: "<span></span>" },
+            { id: "html-div", lang: "html", category: "Common Text & Structure", title: "Block Container", desc: "Generic block-level container for building UI grid structures.", code: "<div></div>" },
+
+            // --- LINKS & MEDIA ---
+            { id: "html-link", lang: "html", category: "Links & Media", title: "Hyperlink (New Tab)", desc: "Builds a standard cross-origin link target opening in an isolated viewport window.", code: '<a href="URL" target="_blank"></a>' },
+            { id: "html-img", lang: "html", category: "Links & Media", title: "Accessible Image Reference", desc: "Embeds direct image assets paired with essential text fallback fields.", code: '<img src="file.jpg" alt="desc">' },
+            { id: "html-video", lang: "html", category: "Links & Media", title: "Video Element with Layout Controls", desc: "Embeds structural streaming media frameworks natively onto canvas layouts.", code: '<video controls></video>' },
+            { id: "html-audio", lang: "html", category: "Links & Media", title: "Audio Native Component", desc: "Attaches a simple audio playback system containing timeline scrubbing widgets.", code: '<audio controls></audio>' },
+
+            // --- FORMS & INPUTS ---
+            { id: "html-form", lang: "html", category: "Forms & Inputs", title: "Secure Form Wrapper", desc: "Encapsulates processing fields routed using standardized safe POST protocols.", code: '<form action="/submit" method="POST"></form>' },
+            { id: "html-input-text", lang: "html", category: "Forms & Inputs", title: "Input Field (Text)", desc: "Generates a straightforward single-line textual collection text area.", code: '<input type="text">' },
+            { id: "html-input-pass", lang: "html", category: "Forms & Inputs", title: "Input Field (Password)", desc: "Generates an obfuscated validation line masking secure access strings.", code: '<input type="password">' },
+            { id: "html-label", lang: "html", category: "Forms & Inputs", title: "Accessible Form Label", desc: "Links contextual metadata visually directly into explicitly assigned form target IDs.", code: '<label for="username">Username</label>' },
+            { id: "html-select", lang: "html", category: "Forms & Inputs", title: "Dropdown Selector Component", desc: "Generates multi-choice structured picklist modules.", code: '<select><option value="1">Option 1</option></select>' },
+
+            // --- CSS BASICS ---
+            { id: "css-reset", lang: "css", category: "CSS Core Rules", title: "Global Box Sizing", desc: "Applies universal boundary adjustments forcing widths to contain structural borders.", code: "* { box-sizing: border-box; }" },
+            { id: "css-flex", lang: "css", category: "CSS Core Rules", title: "Flexbox Layout Center", desc: "Quickly centers elements dynamically across structural axes.", code: ".center { display: flex; justify-content: center; align-items: center; }" }
+        ];
+
+        let currentTab = 'all';
+        let activePracticeItem = null;
+        let targetIsVisible = true;
+
+        // Start Application
+        document.addEventListener("DOMContentLoaded", () => {
+            renderDatabase();
+        });
+
+        // Main Render Engine
+        function renderDatabase() {
+            const container = document.getElementById("database-container");
+            const filterText = document.getElementById("search-input").value.toLowerCase();
+            container.innerHTML = "";
+
+            const filteredData = syntaxDatabase.filter(item => {
+                const matchesTab = currentTab === 'all' || item.lang === currentTab;
+                const matchesSearch = item.title.toLowerCase().includes(filterText) || 
+                                      item.desc.toLowerCase().includes(filterText) || 
+                                      item.code.toLowerCase().includes(filterText) || 
+                                      item.category.toLowerCase().includes(filterText);
+                return matchesTab && matchesSearch;
+            });
+
+            document.getElementById("item-count").innerText = `${filteredData.length} item${filteredData.length === 1 ? '' : 's'}`;
+
+            const groups = {};
+            filteredData.forEach(item => {
+                if (!groups[item.category]) groups[item.category] = [];
+                groups[item.category].push(item);
+            });
+
+            if (filteredData.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 border border-dashed border-slate-800 rounded-2xl text-slate-500">
+                        No matches found for "${document.getElementById("search-input").value}".
+                    </div>`;
+                return;
+            }
+
+            for (const [categoryName, items] of Object.entries(groups)) {
+                const categorySection = document.createElement("div");
+                categorySection.className = "space-y-3";
+                
+                categorySection.innerHTML = `
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-slate-500 px-1">${categoryName}</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        ${items.map(item => `
+                            <div onclick="loadIntoArena('${item.id}')" 
+                                 class="group bg-slate-900/40 border border-slate-900 hover:border-slate-800 hover:bg-slate-900 rounded-xl p-4 transition-all duration-200 cursor-pointer flex flex-col justify-between space-y-3 relative overflow-hidden">
+                                <div class="absolute top-0 left-0 h-full w-1 ${item.lang === 'html' ? 'bg-orange-500' : 'bg-blue-500'} opacity-70"></div>
+                                <div>
+                                    <div class="flex items-center justify-between">
+                                        <h4 class="text-sm font-semibold text-slate-200 group-hover:text-white transition-colors">${item.title}</h4>
+                                        <span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-slate-950 border border-slate-800 tracking-wider ${item.lang === 'html' ? 'text-orange-400' : 'text-blue-400'}">${item.lang}</span>
+                                    </div>
+                                    <p class="text-xs text-slate-400 mt-1 line-clamp-2">${item.desc}</p>
+                                </div>
+                                <div class="bg-slate-950 border border-slate-850 rounded-lg p-2.5 overflow-hidden">
+                                    <code class="text-xs text-slate-300 block truncate group-hover:text-indigo-400 transition-colors">${escapeHtml(item.code)}</code>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                container.appendChild(categorySection);
+            }
+        }
+
+        // Global Controllers
+        function switchTab(tab) {
+            currentTab = tab;
+            ['all', 'html', 'css'].forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                if (t === tab) {
+                    btn.className = "px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-indigo-600 text-white shadow-sm";
+                } else {
+                    btn.className = "px-3 py-1.5 rounded-lg text-xs font-medium transition-all text-slate-400 hover:text-slate-200";
+                }
+            });
+            renderDatabase();
+        }
+
+        function filterItems() {
+            renderDatabase();
+        }
+
+        // Typing Arena Core Engine
+        function loadIntoArena(id) {
+            const item = syntaxDatabase.find(x => x.id === id);
+            if (!item) return;
+
+            activePracticeItem = item;
+
+            document.getElementById("arena-empty-state").classList.add("hidden");
+            document.getElementById("arena-active-state").classList.remove("hidden");
+
+            document.getElementById("arena-type-badge").innerText = `${item.lang} • ${item.category}`;
+            document.getElementById("arena-title").innerText = item.title;
+            document.getElementById("arena-desc").innerText = item.desc;
+            document.getElementById("arena-target").innerText = item.code;
+            
+            resetArena();
+            updateTargetVisibilityUI();
+            
+            setTimeout(() => {
+                const inputField = document.getElementById("arena-input");
+                inputField.focus();
+                inputField.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 80);
+        }
+
+        function toggleTargetVisibility() {
+            targetIsVisible = !targetIsVisible;
+            updateTargetVisibilityUI();
+            
+            // Refocus input field after clicking the visibility toggle button
+            document.getElementById("arena-input").focus();
+        }
+
+        function updateTargetVisibilityUI() {
+            const codeEl = document.getElementById("arena-target");
+            const hiddenEl = document.getElementById("arena-target-hidden");
+            const btnText = document.getElementById("text-toggle-visibility");
+            const iconHide = document.getElementById("icon-eye-hide");
+            const iconShow = document.getElementById("icon-eye-show");
+
+            if (targetIsVisible) {
+                codeEl.classList.remove("hidden");
+                hiddenEl.classList.add("hidden");
+                btnText.innerText = "Hide Target";
+                iconHide.classList.add("hidden");
+                iconShow.classList.remove("hidden");
+            } else {
+                codeEl.classList.add("hidden");
+                hiddenEl.classList.remove("hidden");
+                btnText.innerText = "Unhide Target";
+                iconHide.classList.remove("hidden");
+                iconShow.classList.add("hidden");
+            }
+        }
+
+        function resetArena() {
+            const inputField = document.getElementById("arena-input");
+            inputField.value = "";
+            inputField.className = "code-input w-full bg-slate-950 border-2 border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none tracking-wide transition-all placeholder-slate-700";
+            
+            const feedback = document.getElementById("arena-feedback");
+            feedback.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-slate-600"></span> Ready to type';
+            feedback.className = "text-xs font-medium flex items-center gap-1.5 text-slate-500";
+        }
+
+        function checkTyping() {
+            if (!activePracticeItem) return;
+
+            const target = activePracticeItem.code;
+            const currentInput = document.getElementById("arena-input").value;
+            const inputField = document.getElementById("arena-input");
+            const feedback = document.getElementById("arena-feedback");
+
+            if (currentInput === target) {
+                inputField.className = "code-input w-full bg-slate-950 border-2 border-emerald-500/80 rounded-xl px-4 py-3 text-sm text-emerald-400 focus:outline-none tracking-wide transition-all shadow-md shadow-emerald-950/20";
+                feedback.innerHTML = '<svg class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg> <span class="text-emerald-400">Syntax Completed Successfully!</span>';
+                return;
+            }
+
+            if (target.startsWith(currentInput)) {
+                inputField.className = "code-input w-full bg-slate-950 border-2 border-indigo-500 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none tracking-wide transition-all";
+                feedback.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-ping"></span> Typing... (${currentInput.length}/${target.length})`;
+                feedback.className = "text-xs font-medium flex items-center gap-1.5 text-indigo-400";
+            } else {
+                inputField.className = "code-input w-full bg-slate-950 border-2 border-rose-500/80 rounded-xl px-4 py-3 text-sm text-rose-400 focus:outline-none tracking-wide transition-all";
+                feedback.innerHTML = '<svg class="w-3.5 h-3.5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg> <span class="text-rose-400">Syntax mismatch detected. Check characters.</span>';
+            }
+        }
+
+        function escapeHtml(string) {
+            return String(string).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+    </script>
+</body>
+</html>
