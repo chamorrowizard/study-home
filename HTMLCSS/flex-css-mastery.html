@@ -63,7 +63,7 @@
                 <div class="border-b border-slate-800 p-4 bg-slate-900/50 flex items-center justify-between">
                     <div class="flex items-center space-x-2">
                         <span class="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <h3 class="text-sm font-semibold text-slate-200 tracking-wide uppercase">Typing Arena</h3>
+                        <h3 class="text-sm font-semibold text-slate-200 tracking-wide uppercase">Swipe or use arrows</h3>
                     </div>
                     <span id="arena-type-badge" class="text-[10px] font-bold uppercase tracking-wider bg-slate-800 px-2 py-0.5 rounded-md text-slate-400">Select an item</span>
                 </div>
@@ -119,7 +119,7 @@
         </section>
     </main>
 
-    <!-- Global App Engine Scripts -->
+   <!-- Global App Engine Scripts -->
     <script>
         /**
          * FULL DATA MATRIX STRUCTURE
@@ -205,19 +205,21 @@
         let currentTab = 'all';
         let activePracticeItem = null;
         let targetIsVisible = true;
+        let filteredItemsCache = [];
 
-        // Bootstrapping
+        // Mobile Touch Coordinates
+        let touchStartX = 0;
+        let touchEndX = 0;
+
         document.addEventListener("DOMContentLoaded", () => {
             renderDatabase();
+            setupMobileSwipeDetection();
+            setupDesktopKeyboardNavigation();
         });
 
-        // Layout Rendering Engine
-        function renderDatabase() {
-            const container = document.getElementById("database-container");
+        function getFilteredItems() {
             const filterText = document.getElementById("search-input").value.toLowerCase();
-            container.innerHTML = "";
-
-            const filteredData = syntaxDatabase.filter(item => {
+            return syntaxDatabase.filter(item => {
                 const matchesTab = currentTab === 'all' || item.lang === currentTab;
                 const matchesSearch = item.title.toLowerCase().includes(filterText) || 
                                       item.desc.toLowerCase().includes(filterText) || 
@@ -225,16 +227,22 @@
                                       item.category.toLowerCase().includes(filterText);
                 return matchesTab && matchesSearch;
             });
+        }
 
-            document.getElementById("item-count").innerText = `${filteredData.length} item${filteredData.length === 1 ? '' : 's'}`;
+        function renderDatabase() {
+            const container = document.getElementById("database-container");
+            filteredItemsCache = getFilteredItems();
+
+            document.getElementById("item-count").innerText = `${filteredItemsCache.length} item${filteredItemsCache.length === 1 ? '' : 's'}`;
+            container.innerHTML = "";
 
             const groups = {};
-            filteredData.forEach(item => {
+            filteredItemsCache.forEach(item => {
                 if (!groups[item.category]) groups[item.category] = [];
                 groups[item.category].push(item);
             });
 
-            if (filteredData.length === 0) {
+            if (filteredItemsCache.length === 0) {
                 container.innerHTML = `
                     <div class="text-center py-12 border border-dashed border-slate-800 rounded-2xl text-slate-500">
                         No matches tracked for "${document.getElementById("search-input").value}".
@@ -271,7 +279,6 @@
             }
         }
 
-        // Segment Nav Switches
         function switchTab(tab) {
             currentTab = tab;
             ['all', 'html', 'css'].forEach(t => {
@@ -289,7 +296,6 @@
             renderDatabase();
         }
 
-        // Interactive Processing Architecture
         function loadIntoArena(id) {
             const item = syntaxDatabase.find(x => x.id === id);
             if (!item) return;
@@ -310,8 +316,64 @@
             setTimeout(() => {
                 const inputField = document.getElementById("arena-input");
                 inputField.focus();
-                inputField.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }, 80);
+        }
+
+        // Navigation Engine (Shared by Desktop and Mobile)
+        function navigateCard(direction) {
+            if (!activePracticeItem || filteredItemsCache.length <= 1) return;
+
+            const currentIndex = filteredItemsCache.findIndex(item => item.id === activePracticeItem.id);
+            if (currentIndex === -1) return;
+
+            if (direction === 'next') {
+                const nextIndex = (currentIndex + 1) % filteredItemsCache.length;
+                loadIntoArena(filteredItemsCache[nextIndex].id);
+            } else if (direction === 'prev') {
+                const prevIndex = (currentIndex - 1 + filteredItemsCache.length) % filteredItemsCache.length;
+                loadIntoArena(filteredItemsCache[prevIndex].id);
+            }
+        }
+
+        // Mobile Touch Engine
+        function setupMobileSwipeDetection() {
+            const arenaCard = document.getElementById("arena-active-state").parentElement;
+
+            arenaCard.addEventListener('touchstart', e => {
+                touchStartX = e.changedTouches[0].screenX;
+            }, { passive: true });
+
+            arenaCard.addEventListener('touchend', e => {
+                touchEndX = e.changedTouches[0].screenX;
+                const swipeThreshold = 60;
+                const diffX = touchEndX - touchStartX;
+
+                if (diffX < -swipeThreshold) {
+                    navigateCard('next');
+                } else if (diffX > swipeThreshold) {
+                    navigateCard('prev');
+                }
+            }, { passive: true });
+        }
+
+        // Desktop Keyboard Engine
+        function setupDesktopKeyboardNavigation() {
+            document.addEventListener('keydown', e => {
+                if (!activePracticeItem) return;
+
+                const inputField = document.getElementById("arena-input");
+                const isFocused = document.activeElement === inputField;
+                const isEmpty = inputField.value.length === 0;
+
+                // Navigate if input is empty OR if user holds Ctrl down while typing
+                if (e.key === 'ArrowRight' && (isEmpty || e.ctrlKey || !isFocused)) {
+                    e.preventDefault();
+                    navigateCard('next');
+                } else if (e.key === 'ArrowLeft' && (isEmpty || e.ctrlKey || !isFocused)) {
+                    e.preventDefault();
+                    navigateCard('prev');
+                }
+            });
         }
 
         function toggleTargetVisibility() {

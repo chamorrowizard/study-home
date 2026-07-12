@@ -204,6 +204,35 @@
         font-size: 1.4rem;
       }
     }
+    /* Slider styles for swipe deck */
+    .slider-wrapper { position: relative; width: 100%; }
+    .nav-arrow {
+      display: none; position: absolute; top: 50%; transform: translateY(-50%);
+      background: rgba(15,23,42,0.6); border: 1px solid rgba(255,255,255,0.06);
+      color: #fff; width: 42px; height: 42px; border-radius: 50%; cursor: pointer;
+      z-index: 10; display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s ease; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+      font-size: 1.1rem;
+    }
+    .nav-arrow:hover { background: var(--accent); color: #02101f; }
+    .nav-arrow.prev { left: -54px; }
+    .nav-arrow.next { right: -54px; }
+    @media (min-width: 620px) { .nav-arrow { display: flex; } }
+
+    .slider-container {
+      width: 100%; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth;
+      display: flex; gap: 16px; padding: 12px 4px 24px; box-sizing: border-box; scrollbar-width: none;
+    }
+    .slider-container::-webkit-scrollbar { display: none; }
+    .slide-card {
+      flex: 0 0 100%; scroll-snap-align: center; box-sizing: border-box; border-radius: 16px;
+      padding: 18px; background: linear-gradient(145deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border: 1px solid rgba(255,255,255,0.03); box-shadow: 0 18px 40px rgba(2,6,23,0.8);
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .pagination-dots { display:flex; justify-content:center; gap:8px; margin-top:-6px; }
+    .dot { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.18); transition:all 0.25s ease; }
+    .dot.active { width:18px; background:var(--accent); border-radius:3px; }
   </style>
 </head>
 <body>
@@ -223,130 +252,99 @@
       </div>
     </header>
 
-    <section class="subject-area" aria-label="JavaScript study options">
-      <div class="subject-area-header">
-        <div>
-          <div class="subject-area-title">Study buttons</div>
-          <div class="subject-area-subtitle">
-            Start with one, add more subjects whenever you want.
+    <div class="slider-wrapper">
+      <button class="nav-arrow prev" onclick="moveSlider(-1)" aria-label="Previous slide">←</button>
+      <button class="nav-arrow next" onclick="moveSlider(1)" aria-label="Next slide">→</button>
+
+      <div class="slider-container" id="deckSlider">
+        <section class="slide-card">
+          <h2 style="margin:0 0 8px 0; font-size:1.05rem;">JavaScript</h2>
+          <div class="subject-area" aria-label="JavaScript study options">
+            <div class="subject-area-header">
+              <div>
+                <div class="subject-area-title">Study buttons</div>
+                <div class="subject-area-subtitle">Start with one, add more subjects whenever you want.</div>
+              </div>
+            </div>
+
+            <div class="subject-grid">
+              <a href="https://chamorrowizard.github.io/function-flashcards/" rel="noopenner noreferrer">
+                <button class="btn primary subject-button" type="button">JavaScript Functions Cards</button>
+              </a>
+              <a href="./javascript/cards01.html" rel="noopenner noreferrer">
+                <button class="btn primary subject-button" type="button">JavaScript weakness NOV 2025</button>
+              </a>
+              <a href="./javascript/card02array.html" rel="noopenner noreferrer">
+                <button class="btn primary subject-button" type="button">Array Methods</button>
+              </a>
+              <a href="./HTMLCSS/HTMLCSS/reactive_web_cheatsheet_full.html" rel="noopenner noreferrer">
+                <button class="btn primary subject-button" type="button">Reactive web</button>
+              </a>
+              <a href="./javascript/es6-modules.html" rel="noopenner noreferrer">
+                <button class="btn primary subject-button" type="button">ES6 Modules</button>
+              </a>
+              <a href="./javascript/npm.html" rel="noopenner noreferrer">
+                <button class="btn primary subject-button" type="button">npm</button>
+              </a>
+              <a href="./javascript/webpack.html" rel="noopenner noreferrer">
+                <button class="btn primary subject-button" type="button">webpack</button>
+              </a>
+              <a href="./javascript/menu-module-code.html" rel="noopenner noreferrer">
+                <button class="btn primary subject-button" type="button">Menu Module Code</button>
+              </a>
+              <a href="./javascript/01-global-state-and-dom-injection.html" rel="noopenner noreferrer">
+                <button class="btn primary subject-button" type="button">Global state and DOM injection</button>
+              </a>
+              <a href="./javascript/02-event-propagation-and-state-sync.html" rel="noopenner noreferrer">
+                <button class="btn primary subject-button" type="button">Event prop and state sync</button>
+              </a>
+              <a href="./javascript/03-dynamic-filtering-and-lifecycle-events.html" rel="noopenner noreferrer">
+                <button class="btn primary subject-button" type="button">Dynamic filtering & Life Cycle</button>
+              </a>
+              <a href="./javascript/04-async-api-submissions-and-ux-modals.html" rel="noopenner noreferrer">
+                <button class="btn primary subject-button" type="button">async api sub & ux modals</button>
+              </a>
+            </div>
           </div>
-        </div>
-      </div>
+        </section>
 
-      <div class="subject-grid">
-        <!-- First button: JavaScript main action -->
-         <a href="https://chamorrowizard.github.io/function-flashcards/" rel="noopenner noreferrer" >
-        <button
-          class="btn primary subject-button"
-          type="button"
-        >
-          JavaScript Functions Cards
-        </button>
-      </a>
-        <a href="./javascript/cards01.html" rel="noopenner noreferrer">
-        <button
-          class="btn primary subject-button"
-          type="button"
-        >
-          JavaScript weakness NOV 2025
-        </button>
-      </a>
-       <a href="./javascript/card02array.html" rel="noopenner noreferrer">
-        <button
-          class="btn primary subject-button"
-          type="button"
-        >
-          Array Methods
-        </button>
-      </a>
-        </a>
-       <a href="./HTMLCSS/HTMLCSS/reactive_web_cheatsheet_full.html" rel="noopenner noreferrer">
-        <button
-          class="btn primary subject-button"
-          type="button"
-        >
-          Reactive web
-        </button>
-      </a>
-       <a href="./javascript/es6-modules.html" rel="noopenner noreferrer">
-        <button
-          class="btn primary subject-button"
-          type="button"
-        >
-          ES6 Modules
-        </button>
-      </a>
-       <a href="./javascript/npm.html" rel="noopenner noreferrer">
-        <button
-          class="btn primary subject-button"
-          type="button"
-        >
-          npm
-        </button>
-      </a>
-       <a href="./javascript/webpack.html" rel="noopenner noreferrer">
-        <button
-          class="btn primary subject-button"
-          type="button"
-        >
-          webpack
-        </button>
-      </a>
-      </a>
-       <a href="./javascript/menu-module-code.html" rel="noopenner noreferrer">
-        <button
-          class="btn primary subject-button"
-          type="button"
-        >
-          Menu Module Code 
-        </button>
-      </a>
-      </a>
-       <a href="./javascript/01-global-state-and-dom-injection.html" rel="noopenner noreferrer">
-        <button
-          class="btn primary subject-button"
-          type="button"
-        >
-          Global state and DOM injection
-        </button>
-      </a>
-      </a>
-       <a href="./javascript/02-event-propagation-and-state-sync.html" rel="noopenner noreferrer">
-        <button
-          class="btn primary subject-button"
-          type="button"
-        >
-          Event prop and state sync 
-        </button>
-      </a>
-      <a href="./javascript/03-dynamic-filtering-and-lifecycle-events.html" rel="noopenner noreferrer">
-        <button
-          class="btn primary subject-button"
-          type="button"
-        >
-          Dynamic filtering & Life Cycle 
-        </button>
-      </a>
-      <a href="./javascript/04-async-api-submissions-and-ux-modals.html" rel="noopenner noreferrer">
-        <button
-          class="btn primary subject-button"
-          type="button"
-        >
-          async api sub & ux modals
-        </button>
-      </a>
-
-        <!-- EXAMPLE: later you can copy this block and change the text -->
-        <!--
-        <button
-          class="btn subject-button"
-          type="button"
-        >
-          New Subject
-        </button>
-        -->
+        <section class="slide-card">
+          <h2 style="margin:0 0 8px 0; font-size:1.05rem;">Quick Links</h2>
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <a class="btn primary" href="https://chamorrowizard.github.io/function-flashcards/">Functions Cards</a>
+            <a class="btn primary" href="./javascript/cards01.html">Weakness NOV 2025</a>
+            <a class="btn ghost" href="../index.html">Back</a>
+            <a class="btn ghost" href="./javascript/es6-modules.html">ES6 Modules</a>
+          </div>
+        </section>
+        
       </div>
-    </section>
+    </div>
+
+    <div class="pagination-dots">
+      <div class="dot active" id="dot1"></div>
+      <div class="dot" id="dot2"></div>
+    </div>
+
+    <script>
+      const slider = document.getElementById('deckSlider');
+      const dot1 = document.getElementById('dot1');
+      const dot2 = document.getElementById('dot2');
+
+      slider.addEventListener('scroll', () => {
+        const scrollIndex = Math.round(slider.scrollLeft / slider.offsetWidth);
+        if (scrollIndex === 0) {
+          dot1.classList.add('active'); dot2.classList.remove('active');
+        } else {
+          dot2.classList.add('active'); dot1.classList.remove('active');
+        }
+      });
+
+      function moveSlider(direction) {
+        const cardWidth = slider.offsetWidth;
+        slider.scrollBy({ left: direction * cardWidth, behavior: 'smooth' });
+      }
+    </script>
   </main>
 </body>
 </html>

@@ -203,6 +203,72 @@
         font-size: 1.4rem;
       }
     }
+    /* Slider styles (copied from index) */
+    .slider-wrapper {
+      position: relative;
+      width: 100%;
+      margin-top: 6px;
+    }
+
+    .nav-arrow {
+      display: none;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #fff;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 10;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      font-size: 1.1rem;
+    }
+
+    .nav-arrow.prev { left: -60px; }
+    .nav-arrow.next { right: -60px; }
+
+    @media (min-width: 620px) {
+      .nav-arrow { display: flex; }
+    }
+
+    .slider-container {
+      width: 100%;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      display: flex;
+      gap: 16px;
+      padding: 12px 4px 24px;
+      box-sizing: border-box;
+      scrollbar-width: none;
+    }
+
+    .slider-container::-webkit-scrollbar { display: none; }
+
+    .slide-card {
+      flex: 0 0 100%;
+      scroll-snap-align: center;
+      box-sizing: border-box;
+      border-radius: 20px;
+      padding: 20px;
+      background: linear-gradient(145deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border: 1px solid rgba(255,255,255,0.04);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 160px;
+    }
+
+    .pagination-dots { display: flex; justify-content: center; gap: 8px; margin-top: -8px; }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.2); transition: all 0.3s ease; }
+    .dot.active { width: 18px; background: var(--accent); border-radius: 3px; }
   </style>
 </head>
 <body>
@@ -221,6 +287,38 @@
         </a>
       </div>
     </header>
+
+    <div class="slider-wrapper">
+      <button class="nav-arrow prev" onclick="moveSlider(-1)" aria-label="Previous slide">←</button>
+      <button class="nav-arrow next" onclick="moveSlider(1)" aria-label="Next slide">→</button>
+
+      <div class="slider-container" id="deckSlider">
+        <section class="slide-card">
+          <div class="card-header">
+            <strong style="color:var(--accent)">Rust Shortcuts</strong>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <a class="btn primary" href="https://chamorrowizard.github.io/rust-ownership-borrowing/">Ownership & Borrowing</a>
+            <a class="btn primary" href="./Rust/rust-chapter-2.html">Rust Book Chapter 2</a>
+          </div>
+        </section>
+
+        <section class="slide-card">
+          <div class="card-header">
+            <strong style="color:var(--accent)">More Chapters</strong>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <a class="btn ghost" href="./Rust/rust-chapter-3.html">Chapter 3</a>
+            <a class="btn ghost" href="./Rust/rust-chapter-4.html">Chapter 4</a>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <div class="pagination-dots">
+      <div class="dot active" id="dot1"></div>
+      <div class="dot" id="dot2"></div>
+    </div>
 
     <section class="subject-area" aria-label="Rust study options">
       <div class="subject-area-header">
@@ -295,5 +393,27 @@
       </div>
     </section>
   </main>
+  <script>
+    (function(){
+      const slider = document.getElementById('deckSlider');
+      const dot1 = document.getElementById('dot1');
+      const dot2 = document.getElementById('dot2');
+      if (slider) {
+        slider.addEventListener('scroll', () => {
+          const scrollIndex = Math.round(slider.scrollLeft / slider.offsetWidth);
+          if (scrollIndex === 0) {
+            dot1.classList.add('active'); dot2.classList.remove('active');
+          } else {
+            dot2.classList.add('active'); dot1.classList.remove('active');
+          }
+        });
+      }
+      window.moveSlider = function(direction){
+        if (!slider) return;
+        const cardWidth = slider.offsetWidth;
+        slider.scrollBy({ left: direction * cardWidth, behavior: 'smooth' });
+      };
+    })();
+  </script>
 </body>
 </html>
