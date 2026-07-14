@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Architect: Code Design Playground</title>
+  <style>
+    /* ==========================================================================
+       1. MODERN CSS DESIGN SYSTEM & THEMING (Easily swap colors/fonts here)
+       ========================================================================== */
+    :root {
+      --bg-main: #0B0F19;
+      --bg-surface: #151B26;
+      --bg-surface-nested: #1F293D;
+      --text-primary: #F3F4F6;
+      --text-muted: #9CA3AF;
+      --accent: #3B82F6;
+      --accent-hover: #2563EB;
+      --success: #10B981;
+      --error: #EF4444;
+      --border: #2D3748;
+      --radius-lg: 12px;
+      --radius-md: 8px;
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* PREMIUM APP BAR */
+    header {
+      background-color: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.025em; }
+    header h1 span { color: var(--accent); }
+
+    /* ==========================================================================
+       2. UX/UI LAYOUT (Responsive Grid: Stacked on Mobile, Split Columns on Desktop)
+       ========================================================================== */
+    .app-container {
+      display: grid;
+      grid-template-columns: 1fr;
+      height: calc(100vh - 60px);
+    }
+
+    @media (min-width: 1024px) {
+      .app-container {
+        grid-template-columns: 400px 1fr; /* Sidebar fixed, workspace scales */
+      }
+    }
+
+    /* LEFT SIDEBAR: INSTRUCTIONS & SELECTION */
+    .sidebar {
+      background-color: var(--bg-surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      padding: 1.5rem;
+    }
+
+    .lesson-selector {
+      background: var(--bg-surface-nested);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      padding: 0.75rem;
+      border-radius: var(--radius-md);
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem;
+      outline: none;
+      width: 100%;
+    }
+
+    .instructions-panel h2 { font-size: 1.5rem; margin-bottom: 0.75rem; }
+    .instructions-panel p { color: var(--text-muted); line-height: 1.6; font-size: 0.95rem; margin-bottom: 1rem; }
+
+    /* RIGHT WORKSPACE: EDITOR & INTERACTIVE VISUALIZER */
+    .workspace {
+      display: grid;
+      grid-template-rows: 1fr 1fr; /* Split code space and visual architecture space */
+      height: 100%;
+    }
+
+    .panel-header {
+      background-color: var(--bg-surface-nested);
+      padding: 0.5rem 1rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* CODE EDITOR AREA */
+    .editor-container {
+      display: flex;
+      flex-direction: column;
+      background-color: #0d1117;
+      position: relative;
+    }
+
+    .code-textarea {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: #ff79c6; /* High-contrast developer theme */
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      padding: 1rem;
+      resize: none;
+      outline: none;
+      line-height: 1.5;
+    }
+
+    .btn-submit {
+      background-color: var(--accent);
+      color: white;
+      border: none;
+      padding: 0.5rem 1.25rem;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-submit:hover { background-color: var(--accent-hover); }
+
+    /* VISUAL MAP / REFACTOR METRICS PANEL */
+    .visualizer-container {
+      background-color: var(--bg-main);
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .visual-canvas {
+      flex: 1;
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      overflow-x: auto;
+    }
+
+    /* Visualizing Coupling & Architecture Modules dynamically */
+    .visual-node {
+      background: var(--bg-surface);
+      border: 2px solid var(--border);
+      padding: 1rem;
+      border-radius: var(--radius-lg);
+      text-align: center;
+      min-width: 140px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3);
+    }
+    .visual-node.active { border-color: var(--success); box-shadow: 0 0 12px rgba(16, 185, 129, 0.2); }
+    .visual-node h4 { font-size: 0.9rem; margin-bottom: 0.25rem; }
+    .visual-node p { font-size: 0.75rem; color: var(--text-muted); }
+
+    /* TIGHTLY COUPLED STATE (The Default "Before" Look) */
+    .visual-node.coupled {
+      border-color: var(--error);
+      position: relative;
+      transform: scale(0.98);
+    }
+    .visual-node.coupled::after {
+      content: '⚡ Tightly Coupled';
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--error);
+      color: white;
+      font-size: 0.65rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+
+    /* DECOUPLED STATE (The Clean "After" Look) */
+    .visual-node.decoupled {
+      border-color: var(--success);
+      transform: scale(1.02);
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.25);
+    }
+    .visual-node.decoupled::after {
+      content: '✅ Cleanly Isolated';
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--success);
+      color: var(--bg-main);
+      font-size: 0.65rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+    /* Animated crawling effect for the wire dashed lines */
+    @keyframes pulseCircuit {
+      to { stroke-dashoffset: -20; }
+    }
+
+    #circuitWire {
+      animation: pulseCircuit 1s linear infinite;
+      transition: stroke 0.4s ease, stroke-width 0.4s ease;
+    }
+
+    /* NOTIFICATION TOAST OVERLAY */
+    .toast {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      padding: 1rem 1.5rem;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      transform: translateY(150%);
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 100;
+    }
+    /* Style completed lessons inside the selector dropdown */
+    select option.completed-badge {
+      color: var(--success);
+      background-color: var(--bg-surface-nested);
+    }
+    .toast.show { transform: translateY(0); }
+    .toast.success { background-color: var(--success); color: var(--bg-main); }
+    .toast.error { background-color: var(--error); color: var(--text-primary); }
+  </style>
+</head>
+<body>
+
+  <!-- App Header bar -->
+  <header>
+    <h1>Architect<span>.io</span></h1>
+    <div style="font-size: 0.85rem; color: var(--text-muted);">Code Design Playground</div>
+  </header>
+
+  <!-- Main Application Split-Screen Layout -->
+  <main class="app-container">
+    
+    <!-- Sidebar: Instructions Layer -->
+    <section class="sidebar">
+      <label for="lessonSelect" style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; color: var(--text-muted);">Choose Lesson</label>
+      <select id="lessonSelect" class="lesson-selector">
+        <!-- Dynamically filled by Javascript Array Data -->
+      </select>
+
+      <div class="instructions-panel">
+        <h2 id="lessonTitle">Loading Lesson...</h2>
+        <p id="lessonDescription">Instructions loading...</p>
+        
+        <!-- INSERT THIS HINT HOLDER HERE -->
+        <div id="hintBox" style="display: none; margin-top: 1.5rem; padding: 1rem; background: var(--bg-surface-nested); border-left: 4px solid var(--accent); border-radius: var(--radius-md); font-size: 0.85rem; line-height: 1.5; color: var(--text-primary);">
+          <strong style="color: var(--accent); display: block; margin-bottom: 0.25rem;">💡 Architectural Clue:</strong>
+          <span id="hintText"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Workspace: Coding and Live Visual Graph Layers -->
+    <section class="workspace">
+      
+      <!-- Top Half: Code Box -->
+      <div class="editor-container">
+        <div class="panel-header">
+          <span>Refactor Window</span>
+          <div>
+            <button id="hintBtn" style="background: transparent; color: var(--accent); border: 1px solid var(--accent); padding: 0.5rem 1rem; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; margin-right: 0.5rem; transition: all 0.2s;">Show Hint</button>
+            <button id="resetBtn" style="background: transparent; color: var(--text-muted); border: 1px solid var(--border); padding: 0.5rem 1rem; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; margin-right: 0.5rem; transition: all 0.2s;">Reset Progress</button>
+            <button id="submitBtn" class="btn-submit">Refactor & Verify</button>
+          </div>
+        </div>
+        <textarea id="codeEditor" class="code-textarea" spellcheck="false"></textarea>
+      </div>
+
+      <!-- Bottom Half: Architectural Dependency Map/Nodes -->
+      <div class="visualizer-container">
+        <div class="panel-header">System Dependency Visualizer (Coupling Graph)</div>
+        <div id="visualCanvas" class="visual-canvas" style="position: relative;">
+          
+          <!-- SVG LINE LAYER -->
+          <svg id="graphLines" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0;">
+            <line id="circuitWire" x1="0" y1="0" x2="0" y2="0" stroke="#EF4444" stroke-width="3" stroke-dasharray="8,4" />
+          </svg>
+
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- Interactive Validation Toast Feedbacks -->
+  <div id="toast" class="toast"></div>
+
+  <!-- ==========================================================================
+       3. MODULAR JAVASCRIPT LAYER (Designed for Scalability & Simple Extension)
+       ========================================================================== -->
+  <script>
+   /* ------------------------------------------------------------------------
+       A. DATA STORE / DATA SPECIFICATION
+       To expand this course app, simply add more objects to this array.
+       ------------------------------------------------------------------------ */
+    const lessonsDataset = [
+      {
+        id: "srp",
+        title: "1. Single Responsibility Principle",
+        description: "Notice how this massive function handles both calculating metrics AND saving data to localStorage. If saving mechanics change, this module breaks. Refactor it by ensuring the logic does one thing: separate out data handling.",
+        initialCode: `// Tightly coupled system\nfunction saveAndCalculateWorkout(workoutData) {\n  const volume = workoutData.weight * workoutData.reps;\n  \n  // Smelly part: side effect managing storage directly inside calculation logic!\n  localStorage.setItem('last_workout', JSON.stringify(workoutData));\n  \n  return volume;\n}`,
+        validationRegex: /(localStorage\.setItem|storageService)/i, 
+        nodes: [
+          { name: "Calculation Engine", desc: "Handles heavy lift math" },
+          { name: "Storage Service", desc: "Saves records to database" }
+        ],
+        successPhrase: "storageService",
+        hint: "Extract the storage logic into a dedicated helper object: const storageService = { save: (data) => localStorage.setItem('last_workout', JSON.stringify(data)) }; then call storageService.save(workoutData) inside your main calculation function."
+      },
+      {
+        id: "guard",
+        title: "2. Clean Code Guard Clauses",
+        description: "Eliminate the nested code structures ('The Pyramid of Doom'). Use an early return statement (Guard Clause) to handle validation immediately at the top of the context.",
+        initialCode: `function registerUser(user) {\n  if (user.username !== "") {\n    if (user.age >= 18) {\n      return "Access Granted";\n    }\n  }\n  return "Invalid Access";\n}`,
+        validationRegex: /return/i,
+        nodes: [
+          { name: "Guard Check", desc: "Validates conditions instantly" },
+          { name: "Core Context Execution", desc: "Runs happy path safely" }
+        ],
+        successPhrase: "if (!user",
+        hint: "Flip your conditions around! Check for the invalid states first at the very top of your function: if (user.username === '' || user.age < 18) return 'Invalid Access'; then return the success path right underneath."
+      },
+      {
+        id: "factory",
+        title: "3. The Factory Pattern",
+        description: "Instead of manually creating task objects with raw brackets {} every time you need one, create a 'createTask' factory function. This centralizes object creation so you can update all tasks instantly in the future.",
+        initialCode: `// Bad: Duplicating structure everywhere\nconst task1 = { id: 1, title: "Sprints", done: false };\nconst task2 = { id: 2, title: "Kettlebell", done: false };\n\n// TODO: Write a function named 'createTask(id, title)' that returns the object automatically.`,
+        nodes: [
+          { name: "Client Code Request", desc: "Asks for a new task object" },
+          { name: "Factory Generator", desc: "Standardizes and builds the object" }
+        ],
+        successPhrase: "function createTask",
+        hint: "Define a function: function createTask(id, title) { return { id, title, done: false }; }"
+      },
+      {
+        id: "di",
+        title: "4. Dependency Inversion Principle",
+        description: "Notice how this tracker is hardcoded to use a specific 'SmsNotifier' class. If you want to change to email or push notifications later, you have to rewrite the entire tracker. Refactor it to accept a generic 'notifierService' via its constructor so you can inject any messaging tool seamlessly.",
+        initialCode: `// Bad: Tightly coupled to SMS\nclass WorkoutTracker {\n  constructor() {\n    this.notifier = new SmsNotifier(); // Hardcoded bottleneck!\n  }\n  \n  completeWorkout() {\n    this.notifier.send("Workout Saved!");\n  }\n}`,
+        nodes: [
+          { name: "Tracker Core", desc: "Coordinates app workout states" },
+          { name: "Notification Engine", desc: "Dispatches alerts across systems" }
+        ],
+        successPhrase: "constructor(notifierService)",
+        hint: "Change the constructor signature to constructor(notifierService). Inside the constructor, map it directly: this.notifier = notifierService; Make sure to delete the line that initializes 'new SmsNotifier()'."
+      },
+      {
+        id: "strategy",
+        title: "5. The Strategy Pattern",
+        description: "Look at this calculator function. It uses a messy 'if/else' block to switch between calculating running burn rates and lifting burn rates. If you add 10 more workout types, this function becomes an unreadable nightmare. Refactor it using the Strategy Pattern: create a calculator that takes a strategy object (like 'runStrategy') and calls its '.calculate()' method dynamically.",
+        initialCode: `// Bad: Rigid conditional switching\nfunction calculateCalories(type, duration) {\n  if (type === "running") {\n    return duration * 10;\n  } else if (type === "lifting") {\n    return duration * 5;\n  }\n  return 0;\n}`,
+        nodes: [
+          { name: "Context Runner", desc: "Executes calculations dynamically" },
+          { name: "Algorithm Strategy", desc: "Swaps mathematical formulas on the fly" }
+        ],
+        successPhrase: "strategy.calculate",
+        hint: "Remove the type string entirely. The first parameter should be the strategy interface itself: function calculateCalories(strategy, duration) { return strategy.calculate(duration); }"
+      },
+      {
+        id: "observer",
+        title: "6. The Observer Pattern",
+        description: "Look at this editor module. Whenever the code changes, it is hardcoded to manually call updates on the sidebar, the graph canvas, and the console log. If you add a 4th panel, you have to modify the editor class again. Refactor this using the Observer Pattern: create a class with an '.subscribe(callback)' array mechanism and a '.notify(data)' loop to alert listeners dynamically.",
+        initialCode: `// Bad: UI panels tightly bound to the engine\nclass CodeEditor {\n  constructor() {\n    this.listeners = [];\n  }\n  \n  // TODO: Add 'subscribe(callback)' to push into listeners\n  \n  // TODO: Add 'notify(data)' to loop and execute all callbacks\n}`,
+        nodes: [
+          { name: "Event Publisher", desc: "Broadcasts code state changes" },
+          { name: "UI Subscribing Panels", desc: "Listen and redraw independently" }
+        ],
+        successPhrase: "this.listeners.forEach",
+        hint: "For subscribe(callback), use this.listeners.push(callback). For notify(data), execute a loop: this.listeners.forEach(cb => cb(data));"
+      },
+      {
+        id: "command",
+        title: "7. The Command Pattern",
+        description: "In this fitness app, saving a workout happens immediately when clicked. If you want to add an 'Undo' button or queue saves when offline, this tight coupling breaks. Refactor this by wrapping the save action in a Command object that has execute() and undo() methods.",
+        initialCode: `// Bad: Tightly coupled execution\nclass WorkoutTracker {\n  save(workout) {\n    localStorage.setItem('workout', JSON.stringify(workout));\n  }\n}\n\n// TODO: Refactor using the Command Pattern\n// Create a SaveWorkoutCommand class with execute() and undo() methods`,
+        nodes: [
+          { name: "Invoker (UI Button)", desc: "Triggers commands without knowing what they do" },
+          { name: "Command Object", desc: "Encapsulates actions (execute / undo)" },
+          { name: "Receiver (Tracker)", desc: "Performs the actual low-level operation" }
+        ],
+        successPhrase: "execute",
+        hint: "Create a class: class SaveWorkoutCommand { constructor(tracker, workout) { this.tracker = tracker; this.workout = workout; } execute() { this.tracker.save(this.workout); } }"
+      }
+    ];
+
+    /* ------------------------------------------------------------------------
+       B. APP ENGINE / STATE CONTROL
+       ------------------------------------------------------------------------ */
+    class PlaygroundApp {
+      constructor() {
+        // Cache DOM Pointers
+        this.selector = document.getElementById('lessonSelect');
+        this.title = document.getElementById('lessonTitle');
+        this.description = document.getElementById('lessonDescription');
+        this.editor = document.getElementById('codeEditor');
+        this.canvas = document.getElementById('visualCanvas');
+        this.submitBtn = document.getElementById('submitBtn');
+        this.resetBtn = document.getElementById('resetBtn');
+        this.hintBtn = document.getElementById('hintBtn'); // ADD THIS
+        this.hintBox = document.getElementById('hintBox'); // ADD THIS
+        this.hintText = document.getElementById('hintText'); // ADD THIS
+        this.toast = document.getElementById('toast');
+
+        this.currentLesson = null;
+        this.init();
+      }
+
+      init() {
+        // Load tracked completed lesson IDs from localStorage
+        this.completedLessons = JSON.parse(localStorage.getItem('architect_progress')) || [];
+
+        // Populate Select elements and apply visual markers if already completed
+        lessonsDataset.forEach((lesson, index) => {
+          const opt = document.createElement('option');
+          opt.value = index;
+          opt.textContent = lesson.title;
+          
+          if (this.completedLessons.includes(lesson.id)) {
+            opt.textContent += "  ✓";
+            opt.classList.add('completed-badge');
+          }
+          
+          this.selector.appendChild(opt);
+        });
+
+        // Event Hookups
+        this.selector.addEventListener('change', (e) => this.loadLesson(lessonsDataset[e.target.value]));
+        this.submitBtn.addEventListener('click', () => this.validateCodeInput());
+        
+        // ADD THIS RESET HOOK
+        this.resetBtn.addEventListener('click', () => this.resetAllProgress());
+        // ADD THIS HINT TOGGLE
+        this.hintBtn.addEventListener('click', () => this.toggleHintBox());
+
+        window.addEventListener('resize', () => {
+          const isClean = !this.canvas.querySelector('.coupled');
+          this.drawCircuitLines(isClean);
+        });
+
+        // Default Load on launch
+        this.loadLesson(lessonsDataset[0]);
+      }
+      resetAllProgress() {
+        if (confirm("Are you sure you want to wipe all saved progress and code attempts?")) {
+          // Clear app keys from localStorage
+          localStorage.removeItem('architect_progress');
+          lessonsDataset.forEach(lesson => localStorage.removeItem(`attempt_${lesson.id}`));
+          
+          // Force page reload to cleanly re-initialize the default layout states
+          window.location.reload();
+        }
+      }
+      toggleHintBox() {
+        if (this.hintBox.style.display === 'none') {
+          this.hintBox.style.display = 'block';
+          this.hintBtn.textContent = "Hide Hint";
+        } else {
+          this.hintBox.style.display = 'none';
+          this.hintBtn.textContent = "Show Hint";
+        }
+      }
+
+      loadLesson(lesson) {
+        this.currentLesson = lesson;
+        this.title.textContent = lesson.title;
+        this.description.textContent = lesson.description;
+        
+        // Clear and hide hint box on lesson load
+        this.hintBox.style.display = 'none';
+        this.hintText.textContent = lesson.hint || "No hints available for this lesson.";
+        this.hintBtn.textContent = "Show Hint";
+        
+        // Load their last saved attempt if it exists, otherwise use initial code
+        const savedAttempt = localStorage.getItem(`attempt_${lesson.id}`);
+        this.editor.value = savedAttempt ? savedAttempt : lesson.initialCode;
+
+        this.canvas.innerHTML = '';
+        this.canvas.innerHTML = `
+          <svg id="graphLines" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0;">
+            <line id="circuitWire" x1="0" y1="0" x2="0" y2="0" stroke="#EF4444" stroke-width="3" stroke-dasharray="8,4" />
+          </svg>
+        `;
+
+        // Check if this lesson was already completed to set the initial visual state
+        const isAlreadyDone = this.completedLessons.includes(lesson.id);
+
+        lesson.nodes.forEach(node => {
+          const nodeEl = document.createElement('div');
+          nodeEl.className = isAlreadyDone ? 'visual-node decoupled' : 'visual-node coupled'; 
+          nodeEl.innerHTML = `<h4>${node.name}</h4><p>${node.desc}</p>`;
+          this.canvas.appendChild(nodeEl);
+        });
+
+        setTimeout(() => this.drawCircuitLines(isAlreadyDone), 50);
+      }
+      drawCircuitLines(isDecoupled = false) {
+        const nodes = this.canvas.querySelectorAll('.visual-node');
+        const wire = document.getElementById('circuitWire');
+        
+        if (nodes.length < 2 || !wire) return;
+
+        const canvasRect = this.canvas.getBoundingClientRect();
+        const rectA = nodes[0].getBoundingClientRect();
+        const rectB = nodes[1].getBoundingClientRect();
+
+        // Pin to layout centers
+        const x1 = (rectA.left + rectA.width / 2) - canvasRect.left;
+        const y1 = (rectA.top + rectA.height / 2) - canvasRect.top;
+        const x2 = (rectB.left + rectB.width / 2) - canvasRect.left;
+        const y2 = (rectB.top + rectB.height / 2) - canvasRect.top;
+
+        wire.setAttribute('x1', x1);
+        wire.setAttribute('y1', y1);
+        wire.setAttribute('x2', x2);
+        wire.setAttribute('y2', y2);
+
+        if (isDecoupled) {
+          wire.setAttribute('stroke', '#10B981');
+          wire.removeAttribute('stroke-dasharray');
+        } else {
+          wire.setAttribute('stroke', '#EF4444');
+          wire.setAttribute('stroke-dasharray', '8,4');
+        }
+      }
+
+      validateCodeInput() {
+        const inputCode = this.editor.value;
+        
+        try {
+          let testPassed = false;
+
+          if (this.currentLesson.id === "srp") {
+            // Safely resolve the main function name even if they added helper objects/services
+            const saveAndCalculateWorkout = window.saveAndCalculateWorkout || eval(`(${inputCode}\n;typeof saveAndCalculateWorkout !== "undefined" ? saveAndCalculateWorkout : null)`);
+            
+            if (typeof saveAndCalculateWorkout === "function") {
+              const sampleWorkout = { weight: 100, reps: 5 };
+              const result = saveAndCalculateWorkout(sampleWorkout);
+              
+              const holdsStorageService = inputCode.includes("storageService");
+              const removesLocalStorage = !inputCode.includes("localStorage.setItem");
+              
+              if (result === 500 && holdsStorageService && removesLocalStorage) {
+                testPassed = true;
+              }
+            }
+          } 
+          
+          else if (this.currentLesson.id === "guard") {
+            const registerUser = window.registerUser || eval(`(${inputCode}\n;typeof registerUser !== "undefined" ? registerUser : null)`);
+            
+            if (typeof registerUser === "function") {
+              const standardPass = registerUser({ username: "Alex", age: 20 });
+              const underageFail = registerUser({ username: "Sam", age: 16 });
+              const emptyFail = registerUser({ username: "", age: 25 });
+
+              if (standardPass === "Access Granted" && underageFail === "Invalid Access" && emptyFail === "Invalid Access") {
+                testPassed = true;
+              }
+            }
+          }
+          
+          // INSERT THIS FACTORY TEST PATTERN HERE
+          else if (this.currentLesson.id === "factory") {
+            const createTask = window.createTask || eval(`(${inputCode}\n;typeof createTask !== "undefined" ? createTask : null)`);
+            if (typeof createTask === "function") {
+              const testTask = createTask(99, "Shadowboxing");
+              if (testTask && testTask.id === 99 && testTask.title === "Shadowboxing" && testTask.hasOwnProperty('done')) {
+                testPassed = true;
+              }
+            }
+          }
+          
+          // INSERT THIS DEPENDENCY INVERSION TEST HERE
+          else if (this.currentLesson.id === "di") {
+            const WorkoutTracker = window.WorkoutTracker || eval(`(${inputCode}\n;typeof WorkoutTracker !== "undefined" ? WorkoutTracker : null)`);
+            if (typeof WorkoutTracker === "function") {
+              let mockSent = false;
+              const fakeNotifier = { send: (msg) => { mockSent = true; } };
+              const trackerInstance = new WorkoutTracker(fakeNotifier);
+              trackerInstance.completeWorkout();
+              if (mockSent && !inputCode.includes("new SmsNotifier")) {
+                testPassed = true;
+              }
+            }
+          }
+          
+          // INSERT THIS STRATEGY PATTERN TEST HERE
+          else if (this.currentLesson.id === "strategy") {
+            const calculateCalories = window.calculateCalories || eval(`(${inputCode}\n;typeof calculateCalories !== "undefined" ? calculateCalories : null)`);
+            if (typeof calculateCalories === "function") {
+              const runStrategy = { calculate: (d) => d * 10 };
+              const liftStrategy = { calculate: (d) => d * 5 };
+              const runResult = calculateCalories(runStrategy, 30);
+              const liftResult = calculateCalories(liftStrategy, 30);
+              if (runResult === 300 && liftResult === 150 && !inputCode.includes("else if")) {
+                testPassed = true;
+              }
+            }
+          }
+          
+          // INSERT THIS OBSERVER PATTERN TEST HERE
+          else if (this.currentLesson.id === "observer") {
+            const CodeEditor = window.CodeEditor || eval(`(${inputCode}\n;typeof CodeEditor !== "undefined" ? CodeEditor : null)`);
+            
+            if (typeof CodeEditor === "function") {
+              const editorInstance = new CodeEditor();
+              
+              if (typeof editorInstance.subscribe === "function" && typeof editorInstance.notify === "function") {
+                let receivedData = null;
+                
+                // Subscribe a mock panel to the event channel
+                editorInstance.subscribe((data) => { receivedData = data; });
+                editorInstance.notify("code_updated");
+                
+                // Pass if the callback successfully received the broadcast stream notice
+                if (receivedData === "code_updated") {
+                  testPassed = true;
+                }
+              }
+            }
+          }
+          
+          // ADD THIS COMMAND PATTERN TEST HERE
+          else if (this.currentLesson.id === "command") {
+            const userCode = inputCode;
+            const hasExecute = userCode.includes("execute()") || userCode.includes("execute ");
+            const hasUndo = userCode.includes("undo()") || userCode.includes("undo ");
+            
+            if (hasExecute && hasUndo) {
+              testPassed = true;
+            }
+          }
+
+          if (testPassed) {
+            this.triggerNotification("Success! All automated unit tests passed perfectly.", "success");
+            
+            // Save current code attempt and mark lesson as completed
+            localStorage.setItem(`attempt_${this.currentLesson.id}`, inputCode);
+            if (!this.completedLessons.includes(this.currentLesson.id)) {
+              this.completedLessons.push(this.currentLesson.id);
+              localStorage.setItem('architect_progress', JSON.stringify(this.completedLessons));
+              
+              // Dynamically update the selector text option with a checkmark
+              const activeOption = this.selector.options[this.selector.selectedIndex];
+              activeOption.textContent += "  ✓";
+              activeOption.classList.add('completed-badge');
+            }
+
+            document.querySelectorAll('.visual-node').forEach(node => {
+              node.classList.remove('coupled');
+              node.classList.add('decoupled');
+            });
+            this.drawCircuitLines(true);
+          } else {
+            this.triggerNotification("Logic compilation failed. The code structure doesn't satisfy the design requirements.", "error");
+            document.querySelectorAll('.visual-node').forEach(node => {
+              node.classList.remove('decoupled');
+              node.classList.add('coupled');
+            });
+            this.drawCircuitLines(false);
+          }
+
+        } catch (error) {
+          this.triggerNotification(`Syntax Error: ${error.message}`, "error");
+          document.querySelectorAll('.visual-node').forEach(node => {
+            node.classList.remove('decoupled');
+            node.classList.add('coupled');
+          });
+          this.drawCircuitLines(false);
+        }
+      }
+
+      triggerNotification(msg, type) {
+        this.toast.textContent = msg;
+        this.toast.className = `toast show ${type}`;
+        
+        setTimeout(() => {
+          this.toast.classList.remove('show');
+        }, 4000);
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      new PlaygroundApp();
+    });
+  </script>
+</body>
+</html>
