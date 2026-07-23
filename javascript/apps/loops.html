@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SyntaxMaster // JavaScript Loops &amp; Iteration</title>
+    <!-- Tailwind CSS CDN for premium UI styling and rapid structural layout -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        /* Import premium Google Fonts: Inter for the UI copy, JetBrains Mono for clean, legible code */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700&family=JetBrains+Mono:wght=400;500;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        code, kbd, input.code-input { font-family: 'JetBrains Mono', monospace; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-amber-500 selection:text-white">
+
+    <!-- Top Sticky Navigation Header -->
+    <header class="sticky top-0 z-50 backdrop-blur-md bg-slate-900/80 border-b border-slate-800 px-4 py-3 sm:px-6">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            <!-- App Branding with Neon Gradient Glow Icon -->
+            <div class="flex items-center space-x-3">
+                <div class="bg-gradient-to-tr from-amber-500 to-yellow-500 p-2 rounded-xl shadow-lg shadow-amber-500/20">
+                    <!-- Iterative Loop Visual SVG Icon -->
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.253 8H18M9 11V9a2 2 0 012-2h2a2 2 0 012 2v2m-6 4h6"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-sm font-bold tracking-wider text-slate-200 uppercase">SyntaxMaster</h1>
+                    <p class="text-xs text-slate-400">Loops, Iteration &amp; Label Breakpoints</p>
+                </div>
+            </div>
+            
+            <!-- Category Filter Tabs -->
+            <div class="flex flex-wrap items-center justify-center gap-2">
+                <button onclick="switchTab('all')" id="tab-all" class="px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-indigo-600 text-white shadow-sm">All Loops</button>
+                <button onclick="switchTab('collections')" id="tab-collections" class="px-3 py-1.5 rounded-lg text-xs font-medium transition-all text-slate-400 hover:text-slate-200">Collections (of / map)</button>
+                <button onclick="switchTab('standard')" id="tab-standard" class="px-3 py-1.5 rounded-lg text-xs font-medium transition-all text-slate-400 hover:text-slate-200">Standard for / while</button>
+                <button onclick="switchTab('labels')" id="tab-labels" class="px-3 py-1.5 rounded-lg text-xs font-medium transition-all text-slate-400 hover:text-slate-200">Breaks &amp; Labels</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace Split Grid -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left Side: Interactive Lessons Deck (7 columns) -->
+        <section class="lg:col-span-7 space-y-6">
+            <div class="flex items-center justify-between flex-wrap gap-3">
+                <h2 class="text-lg font-semibold text-slate-200 flex items-center gap-2">
+                    <span>Syntax Database</span>
+                    <span id="item-count" class="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full font-normal">0 items</span>
+                </h2>
+                <!-- Dynamic Input Filter -->
+                <div class="relative w-full sm:w-64">
+                    <input type="text" id="search-input" oninput="filterItems()" placeholder="Search loops, breaks, filters..." class="w-full text-xs bg-slate-900 border border-slate-800 rounded-lg pl-8 pr-3 py-2 text-slate-300 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors">
+                    <svg class="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Category Injection Container -->
+            <div id="database-container" class="space-y-6"></div>
+        </section>
+
+        <!-- Right Side: Interactive Arena (5 columns, sticky on desktop scroll) -->
+        <section class="lg:col-span-5 lg:sticky lg:top-24 h-fit">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden backdrop-blur-sm">
+                
+                <!-- Arena State Header -->
+                <div class="border-b border-slate-800 p-4 bg-slate-900/50 flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                        <span class="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <h3 class="text-sm font-semibold text-slate-200 tracking-wide uppercase">Typing Arena</h3>
+                    </div>
+                    <span id="arena-type-badge" class="text-[10px] font-bold uppercase tracking-wider bg-slate-800 px-2 py-0.5 rounded-md text-slate-400">Select card</span>
+                </div>
+
+                <!-- Arena Core Body -->
+                <div class="p-5 space-y-5">
+                    <!-- Unselected Empty Slate -->
+                    <div id="arena-empty-state" class="text-center py-12 text-slate-500 space-y-4">
+                        <svg class="w-12 h-12 mx-auto text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.253 8H18"></path>
+                        </svg>
+                        <div class="space-y-1">
+                            <p class="text-sm font-medium text-slate-400">Select a card target on the left to initialize tracking.</p>
+                            <p class="text-xs text-slate-600 px-4">Desktop: Use left/right arrows to shift cards. Hold Ctrl + arrow to instantly force-skip while field is focused.</p>
+                        </div>
+                    </div>
+
+                    <!-- Active Typing State Panel -->
+                    <div id="arena-active-state" class="hidden space-y-5">
+                        <div class="flex items-start justify-between gap-4">
+                            <div class="min-w-0 flex-1">
+                                <span id="arena-title" class="text-base font-semibold text-slate-100 block truncate"></span>
+                                <span id="arena-desc" class="text-xs text-slate-400 mt-1 block leading-relaxed"></span>
+                            </div>
+                            <!-- Mask Toggle for Blind Recall Practice -->
+                            <button onclick="toggleTargetVisibility()" id="btn-toggle-visibility" class="shrink-0 flex items-center gap-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors select-none">
+                                <svg id="icon-eye-hide" class="w-3.5 h-3.5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"></path>
+                                </svg>
+                                <svg id="icon-eye-show" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268-2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                                <span id="text-toggle-visibility">Hide Target</span>
+                            </button>
+                        </div>
+
+                        <!-- Code Prompt Display Container -->
+                        <div id="target-container" class="bg-slate-950 border border-slate-800/80 rounded-xl p-4 relative overflow-hidden transition-all duration-200 min-h-[54px] flex items-center">
+                            <div class="absolute top-2 right-2 text-[10px] uppercase font-bold tracking-wider text-slate-600 select-none">Target Expression</div>
+                            
+                            <!-- Visible Syntax Element -->
+                            <code id="arena-target" class="text-sm text-amber-400 block break-all whitespace-pre-wrap select-none tracking-wide w-full"></code>
+                            
+                            <!-- Hidden State Masked Element -->
+                            <div id="arena-target-hidden" class="hidden text-xs text-slate-600 italic select-none">Expression hidden. Recall loop parameters from memory or toggle "Unhide Target".</div>
+                        </div>
+
+                        <!-- Typing Input Box -->
+                        <div class="space-y-2">
+                            <label for="arena-input" class="block text-xs font-medium text-slate-400">Type the exact expression logic:</label>
+                            <!-- Code formatted textarea for multiline support -->
+                            <textarea id="arena-input" autocomplete="off" spellcheck="false" oninput="checkTyping()" rows="6" class="code-input w-full bg-slate-950 border-2 border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none tracking-wide transition-all placeholder-slate-700 resize-none" placeholder="Initialize evaluation parsing rules..."></textarea>
+                        </div>
+
+                        <!-- Feedback HUD -->
+                        <div class="flex items-center justify-between pt-2">
+                            <div id="arena-feedback" class="text-xs font-medium flex items-center gap-1.5 text-slate-500">
+                                <span class="w-1.5 h-1.5 rounded-full bg-slate-600"></span> Ready to type
+                            </div>
+                            <button onclick="resetArena()" class="text-xs text-slate-400 hover:text-slate-200 flex items-center gap-1 transition-colors">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.253 8H18"></path>
+                                </svg>
+                                Reset
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <!-- Global Data & App Engine -->
+    <script>
+        /**
+         * COMBINED DATA MATRIX STRUCTURE: LOOPS & ITERATIONS
+         * Fully corrected all errors from raw notes (e.g., fixed 'if (let i === ...)' syntax error to proper 'if (i === ...)')
+         * Added essential loop structures such as Map, Filter, While, Do...While, and Nested Break Labels.
+         */
+        const syntaxDatabase = [
+            // --- COLLECTIONS ---
+            { 
+                id: "loop-for-of", 
+                group: "collections", 
+                category: "Collection Iterations", 
+                title: "Basic for...of Loop", 
+                desc: "The cleanest tool to safely iterate over standard array items without indices.", 
+                code: "for (const cat of cats) {\n  console.log(cat);\n}" 
+            },
+            { 
+                id: "loop-map", 
+                group: "collections", 
+                category: "Collection Iterations", 
+                title: "Array.prototype.map()", 
+                desc: "Iterates through a collection, executes a callback function on each item, and returns a modified array.", 
+                code: "const upperCats = cats.map(toUpper);" 
+            },
+            { 
+                id: "loop-filter-named", 
+                group: "collections", 
+                category: "Collection Iterations", 
+                title: "Named Filter Callback", 
+                desc: "Filters elements out of an array by running a validation check return statement.", 
+                code: "const filtered = cats.filter(lcat);" 
+            },
+            { 
+                id: "loop-filter-arrow", 
+                group: "collections", 
+                category: "Collection Iterations", 
+                title: "Arrow Expression Filter Shorthand", 
+                desc: "Compact inline validation pattern utilizing arrow function shorthand expressions.", 
+                code: "const filtered = cats.filter(cat => cat.startsWith(\"L\"));" 
+            },
+
+            // --- STANDARD FOR & WHILE ---
+            { 
+                id: "loop-for-standard", 
+                group: "standard", 
+                category: "Standard Count Loops", 
+                title: "Standard Counter for Loop", 
+                desc: "Maintains a local numerical initializer, testing a stop condition after each round to execute code.", 
+                code: "for (let i = 1; i < 10; i++) {\n  console.log(i * i);\n}" 
+            },
+            { 
+                id: "loop-for-cats-formatted", 
+                group: "standard", 
+                category: "Standard Count Loops", 
+                title: "Formatted Array Terminus Handling", 
+                desc: "Checks current index parameter against the length boundary properties of the list array. (Corrected: removed syntax bug of repeating let/const declarations inside condition parentheticals).", 
+                code: "for (let i = 0; i < cats.length; i++) {\n  if (i === cats.length - 1) {\n    myFavoriteCats += `and ${cats[i]}.`;\n  } else {\n    myFavoriteCats += `${cats[i]}, `;\n  }\n}" 
+            },
+            { 
+                id: "loop-while", 
+                group: "standard", 
+                category: "While & Do...While Structs", 
+                title: "Traditional while Loop", 
+                desc: "Processes loops dynamically based on condition truthiness. Initializer defined prior to loop entry.", 
+                code: "let i = 0;\nwhile (i < cats.length) {\n  console.log(cats[i]);\n  i++;\n}" 
+            },
+            { 
+                id: "loop-do-while", 
+                group: "standard", 
+                category: "While & Do...While Structs", 
+                title: "Guaranteed do...while Loop", 
+                desc: "Alternative loop structure that guarantees the internal block will run at least once before testing the condition.", 
+                code: "let i = 0;\ndo {\n  console.log(cats[i]);\n  i++;\n} while (i < cats.length);" 
+            },
+
+            // --- BREAKS & LABELS ---
+            { 
+                id: "loop-break", 
+                group: "labels", 
+                category: "Iteration Control Flow", 
+                title: "Immediate break Termination", 
+                desc: "Exits active loops early and jumps straight to processing downstream script routines.", 
+                code: "for (const cat of cats) {\n  if (cat === \"Tiger\") break;\n  console.log(cat);\n}" 
+            },
+            { 
+                id: "loop-continue", 
+                group: "labels", 
+                category: "Iteration Control Flow", 
+                title: "Skip Iteration continue State", 
+                desc: "Instructs current loops to immediately cease execution lines and jump directly to evaluating the next index step.", 
+                code: "for (const cat of cats) {\n  if (cat === \"Tiger\") continue;\n  console.log(cat);\n}" 
+            },
+            { 
+                id: "loop-label", 
+                group: "labels", 
+                category: "Iteration Control Flow", 
+                title: "Multi-Nested Label Target Break", 
+                desc: "Establishes reference identifiers to cleanly escape nested matrix loops at targeted positions.", 
+                code: "outerLoop: for (let i = 0; i < 3; i++) {\n  for (let j = 0; j < 3; j++) {\n    if (i === 1) break outerLoop;\n  }\n}" 
+            }
+        ];
+
+        let currentTab = 'all';
+        let activePracticeItem = null;
+        let targetIsVisible = true;
+        let filteredItemsCache = [];
+
+        // Mobile touch gesture coordinate variables
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        // Application initialization
+        document.addEventListener("DOMContentLoaded", () => {
+            renderDatabase();
+            setupMobileSwipeDetection();
+            setupDesktopKeyboardNavigation();
+        });
+
+        // Filter elements based on search context and tabs
+        function getFilteredItems() {
+            const filterText = document.getElementById("search-input").value.toLowerCase();
+            return syntaxDatabase.filter(item => {
+                const matchesTab = currentTab === 'all' || item.group === currentTab;
+                const matchesSearch = item.title.toLowerCase().includes(filterText) || 
+                                      item.desc.toLowerCase().includes(filterText) || 
+                                      item.code.toLowerCase().includes(filterText) || 
+                                      item.category.toLowerCase().includes(filterText);
+                return matchesTab && matchesSearch;
+            });
+        }
+
+        // Render loop categories and elements dynamically
+        function renderDatabase() {
+            const container = document.getElementById("database-container");
+            container.innerHTML = "";
+
+            filteredItemsCache = getFilteredItems();
+            document.getElementById("item-count").innerText = `${filteredItemsCache.length} item${filteredItemsCache.length === 1 ? '' : 's'}`;
+
+            const groups = {};
+            filteredItemsCache.forEach(item => {
+                if (!groups[item.category]) groups[item.category] = [];
+                groups[item.category].push(item);
+            });
+
+            if (filteredItemsCache.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 border border-dashed border-slate-800 rounded-2xl text-slate-500">
+                        No matches found for "${document.getElementById("search-input").value}".
+                    </div>`;
+                return;
+            }
+
+            for (const [categoryName, items] of Object.entries(groups)) {
+                const categorySection = document.createElement("div");
+                categorySection.className = "space-y-3";
+                
+                categorySection.innerHTML = `
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-slate-500 px-1">${categoryName}</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        ${items.map(item => `
+                            <div onclick="loadIntoArena('${item.id}')" 
+                                 class="group bg-slate-900/40 border border-slate-900 hover:border-slate-800 hover:bg-slate-900 rounded-xl p-4 transition-all duration-200 cursor-pointer flex flex-col justify-between space-y-3 relative overflow-hidden">
+                                <div class="absolute top-0 left-0 h-full w-1 ${getColorBar(item.group)} opacity-70"></div>
+                                <div>
+                                    <div class="flex items-center justify-between">
+                                        <h4 class="text-sm font-semibold text-slate-200 group-hover:text-white transition-colors truncate pr-2">${item.title}</h4>
+                                        <span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-slate-950 border border-slate-800 tracking-wider shrink-0 ${getColorText(item.group)}">${item.group}</span>
+                                    </div>
+                                    <p class="text-xs text-slate-400 mt-1 line-clamp-2 leading-relaxed">${item.desc}</p>
+                                </div>
+                                <div class="bg-slate-950 border border-slate-850 rounded-lg p-2.5 overflow-hidden">
+                                    <code class="text-xs text-slate-300 block truncate group-hover:text-indigo-400 transition-colors">${escapeHtml(item.code)}</code>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                container.appendChild(categorySection);
+            }
+        }
+
+        // Color coding dynamically based on group parameters
+        function getColorBar(group) {
+            if (group === 'collections') return 'bg-amber-500';
+            if (group === 'standard') return 'bg-yellow-500';
+            return 'bg-orange-500';
+        }
+
+        function getColorText(group) {
+            if (group === 'collections') return 'text-amber-400';
+            if (group === 'standard') return 'text-yellow-400';
+            return 'text-orange-400';
+        }
+
+        // Global Navigation controls
+        function switchTab(tab) {
+            currentTab = tab;
+            ['all', 'collections', 'standard', 'labels'].forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                if (t === tab) {
+                    btn.className = "px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-indigo-600 text-white shadow-sm";
+                } else {
+                    btn.className = "px-3 py-1.5 rounded-lg text-xs font-medium transition-all text-slate-400 hover:text-slate-200";
+                }
+            });
+            renderDatabase();
+        }
+
+        function filterItems() {
+            renderDatabase();
+        }
+
+        // Typing Arena loader
+        function loadIntoArena(id) {
+            const item = syntaxDatabase.find(x => x.id === id);
+            if (!item) return;
+
+            activePracticeItem = item;
+
+            document.getElementById("arena-empty-state").classList.add("hidden");
+            document.getElementById("arena-active-state").classList.remove("hidden");
+
+            document.getElementById("arena-type-badge").innerText = `${item.group.toUpperCase()} • ${item.category}`;
+            document.getElementById("arena-title").innerText = item.title;
+            document.getElementById("arena-desc").innerText = item.desc;
+            document.getElementById("arena-target").innerText = item.code;
+            
+            resetArena();
+            updateTargetVisibilityUI();
+            
+            setTimeout(() => {
+                const inputField = document.getElementById("arena-input");
+                inputField.focus();
+                inputField.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 80);
+        }
+
+        // Navigation controls for switching decks via swipes or keyboard hotkeys
+        function navigateCard(direction) {
+            if (!activePracticeItem || filteredItemsCache.length <= 1) return;
+
+            const currentIndex = filteredItemsCache.findIndex(item => item.id === activePracticeItem.id);
+            if (currentIndex === -1) return;
+
+            if (direction === 'next') {
+                const nextIndex = (currentIndex + 1) % filteredItemsCache.length;
+                loadIntoArena(filteredItemsCache[nextIndex].id);
+            } else if (direction === 'prev') {
+                const prevIndex = (currentIndex - 1 + filteredItemsCache.length) % filteredItemsCache.length;
+                loadIntoArena(filteredItemsCache[prevIndex].id);
+            }
+        }
+
+        // Swipe gesture setup for mobile compatibility
+        function setupMobileSwipeDetection() {
+            const arenaCard = document.getElementById("arena-active-state").parentElement;
+
+            arenaCard.addEventListener('touchstart', e => {
+                touchStartX = e.changedTouches[0].screenX;
+            }, { passive: true });
+
+            arenaCard.addEventListener('touchend', e => {
+                touchEndX = e.changedTouches[0].screenX;
+                const swipeThreshold = 60;
+                const diffX = touchEndX - touchStartX;
+
+                if (diffX < -swipeThreshold) {
+                    navigateCard('next');
+                } else if (diffX > swipeThreshold) {
+                    navigateCard('prev');
+                }
+            }, { passive: true });
+        }
+
+        // Desktop keyboard shortcut routines
+        function setupDesktopKeyboardNavigation() {
+            document.addEventListener('keydown', e => {
+                if (!activePracticeItem) return;
+
+                const inputField = document.getElementById("arena-input");
+                const isFocused = document.activeElement === inputField;
+                const isEmpty = inputField.value.length === 0;
+
+                // Fire clean card shifts when input area is blank OR if holding Control down while typing mid-sentence
+                if (e.key === 'ArrowRight' && (isEmpty || e.ctrlKey || !isFocused)) {
+                    e.preventDefault();
+                    navigateCard('next');
+                } else if (e.key === 'ArrowLeft' && (isEmpty || e.ctrlKey || !isFocused)) {
+                    e.preventDefault();
+                    navigateCard('prev');
+                }
+            });
+        }
+
+        // Toggle mask overlay for memory blind practice
+        function toggleTargetVisibility() {
+            targetIsVisible = !targetIsVisible;
+            updateTargetVisibilityUI();
+            document.getElementById("arena-input").focus();
+        }
+
+        function updateTargetVisibilityUI() {
+            const codeEl = document.getElementById("arena-target");
+            const hiddenEl = document.getElementById("arena-target-hidden");
+            const btnText = document.getElementById("text-toggle-visibility");
+            const iconHide = document.getElementById("icon-eye-hide");
+            const iconShow = document.getElementById("icon-eye-show");
+
+            if (targetIsVisible) {
+                codeEl.classList.remove("hidden");
+                hiddenEl.classList.add("hidden");
+                btnText.innerText = "Hide Target";
+                iconHide.classList.add("hidden");
+                iconShow.classList.remove("hidden");
+            } else {
+                codeEl.classList.add("hidden");
+                hiddenEl.classList.remove("hidden");
+                btnText.innerText = "Unhide Target";
+                iconHide.classList.remove("hidden");
+                iconShow.classList.add("hidden");
+            }
+        }
+
+        // Reset Typing states
+        function resetArena() {
+            const inputField = document.getElementById("arena-input");
+            inputField.value = "";
+            inputField.className = "code-input w-full bg-slate-950 border-2 border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none tracking-wide transition-all placeholder-slate-700 resize-none";
+            
+            const feedback = document.getElementById("arena-feedback");
+            feedback.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-slate-600"></span> Ready to type';
+            feedback.className = "text-xs font-medium flex items-center gap-1.5 text-slate-500";
+        }
+
+        // Dynamic, real-time typing assessment
+        function checkTyping() {
+            if (!activePracticeItem) return;
+
+            const target = activePracticeItem.code;
+            const currentInput = document.getElementById("arena-input").value;
+            const inputField = document.getElementById("arena-input");
+            const feedback = document.getElementById("arena-feedback");
+
+            // Standardize line breaks/spaces to ensure consistency in assessment
+            const normalizedTarget = target.replace(/\r\n/g, "\n").trim();
+            const normalizedInput = currentInput.replace(/\r\n/g, "\n").trim();
+
+            if (currentInput === target || normalizedInput === normalizedTarget) {
+                inputField.className = "code-input w-full bg-slate-950 border-2 border-emerald-500/80 rounded-xl px-4 py-3 text-sm text-emerald-400 focus:outline-none tracking-wide transition-all shadow-md shadow-emerald-950/20 resize-none";
+                feedback.innerHTML = '<svg class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg> <span class="text-emerald-400 font-bold">Expression Completed Successfully!</span>';
+                return;
+            }
+
+            if (target.startsWith(currentInput)) {
+                inputField.className = "code-input w-full bg-slate-950 border-2 border-indigo-500 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none tracking-wide transition-all resize-none";
+                feedback.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-ping"></span> Typing... (${currentInput.length}/${target.length})`;
+                feedback.className = "text-xs font-medium flex items-center gap-1.5 text-indigo-400";
+            } else {
+                inputField.className = "code-input w-full bg-slate-950 border-2 border-rose-500/80 rounded-xl px-4 py-3 text-sm text-rose-400 focus:outline-none tracking-wide transition-all resize-none";
+                feedback.innerHTML = '<svg class="w-3.5 h-3.5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg> <span class="text-rose-400">Expression mismatch detected. Check syntax characters.</span>';
+            }
+        }
+
+        // Basic escape parser to display code correctly in card items
+        function escapeHtml(string) {
+            return String(string).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+    </script>
+</body>
+</html>

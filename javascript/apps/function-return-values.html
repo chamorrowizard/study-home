@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SyntaxMaster // Function Return Values</title>
+    <!-- Tailwind CSS CDN for high-end styling and component layouts -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        /* Import Google Fonts: Inter for slick UI copy and JetBrains Mono for clean code readability */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700&family=JetBrains+Mono:wght=400;500;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        code, kbd, input.code-input { font-family: 'JetBrains Mono', monospace; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-teal-500 selection:text-white">
+
+    <!-- Premium Dashboard Navigation Header -->
+    <header class="sticky top-0 z-50 backdrop-blur-md bg-slate-900/80 border-b border-slate-800 px-4 py-3 sm:px-6">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            <!-- App Branding with Neon Gradient Backglowing Icon -->
+            <div class="flex items-center space-x-3">
+                <div class="bg-gradient-to-tr from-teal-500 to-indigo-500 p-2 rounded-xl shadow-lg shadow-indigo-500/20">
+                    <!-- Terminal Code Icon -->
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-sm font-bold tracking-wider text-slate-200 uppercase">SyntaxMaster</h1>
+                    <p class="text-xs text-slate-400">Function Return Values &amp; Custom Methods</p>
+                </div>
+            </div>
+            
+            <!-- Dynamic Navigation Tabs representing distinct learning tracks -->
+            <div class="flex flex-wrap items-center justify-center gap-2">
+                <button onclick="switchTab('all')" id="tab-all" class="px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-indigo-600 text-white shadow-sm">All Concepts</button>
+                <button onclick="switchTab('theory')" id="tab-theory" class="px-3 py-1.5 rounded-lg text-xs font-medium transition-all text-slate-400 hover:text-slate-200">Return Theory</button>
+                <button onclick="switchTab('custom')" id="tab-custom" class="px-3 py-1.5 rounded-lg text-xs font-medium transition-all text-slate-400 hover:text-slate-200">Custom Functions</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Grid Workspace split into Curated Database and Active Practice Arena -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left Column: Interactive Database Deck (7 cols wide) -->
+        <section class="lg:col-span-7 space-y-6">
+            <div class="flex items-center justify-between flex-wrap gap-3">
+                <h2 class="text-lg font-semibold text-slate-200 flex items-center gap-2">
+                    <span>Curriculum Database</span>
+                    <span id="item-count" class="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full font-normal">0 items</span>
+                </h2>
+                <!-- Instant Search Filtering Bar -->
+                <div class="relative w-full sm:w-64">
+                    <input type="text" id="search-input" oninput="filterItems()" placeholder="Search theory, custom code, keywords..." class="w-full text-xs bg-slate-900 border border-slate-800 rounded-lg pl-8 pr-3 py-2 text-slate-300 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors">
+                    <svg class="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Dynamic Category Grid Injection Container -->
+            <div id="database-container" class="space-y-6"></div>
+        </section>
+
+        <!-- Right Column: Interactive Typing Trainer (Sticky component, 5 cols wide) -->
+        <section class="lg:col-span-5 lg:sticky lg:top-24 h-fit">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden backdrop-blur-sm">
+                
+                <!-- Active State Indicator Header -->
+                <div class="border-b border-slate-800 p-4 bg-slate-900/50 flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                        <span class="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <h3 class="text-sm font-semibold text-slate-200 tracking-wide uppercase">Typing Arena</h3>
+                    </div>
+                    <span id="arena-type-badge" class="text-[10px] font-bold uppercase tracking-wider bg-slate-800 px-2 py-0.5 rounded-md text-slate-400">Select a card</span>
+                </div>
+
+                <!-- Active State Workspace Body -->
+                <div class="p-5 space-y-5">
+                    <!-- Empty/Unselected State -->
+                    <div id="arena-empty-state" class="text-center py-12 text-slate-500 space-y-4">
+                        <svg class="w-12 h-12 mx-auto text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path>
+                        </svg>
+                        <div class="space-y-1">
+                            <p class="text-sm font-medium text-slate-400">Select a practice concept card on the left to initialize tracking.</p>
+                            <p class="text-xs text-slate-600 px-4">Desktop: Use Left/Right Arrow keys to navigate cards. Hold 'Ctrl + Arrow' to quickly skip when typing.</p>
+                        </div>
+                    </div>
+
+                    <!-- Active Loading State -->
+                    <div id="arena-active-state" class="hidden space-y-5">
+                        <div class="flex items-start justify-between gap-4">
+                            <div class="min-w-0 flex-1">
+                                <span id="arena-title" class="text-base font-semibold text-slate-100 block truncate"></span>
+                                <span id="arena-desc" class="text-xs text-slate-400 mt-1 block leading-relaxed"></span>
+                            </div>
+                            <!-- Target Visibility Toggle Switch for Blind Recall Practice -->
+                            <button onclick="toggleTargetVisibility()" id="btn-toggle-visibility" class="shrink-0 flex items-center gap-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors select-none">
+                                <svg id="icon-eye-hide" class="w-3.5 h-3.5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"></path>
+                                </svg>
+                                <svg id="icon-eye-show" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                                <span id="text-toggle-visibility">Hide Target</span>
+                            </button>
+                        </div>
+
+                        <!-- Code Prompt Display Container (Can be masked via Visibility Switch) -->
+                        <div id="target-container" class="bg-slate-950 border border-slate-800/80 rounded-xl p-4 relative overflow-hidden transition-all duration-200 min-h-[54px] flex items-center">
+                            <div class="absolute top-2 right-2 text-[10px] uppercase font-bold tracking-wider text-slate-600 select-none">Target Expression</div>
+                            
+                            <!-- Unmasked Element -->
+                            <code id="arena-target" class="text-sm text-teal-400 block break-all whitespace-pre-wrap select-none tracking-wide w-full"></code>
+                            
+                            <!-- Masked State Overlay Text -->
+                            <div id="arena-target-hidden" class="hidden text-xs text-slate-600 italic select-none">Expression hidden. Recall correct code logic or toggle "Unhide Target"!</div>
+                        </div>
+
+                        <!-- Typing Input Box for Exact Input Execution -->
+                        <div class="space-y-2">
+                            <label for="arena-input" class="block text-xs font-medium text-slate-400">Type the exact expression logic:</label>
+                            <input type="text" id="arena-input" autocomplete="off" spellcheck="false" oninput="checkTyping()" class="code-input w-full bg-slate-950 border-2 border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none tracking-wide transition-all placeholder-slate-700" placeholder="Begin typing syntax rules...">
+                        </div>
+
+                        <!-- Feedback HUD with dynamic error tracking -->
+                        <div class="flex items-center justify-between pt-2">
+                            <div id="arena-feedback" class="text-xs font-medium flex items-center gap-1.5 text-slate-500">
+                                <span class="w-1.5 h-1.5 rounded-full bg-slate-600"></span> Ready to type
+                            </div>
+                            <button onclick="resetArena()" class="text-xs text-slate-400 hover:text-slate-200 flex items-center gap-1 transition-colors">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.253 8H18"></path>
+                                </svg>
+                                Reset
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <!-- Global Data & App Engine -->
+    <script>
+        /**
+         * EXTENSIBLE DATA MATRIX FOR THE FUNCTION RETURN VALUES CURRICULUM
+         * Structured for absolute modularity so you can scale and add more lessons here easily.
+         */
+        const syntaxDatabase = [
+            // --- RETURN VALUE THEORY ---
+            { 
+                id: "ret-string-replace", 
+                group: "theory", 
+                category: "Return Value Mechanics", 
+                title: "Intermediate Value Assignment", 
+                desc: "Invokes standard string replacements, returning an entirely new modified string to assign directly to code constants.", 
+                code: "const newString = myText.replace('cold', 'warm');" 
+            },
+            { 
+                id: "ret-calculation-var", 
+                group: "theory", 
+                category: "Return Value Mechanics", 
+                title: "Intermediate Calculation Catch", 
+                desc: "Captures dynamic evaluation properties into localized variables so they can feed directly into downstream equations.", 
+                code: "const result = Math.floor(Math.random() * number);" 
+            },
+            { 
+                id: "ret-calculation-return", 
+                group: "theory", 
+                category: "Return Value Mechanics", 
+                title: "Instant Equation Execution Return", 
+                desc: "Returns calculated math statements out of the processing block directly to the caller line.", 
+                code: "return Math.floor(Math.random() * number);" 
+            },
+            { 
+                id: "ret-void-implicit", 
+                group: "theory", 
+                category: "Return Value Mechanics", 
+                title: "Undefined Return Evaluation", 
+                desc: "Demonstrates that invoking structural void modules returns 'undefined' elements implicitly to caller runtimes.", 
+                code: "const outputValue = displayMessage();" 
+            },
+
+            // --- CUSTOM FUNCTIONS & USAGE ---
+            { 
+                id: "ret-custom-square", 
+                group: "custom", 
+                category: "Custom Return Architectures", 
+                title: "Custom Squared Return Method", 
+                desc: "Defines a clean, mathematical processing function block returning the squared calculation of target arguments.", 
+                code: "function squared(num) { return num * num; }" 
+            },
+            { 
+                id: "ret-custom-cube", 
+                group: "custom", 
+                category: "Custom Return Architectures", 
+                title: "Custom Cubed Return Method", 
+                desc: "Declares a standard named block targeting three-dimensional multiplications returning cubed integers.", 
+                code: "function cubed(num) { return num * num * num; }" 
+            },
+            { 
+                id: "ret-custom-factorial", 
+                group: "custom", 
+                category: "Custom Return Architectures", 
+                title: "Algorithmic Factorial Assessment", 
+                desc: "Uses loop patterns alongside argument mutations to calculate and return factorial math algorithms.", 
+                code: "function factorial(num) {\n  if (num < 0) return undefined;\n  if (num === 0) return 1;\n  let x = num - 1;\n  while (x > 1) { num *= x; x--; }\n  return num;\n}" 
+            },
+            { 
+                id: "ret-canvas-arc", 
+                group: "custom", 
+                category: "Return Value Applications", 
+                title: "Substituted Callback Invocation", 
+                desc: "Injects multiple return values on execution straight into secondary function parameter layers.", 
+                code: "ctx.arc(random(WIDTH), random(HEIGHT), random(50), 0, 2 * Math.PI);" 
+            },
+            { 
+                id: "ret-listener-event", 
+                group: "custom", 
+                category: "Return Value Applications", 
+                title: "Dynamic Handler Concatenation", 
+                desc: "Evaluates standard calculations inline dynamically to patch text values inside target UI nodes.", 
+                code: "para.textContent = `Squared is ${squared(num)}.`;" 
+            }
+        ];
+
+        let currentTab = 'all';
+        let activePracticeItem = null;
+        let targetIsVisible = true;
+        let filteredItemsCache = [];
+
+        // Touch Interaction Variables for Swiping Gestures
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        // Bootstrapping initialization listeners
+        document.addEventListener("DOMContentLoaded", () => {
+            renderDatabase();
+            setupMobileSwipeDetection();
+            setupDesktopKeyboardNavigation();
+        });
+
+        // Query filtration engine mapping search criteria and current tab tags
+        function getFilteredItems() {
+            const filterText = document.getElementById("search-input").value.toLowerCase();
+            return syntaxDatabase.filter(item => {
+                const matchesTab = currentTab === 'all' || item.group === currentTab;
+                const matchesSearch = item.title.toLowerCase().includes(filterText) || 
+                                      item.desc.toLowerCase().includes(filterText) || 
+                                      item.code.toLowerCase().includes(filterText) || 
+                                      item.category.toLowerCase().includes(filterText);
+                return matchesTab && matchesSearch;
+            });
+        }
+
+        // Master UI Database Render Routine
+        function renderDatabase() {
+            const container = document.getElementById("database-container");
+            container.innerHTML = "";
+
+            filteredItemsCache = getFilteredItems();
+            document.getElementById("item-count").innerText = `${filteredItemsCache.length} item${filteredItemsCache.length === 1 ? '' : 's'}`;
+
+            // Aggregate elements inside their functional categories
+            const groups = {};
+            filteredItemsCache.forEach(item => {
+                if (!groups[item.category]) groups[item.category] = [];
+                groups[item.category].push(item);
+            });
+
+            // Empty Database Fallback Layout
+            if (filteredItemsCache.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 border border-dashed border-slate-800 rounded-2xl text-slate-500">
+                        No matches found for "${document.getElementById("search-input").value}".
+                    </div>`;
+                return;
+            }
+
+            // Build structural section templates dynamically
+            for (const [categoryName, items] of Object.entries(groups)) {
+                const categorySection = document.createElement("div");
+                categorySection.className = "space-y-3";
+                
+                categorySection.innerHTML = `
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-slate-500 px-1">${categoryName}</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        ${items.map(item => `
+                            <div onclick="loadIntoArena('${item.id}')" 
+                                 class="group bg-slate-900/40 border border-slate-900 hover:border-slate-800 hover:bg-slate-900 rounded-xl p-4 transition-all duration-200 cursor-pointer flex flex-col justify-between space-y-3 relative overflow-hidden">
+                                <div class="absolute top-0 left-0 h-full w-1 ${item.group === 'theory' ? 'bg-teal-500' : 'bg-indigo-500'} opacity-70"></div>
+                                <div>
+                                    <div class="flex items-center justify-between">
+                                        <h4 class="text-sm font-semibold text-slate-200 group-hover:text-white transition-colors truncate pr-2">${item.title}</h4>
+                                        <span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-slate-950 border border-slate-800 tracking-wider shrink-0 ${item.group === 'theory' ? 'text-teal-400' : 'text-indigo-400'}">${item.group}</span>
+                                    </div>
+                                    <p class="text-xs text-slate-400 mt-1 line-clamp-2 leading-relaxed">${item.desc}</p>
+                                </div>
+                                <div class="bg-slate-950 border border-slate-850 rounded-lg p-2.5 overflow-hidden">
+                                    <code class="text-xs text-slate-300 block truncate group-hover:text-indigo-400 transition-colors">${escapeHtml(item.code)}</code>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                container.appendChild(categorySection);
+            }
+        }
+
+        // Handle navigation tab switcher state updates
+        function switchTab(tab) {
+            currentTab = tab;
+            ['all', 'theory', 'custom'].forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                if (t === tab) {
+                    btn.className = "px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-indigo-600 text-white shadow-sm";
+                } else {
+                    btn.className = "px-3 py-1.5 rounded-lg text-xs font-medium transition-all text-slate-400 hover:text-slate-200";
+                }
+            });
+            renderDatabase();
+        }
+
+        function filterItems() {
+            renderDatabase();
+        }
+
+        // Typing Arena Loader
+        function loadIntoArena(id) {
+            const item = syntaxDatabase.find(x => x.id === id);
+            if (!item) return;
+
+            activePracticeItem = item;
+
+            document.getElementById("arena-empty-state").classList.add("hidden");
+            document.getElementById("arena-active-state").classList.remove("hidden");
+
+            document.getElementById("arena-type-badge").innerText = `${item.group.toUpperCase()} • ${item.category}`;
+            document.getElementById("arena-title").innerText = item.title;
+            document.getElementById("arena-desc").innerText = item.desc;
+            document.getElementById("arena-target").innerText = item.code;
+            
+            resetArena();
+            updateTargetVisibilityUI();
+            
+            setTimeout(() => {
+                const inputField = document.getElementById("arena-input");
+                inputField.focus();
+                inputField.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 80);
+        }
+
+        // Dynamic Sequence Navigation controller (shared by Mobile and Desktop key interfaces)
+        function navigateCard(direction) {
+            if (!activePracticeItem || filteredItemsCache.length <= 1) return;
+
+            const currentIndex = filteredItemsCache.findIndex(item => item.id === activePracticeItem.id);
+            if (currentIndex === -1) return;
+
+            if (direction === 'next') {
+                const nextIndex = (currentIndex + 1) % filteredItemsCache.length;
+                loadIntoArena(filteredItemsCache[nextIndex].id);
+            } else if (direction === 'prev') {
+                const prevIndex = (currentIndex - 1 + filteredItemsCache.length) % filteredItemsCache.length;
+                loadIntoArena(filteredItemsCache[prevIndex].id);
+            }
+        }
+
+        // Mobile Gesture Setup (Touch Swipes)
+        function setupMobileSwipeDetection() {
+            const arenaCard = document.getElementById("arena-active-state").parentElement;
+
+            arenaCard.addEventListener('touchstart', e => {
+                touchStartX = e.changedTouches[0].screenX;
+            }, { passive: true });
+
+            arenaCard.addEventListener('touchend', e => {
+                touchEndX = e.changedTouches[0].screenX;
+                const swipeThreshold = 60;
+                const diffX = touchEndX - touchStartX;
+
+                if (diffX < -swipeThreshold) {
+                    navigateCard('next'); // Swipe Left -> Next Card
+                } else if (diffX > swipeThreshold) {
+                    navigateCard('prev'); // Swipe Right -> Previous Card
+                }
+            }, { passive: true });
+        }
+
+        // Desktop Keyboard Setup (Arrow Keys Shortcuts)
+        function setupDesktopKeyboardNavigation() {
+            document.addEventListener('keydown', e => {
+                if (!activePracticeItem) return;
+
+                const inputField = document.getElementById("arena-input");
+                const isFocused = document.activeElement === inputField;
+                const isEmpty = inputField.value.length === 0;
+
+                // Navigate if input field is clear, OR if user holds 'Ctrl' down while typing mid-sentence
+                if (e.key === 'ArrowRight' && (isEmpty || e.ctrlKey || !isFocused)) {
+                    e.preventDefault();
+                    navigateCard('next');
+                } else if (e.key === 'ArrowLeft' && (isEmpty || e.ctrlKey || !isFocused)) {
+                    e.preventDefault();
+                    navigateCard('prev');
+                }
+            });
+        }
+
+        // Toggle Mask Overlay
+        function toggleTargetVisibility() {
+            targetIsVisible = !targetIsVisible;
+            updateTargetVisibilityUI();
+            document.getElementById("arena-input").focus();
+        }
+
+        function updateTargetVisibilityUI() {
+            const codeEl = document.getElementById("arena-target");
+            const hiddenEl = document.getElementById("arena-target-hidden");
+            const btnText = document.getElementById("text-toggle-visibility");
+            const iconHide = document.getElementById("icon-eye-hide");
+            const iconShow = document.getElementById("icon-eye-show");
+
+            if (targetIsVisible) {
+                codeEl.classList.remove("hidden");
+                hiddenEl.classList.add("hidden");
+                btnText.innerText = "Hide Target";
+                iconHide.classList.add("hidden");
+                iconShow.classList.remove("hidden");
+            } else {
+                codeEl.classList.add("hidden");
+                hiddenEl.classList.remove("hidden");
+                btnText.innerText = "Unhide Target";
+                iconHide.classList.remove("hidden");
+                iconShow.classList.add("hidden");
+            }
+        }
+
+        // Reset Typing Buffer State
+        function resetArena() {
+            const inputField = document.getElementById("arena-input");
+            inputField.value = "";
+            inputField.className = "code-input w-full bg-slate-950 border-2 border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none tracking-wide transition-all placeholder-slate-700";
+            
+            const feedback = document.getElementById("arena-feedback");
+            feedback.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-slate-600"></span> Ready to type';
+            feedback.className = "text-xs font-medium flex items-center gap-1.5 text-slate-500";
+        }
+
+        // Evaluates typing input sequentially character-by-character
+        function checkTyping() {
+            if (!activePracticeItem) return;
+
+            const target = activePracticeItem.code;
+            const currentInput = document.getElementById("arena-input").value;
+            const inputField = document.getElementById("arena-input");
+            const feedback = document.getElementById("arena-feedback");
+
+            // Successful exact match
+            if (currentInput === target) {
+                inputField.className = "code-input w-full bg-slate-950 border-2 border-emerald-500/80 rounded-xl px-4 py-3 text-sm text-emerald-400 focus:outline-none tracking-wide transition-all shadow-md shadow-emerald-950/20";
+                feedback.innerHTML = '<svg class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg> <span class="text-emerald-400 font-bold">Expression Completed Successfully!</span>';
+                return;
+            }
+
+            // Real-time subset checking
+            if (target.startsWith(currentInput)) {
+                inputField.className = "code-input w-full bg-slate-950 border-2 border-indigo-500 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none tracking-wide transition-all";
+                feedback.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-ping"></span> Typing... (${currentInput.length}/${target.length})`;
+                feedback.className = "text-xs font-medium flex items-center gap-1.5 text-indigo-400";
+            } else {
+                // Warning on character mismatch
+                inputField.className = "code-input w-full bg-slate-950 border-2 border-rose-500/80 rounded-xl px-4 py-3 text-sm text-rose-400 focus:outline-none tracking-wide transition-all";
+                feedback.innerHTML = '<svg class="w-3.5 h-3.5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg> <span class="text-rose-400">Expression mismatch detected. Check characters.</span>';
+            }
+        }
+
+        // Standard Sanitizer Tool
+        function escapeHtml(string) {
+            return String(string).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+    </script>
+</body>
+</html>
