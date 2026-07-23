@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!--
+      UX/UI DESIGN METADATA
+      - Mobile Viewport setup for fluid scaling across mobile, tablet, and desktop viewports.
+      - Dark Mode IDE Theme with modern glassmorphism navbar and status indicators.
+    -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rust All-in-One: Book 1, Chapter 4 Practice App</title>
+    
+    <!-- Fonts: Inter for general UI, Fira Code for code blocks and interactive inputs -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* CSS Variables for consistent Design Tokens */
+        :root {
+            --bg-primary: #0f172a;       /* Deep slate background */
+            --bg-card: #1e293b;          /* Dark slate card container */
+            --bg-input: #090d16;         /* Terminal/Code block background */
+            --accent-rust: #f97316;      /* Signature Rust orange */
+            --accent-rust-hover: #ea580c;
+            --accent-green: #22c55e;     /* Success state */
+            --accent-red: #ef4444;       /* Error state */
+            --text-primary: #f8fafc;     /* Clean off-white text */
+            --text-secondary: #94a3b8;   /* Muted grey text */
+            --border-color: #334155;     /* Subtle border divider */
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'Fira Code', monospace;
+        }
+
+        /* Base Reset */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            padding-bottom: 40px;
+        }
+
+        /* Sticky Header Bar */
+        header {
+            background-color: rgba(30, 41, 59, 0.85);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 1.5rem;
+        }
+
+        .header-container {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--text-primary);
+        }
+
+        .logo-badge {
+            background-color: var(--accent-rust);
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-family: var(--font-mono);
+        }
+
+        /* Responsive Layout Container */
+        main {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        /* Module Sections UI */
+        .module-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+
+        .module-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--accent-rust);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .module-desc {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 1.25rem;
+        }
+
+        /* Practice Container (Terminal UI) */
+        .practice-box {
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .terminal-header {
+            background-color: #182232;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .terminal-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .dot-red { background-color: #ff5f56; }
+        .dot-yellow { background-color: #ffbd2e; }
+        .dot-green { background-color: #27c93f; }
+
+        .terminal-title {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .editor-body {
+            padding: 1rem;
+        }
+
+        .instruction-prompt {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+
+        .target-code {
+            font-family: var(--font-mono);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 12px;
+            border-radius: 4px;
+            color: #38bdf8;
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+            word-break: break-all;
+        }
+
+        /* Interactive Inputs */
+        .practice-input {
+            width: 100%;
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-size: 1rem;
+            padding: 10px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .practice-input:focus {
+            border-color: var(--accent-rust);
+        }
+
+        /* Feedback Status Area */
+        .feedback-area {
+            margin-top: 10px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-height: 24px;
+        }
+
+        .status-correct { color: var(--accent-green); }
+        .status-incorrect { color: var(--accent-red); }
+
+        /* Progress Header Tracker */
+        .progress-bar-container {
+            background-color: var(--border-color);
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+
+        .progress-bar-fill {
+            background-color: var(--accent-rust);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        @media (max-width: 600px) {
+            header { padding: 0.8rem 1rem; }
+            .module-card { padding: 1rem; }
+            .practice-input { font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation & Overall Progress Tracker -->
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <span>Rust Mastery</span>
+                <span class="logo-badge">Ch. 4</span>
+            </div>
+            <div style="text-align: right;">
+                <span id="progress-text" style="font-size: 0.85rem; color: var(--text-secondary);">0 / 8 Exercises Completed</span>
+            </div>
+        </div>
+        <div class="progress-bar-container">
+            <div id="progress-bar" class="progress-bar-fill"></div>
+        </div>
+    </header>
+
+    <main>
+        <!-- CHAPTER OVERVIEW CARD -->
+        <section class="module-card">
+            <h1 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Controlling the Flow</h1>
+            <p class="module-desc">
+                Book 1, Chapter 4 of <em>Rust All-in-One For Dummies</em> covers controlling execution flow: branches using <code style="color:var(--accent-rust);">if</code>, <code style="color:var(--accent-rust);">else if</code>, and <code style="color:var(--accent-rust);">else</code> expressions, using <code style="color:var(--accent-rust);">if</code> in <code style="color:var(--accent-rust);">let</code> statements, as well as looping structures including <code style="color:var(--accent-rust);">loop</code>, <code style="color:var(--accent-rust);">while</code>, and <code style="color:var(--accent-rust);">for</code>.
+            </p>
+        </section>
+
+        <!-- EXERCISE 1: Basic If Expressions -->
+        <section class="module-card">
+            <h2 class="module-title">1. Basic Conditional Branching</h2>
+            <p class="module-desc">
+                An <code style="color:var(--accent-rust);">if</code> expression checks a condition. Unlike some other languages, the condition in Rust <strong>must</strong> evaluate strictly to a <code style="color:var(--accent-rust);">bool</code>—Rust does not automatically convert non-booleans to booleans.
+            </p>
+            <div class="practice-box">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <span class="dot dot-red"></span>
+                        <span class="dot dot-yellow"></span>
+                        <span class="dot dot-green"></span>
+                    </div>
+                    <span class="terminal-title">src/main.rs — Branching</span>
+                </div>
+                <div class="editor-body">
+                    <div class="instruction-prompt">Type the <strong>if statement condition header</strong> checking if <strong>number &lt; 10</strong>:</div>
+                    <div class="target-code">if number &lt; 10 {</div>
+                    <input type="text" class="practice-input" data-target="if number < 10 {" placeholder="Type here..." autocomplete="off" spellcheck="false">
+                    <div class="feedback-area"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXERCISE 2: Handling Multiple Conditions with Else If -->
+        <section class="module-card">
+            <h2 class="module-title">2. Multiple Conditions with else if</h2>
+            <p class="module-desc">
+                You can combine multiple conditions using <code style="color:var(--accent-rust);">else if</code>. Rust executes the block corresponding to the first condition that evaluates to <code style="color:var(--accent-rust);">true</code>.
+            </p>
+            <div class="practice-box">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <span class="dot dot-red"></span>
+                        <span class="dot dot-yellow"></span>
+                        <span class="dot dot-green"></span>
+                    </div>
+                    <span class="terminal-title">src/main.rs — Multiple Conditions</span>
+                </div>
+                <div class="editor-body">
+                    <div class="instruction-prompt">Type an <strong>else if</strong> check testing if <strong>number % 3 == 0</strong>:</div>
+                    <div class="target-code">else if number % 3 == 0 {</div>
+                    <input type="text" class="practice-input" data-target="else if number % 3 == 0 {" placeholder="Type here..." autocomplete="off" spellcheck="false">
+                    <div class="feedback-area"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXERCISE 3: If in a let Statement -->
+        <section class="module-card">
+            <h2 class="module-title">3. Using if in a let Statement</h2>
+            <p class="module-desc">
+                Because <code style="color:var(--accent-rust);">if</code> is an expression in Rust, you can use it on the right side of a <code style="color:var(--accent-rust);">let</code> statement to assign values dynamically. Note: Both arms must return the same data type.
+            </p>
+            <div class="practice-box">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <span class="dot dot-red"></span>
+                        <span class="dot dot-yellow"></span>
+                        <span class="dot dot-green"></span>
+                    </div>
+                    <span class="terminal-title">src/main.rs — Ternary-style Assign</span>
+                </div>
+                <div class="editor-body">
+                    <div class="instruction-prompt">Type a statement binding <strong>number</strong> to 5 if <strong>condition</strong> is true, else 6:</div>
+                    <div class="target-code">let number = if condition { 5 } else { 6 };</div>
+                    <input type="text" class="practice-input" data-target="let number = if condition { 5 } else { 6 };" placeholder="Type here..." autocomplete="off" spellcheck="false">
+                    <div class="feedback-area"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXERCISE 4: Infinite Loops with loop -->
+        <section class="module-card">
+            <h2 class="module-title">4. Repeating Code with loop</h2>
+            <p class="module-desc">
+                The <code style="color:var(--accent-rust);">loop</code> keyword tells Rust to execute a block of code over and over again forever until you explicitly instruct it to stop using <code style="color:var(--accent-rust);">break</code>.
+            </p>
+            <div class="practice-box">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <span class="dot dot-red"></span>
+                        <span class="dot dot-yellow"></span>
+                        <span class="dot dot-green"></span>
+                    </div>
+                    <span class="terminal-title">src/main.rs — Standard Loop</span>
+                </div>
+                <div class="editor-body">
+                    <div class="instruction-prompt">Type a break statement that breaks out of a loop passing the value <strong>counter * 2</strong>:</div>
+                    <div class="target-code">break counter * 2;</div>
+                    <input type="text" class="practice-input" data-target="break counter * 2;" placeholder="Type here..." autocomplete="off" spellcheck="false">
+                    <div class="feedback-area"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXERCISE 5: Returning Values from Loops -->
+        <section class="module-card">
+            <h2 class="module-title">5. Returning Values from Loops</h2>
+            <p class="module-desc">
+                One of the uses of a <code style="color:var(--accent-rust);">loop</code> is to retry an operation. You can pass the result of that operation out of the loop by adding the expression after the <code style="color:var(--accent-rust);">break</code> keyword.
+            </p>
+            <div class="practice-box">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <span class="dot dot-red"></span>
+                        <span class="dot dot-yellow"></span>
+                        <span class="dot dot-green"></span>
+                    </div>
+                    <span class="terminal-title">src/main.rs — Loop Assignment</span>
+                </div>
+                <div class="editor-body">
+                    <div class="instruction-prompt">Type a statement binding <strong>result</strong> to an infinite <strong>loop { break 20; };</strong></div>
+                    <div class="target-code">let result = loop { break 20; };</div>
+                    <input type="text" class="practice-input" data-target="let result = loop { break 20; };" placeholder="Type here..." autocomplete="off" spellcheck="false">
+                    <div class="feedback-area"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXERCISE 6: Conditional Loops with while -->
+        <section class="module-card">
+            <h2 class="module-title">6. Conditional Loops with while</h2>
+            <p class="module-desc">
+                A program often needs to evaluate a condition within a loop. While the condition is <code style="color:var(--accent-rust);">true</code>, the loop runs; when the condition turns <code style="color:var(--accent-rust);">false</code>, the loop ends.
+            </p>
+            <div class="practice-box">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <span class="dot dot-red"></span>
+                        <span class="dot dot-yellow"></span>
+                        <span class="dot dot-green"></span>
+                    </div>
+                    <span class="terminal-title">src/main.rs — While Loop</span>
+                </div>
+                <div class="editor-body">
+                    <div class="instruction-prompt">Type a <strong>while header</strong> that runs as long as <strong>number != 0</strong>:</div>
+                    <div class="target-code">while number != 0 {</div>
+                    <input type="text" class="practice-input" data-target="while number != 0 {" placeholder="Type here..." autocomplete="off" spellcheck="false">
+                    <div class="feedback-area"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXERCISE 7: Iterating Collections with for -->
+        <section class="module-card">
+            <h2 class="module-title">7. Iterating Through Collections with for</h2>
+            <p class="module-desc">
+                Instead of using a index counter with a <code style="color:var(--accent-rust);">while</code> loop (which can cause runtime panics if bounds are wrong), the <code style="color:var(--accent-rust);">for</code> loop provides safety and efficiency when iterating over arrays or collections.
+            </p>
+            <div class="practice-box">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <span class="dot dot-red"></span>
+                        <span class="dot dot-yellow"></span>
+                        <span class="dot dot-green"></span>
+                    </div>
+                    <span class="terminal-title">src/main.rs — For Loop</span>
+                </div>
+                <div class="editor-body">
+                    <div class="instruction-prompt">Type a <strong>for loop header</strong> iterating over elements in an array named <strong>a</strong>:</div>
+                    <div class="target-code">for element in a {</div>
+                    <input type="text" class="practice-input" data-target="for element in a {" placeholder="Type here..." autocomplete="off" spellcheck="false">
+                    <div class="feedback-area"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXERCISE 8: Range Expressions in For Loops -->
+        <section class="module-card">
+            <h2 class="module-title">8. Counting with Range Expressions</h2>
+            <p class="module-desc">
+                Rust provides ranges like <code style="color:var(--accent-rust);">1..4</code> (generates 1, 2, 3) or <code style="color:var(--accent-rust);">(1..4).rev()</code> to reverse the order. This is the safest way to execute code a specific number of times.
+            </p>
+            <div class="practice-box">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <span class="dot dot-red"></span>
+                        <span class="dot dot-yellow"></span>
+                        <span class="dot dot-green"></span>
+                    </div>
+                    <span class="terminal-title">src/main.rs — Range Countdown</span>
+                </div>
+                <div class="editor-body">
+                    <div class="instruction-prompt">Type a <strong>for loop header</strong> counting down using <strong>(1..4).rev()</strong>:</div>
+                    <div class="target-code">for number in (1..4).rev() {</div>
+                    <input type="text" class="practice-input" data-target="for number in (1..4).rev() {" placeholder="Type here..." autocomplete="off" spellcheck="false">
+                    <div class="feedback-area"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- AUTOMATED JAVASCRIPT SYSTEM -->
+    <script>
+        /**
+         * Global Progress Calculator:
+         * Automatically calculates progress based on input fields with `data-target`.
+         * Completely dynamic — zero hardcoded counts required!
+         */
+        function updateProgress() {
+            const inputs = document.querySelectorAll('.practice-input');
+            const total = inputs.length;
+            let correctCount = 0;
+
+            inputs.forEach(input => {
+                const target = input.dataset.target ? input.dataset.target.trim() : '';
+                if (input.value.trim() === target && target !== '') {
+                    correctCount++;
+                }
+            });
+
+            const percentage = total > 0 ? (correctCount / total) * 100 : 0;
+
+            document.getElementById('progress-bar').style.width = percentage + '%';
+            document.getElementById('progress-text').textContent = `${correctCount} / ${total} Exercises Completed`;
+        }
+
+        /**
+         * Declarative Typing Validation Listener:
+         * Evaluates inputs in real-time as you type.
+         */
+        document.addEventListener('input', (e) => {
+            if (e.target.classList.contains('practice-input') && e.target.dataset.target) {
+                const inputEl = e.target;
+                const targetStr = inputEl.dataset.target.trim();
+                const currentVal = inputEl.value.trim();
+                const feedbackEl = inputEl.nextElementSibling; // finds sibling .feedback-area
+
+                if (currentVal === targetStr) {
+                    feedbackEl.textContent = "✓ Correct! Syntax matched perfectly.";
+                    feedbackEl.className = "feedback-area status-correct";
+                } else if (currentVal.length > 0) {
+                    feedbackEl.textContent = `✗ Keep typing... ensure spaces, operations, and braces match exactly.`;
+                    feedbackEl.className = "feedback-area status-incorrect";
+                } else {
+                    feedbackEl.textContent = "";
+                }
+
+                updateProgress();
+            }
+        });
+
+        // Initialize progress count on page load
+        window.addEventListener('DOMContentLoaded', updateProgress);
+    </script>
+</body>
+</html>

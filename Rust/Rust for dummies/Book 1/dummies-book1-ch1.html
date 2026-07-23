@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!--
+      UX/UI DESIGN METADATA
+      - Mobile Viewport setup for fluid scaling across mobile, tablet, and desktop viewports.
+      - Dark Mode IDE Theme with modern glassmorphism navbar and status indicators.
+    -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rust All-in-One: Book 1, Chapter 1 Practice App</title>
+    
+    <!-- Fonts: Inter for general UI, Fira Code for code blocks and interactive inputs -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* CSS Variables for consistent Design Tokens */
+        :root {
+            --bg-primary: #0f172a;       /* Deep slate background */
+            --bg-card: #1e293b;          /* Dark slate card container */
+            --bg-input: #090d16;         /* Terminal/Code block background */
+            --accent-rust: #f97316;      /* Signature Rust orange */
+            --accent-rust-hover: #ea580c;
+            --accent-green: #22c55e;     /* Success state */
+            --accent-red: #ef4444;       /* Error state */
+            --text-primary: #f8fafc;     /* Clean off-white text */
+            --text-secondary: #94a3b8;   /* Muted grey text */
+            --border-color: #334155;     /* Subtle border divider */
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'Fira Code', monospace;
+        }
+
+        /* Base Reset */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            padding-bottom: 40px;
+        }
+
+        /* Sticky Header Bar */
+        header {
+            background-color: rgba(30, 41, 59, 0.85);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 1.5rem;
+        }
+
+        .header-container {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--text-primary);
+        }
+
+        .logo-badge {
+            background-color: var(--accent-rust);
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-family: var(--font-mono);
+        }
+
+        /* Responsive Layout Container */
+        main {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        /* Module Sections UI */
+        .module-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+
+        .module-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--accent-rust);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .module-desc {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 1.25rem;
+        }
+
+        /* Practice Container (Terminal UI) */
+        .practice-box {
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .terminal-header {
+            background-color: #182232;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .terminal-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .dot-red { background-color: #ff5f56; }
+        .dot-yellow { background-color: #ffbd2e; }
+        .dot-green { background-color: #27c93f; }
+
+        .terminal-title {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .editor-body {
+            padding: 1rem;
+        }
+
+        .instruction-prompt {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+
+        .target-code {
+            font-family: var(--font-mono);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 12px;
+            border-radius: 4px;
+            color: #38bdf8;
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+            word-break: break-all;
+        }
+
+        /* Interactive Inputs */
+        .practice-input {
+            width: 100%;
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-size: 1rem;
+            padding: 10px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .practice-input:focus {
+            border-color: var(--accent-rust);
+        }
+
+        /* Feedback Status Area */
+        .feedback-area {
+            margin-top: 10px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-height: 24px;
+        }
+
+        .status-correct { color: var(--accent-green); }
+        .status-incorrect { color: var(--accent-red); }
+
+        /* Progress Header Tracker */
+        .progress-bar-container {
+            background-color: var(--border-color);
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+
+        .progress-bar-fill {
+            background-color: var(--accent-rust);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        @media (max-width: 600px) {
+            header { padding: 0.8rem 1rem; }
+            .module-card { padding: 1rem; }
+            .practice-input { font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation & Overall Progress Tracker -->
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <span>Rust Mastery</span>
+                <span class="logo-badge">Ch. 1</span>
+            </div>
+            <div style="text-align: right;">
+                <span id="progress-text" style="font-size: 0.85rem; color: var(--text-secondary);">0 / 8 Exercises Completed</span>
+            </div>
+        </div>
+        <div class="progress-bar-container">
+            <div id="progress-bar" class="progress-bar-fill"></div>
+        </div>
+    </header>
+
+    <main>
+        <!-- CHAPTER OVERVIEW CARD -->
+        <section class="module-card">
+            <h1 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Hello, Rust! Getting Started</h1>
+            <p class="module-desc">
+                Book 1, Chapter 1 of <em>Rust All-in-One For Dummies</em> introduces the Rust toolchain: installing Rust via <code style="color:var(--accent-rust);">rustup</code>, checking versions, writing a classic "Hello, world!" program, understanding the <code style="color:var(--accent-rust);">main</code> function and macros, compiling with <code style="color:var(--accent-rust);">rustc</code>, and creating and managing projects using <code style="color:var(--accent-rust);">cargo</code>.
+            </p>
+        </section>
+
+        <!-- EXERCISE 1: Checking Toolchain Installation -->
+        <section class="module-card">
+            <h2 class="module-title">1. Verifying Rust Installation</h2>
+            <p class="module-desc">
+                Rust is installed and managed via <code style="color:var(--accent-rust);">rustup</code>. To verify that the Rust compiler is successfully installed on your system terminal, you check its version using the version flag.
+            </p>
+            <div class="practice-box">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <span class="dot dot-red"></span>
+                        <span class="dot dot-yellow"></span>
+                        <span class="dot dot-green"></span>
+                    </div>
+                    <span class="terminal-title">Terminal — Version Check</span>
+                </div>
+                <div class="editor-body">
+                    <div class="instruction-prompt">Type the command to check your installed Rust compiler version:</div>
+                    <div class="target-code">rustc --version</div>
+                    <input type="text" class="practice-input" data-target="rustc --version" placeholder="Type here..." autocomplete="off" spellcheck="false">
+                    <div class="feedback-area"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXERCISE 2: Entry Point Function -->
+        <section class="module-card">
+            <h2 class="module-title">2. Defining the Entry Point</h2>
+            <p class="module-desc">
+                Every executable Rust program must have a <code style="color:var(--accent-rust);">main</code> function. It serves as the initial code that runs when your program is executed. Functions are defined using the <code style="color:var(--accent-rust);">fn</code> keyword.
+            </p>
+            <div class="practice-box">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <span class="dot dot-red"></span>
+                        <span class="dot dot-yellow"></span>
+                        <span class="dot dot-green"></span>
+                    </div>
+                    <span class="terminal-title">src/main.rs — Main Function</span>
+                </div>
+                <div class="editor-body">
+                    <div class="instruction-prompt">Type the opening line for the main entry point function:</div>
+                    <div class="target-code">fn main() {</div>
+                    <input type="text" class="practice-input" data-target="fn main() {" placeholder="Type here..." autocomplete="off" spellcheck="false">
+                    <div class="feedback-area"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXERCISE 3: Printing with Macros -->
+        <section class="module-card">
+            <h2 class="module-title">3. Printing Text with println!</h2>
+            <p class="module-desc">
+                <code style="color:var(--accent-rust);">println!</code> calls a Rust <strong>macro</strong> (indicated by the exclamation mark <code style="color:var(--accent-rust);">!</code>). Macros allow meta-programming and syntax extension; calling a regular function would omit the exclamation mark.
+            </p>
+            <div class="practice-box">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <span class="dot dot-red"></span>
+                        <span class="dot dot-yellow"></span>
+                        <span class="dot dot-green"></span>
+                    </div>
+                    <span class="terminal-title">src/main.rs — Macro Call</span>
+                </div>
+                <div class="editor-body">
+                    <div class="instruction-prompt">Type the statement to print "Hello, world!" to standard output:</div>
+                    <div class="target-code">println!("Hello, world!");</div>
+                    <input type="text" class="practice-input" data-target='println!("Hello, world!");' placeholder="Type here..." autocomplete="off" spellcheck="false">
+                    <div class="feedback-area"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXERCISE 4: Manual Compilation with rustc -->
+        <section class="module-card">
+            <h2 class="module-title">4. Compiling with rustc</h2>
+            <p class="module-desc">
+                For simple single-file scripts, you can pass the source file directly to the compiler <code style="color:var(--accent-rust);">rustc</code> to create a standalone binary executable file.
+            </p>
+            <div class="practice-box">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <span class="dot dot-red"></span>
+                        <span class="dot dot-yellow"></span>
+                        <span class="dot dot-green"></span>
+                    </div>
+                    <span class="terminal-title">Terminal — Compilation</span>
+                </div>
+                <div class="editor-body">
+                    <div class="instruction-prompt">Type the terminal command to compile <strong>main.rs</strong> using rustc:</div>
+                    <div class="target-code">rustc main.rs</div>
+                    <input type="text" class="practice-input" data-target="rustc main.rs" placeholder="Type here..." autocomplete="off" spellcheck="false">
+                    <div class="feedback-area"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXERCISE 5: Initializing Cargo Projects -->
+        <section class="module-card">
+            <h2 class="module-title">5. Creating a Project with Cargo</h2>
+            <p class="module-desc">
+                <code style="color:var(--accent-rust);">cargo</code> is Rust's build system and package manager. It creates standard directory structures, manages dependencies via <code style="color:var(--accent-rust);">Cargo.toml</code>, and builds your application.
+            </p>
+            <div class="practice-box">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <span class="dot dot-red"></span>
+                        <span class="dot dot-yellow"></span>
+                        <span class="dot dot-green"></span>
+                    </div>
+                    <span class="terminal-title">Terminal — Cargo Initialization</span>
+                </div>
+                <div class="editor-body">
+                    <div class="instruction-prompt">Type the cargo command to create a new project named <strong>hello_cargo</strong>:</div>
+                    <div class="target-code">cargo new hello_cargo</div>
+                    <input type="text" class="practice-input" data-target="cargo new hello_cargo" placeholder="Type here..." autocomplete="off" spellcheck="false">
+                    <div class="feedback-area"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXERCISE 6: Building Cargo Projects -->
+        <section class="module-card">
+            <h2 class="module-title">6. Building Projects with Cargo</h2>
+            <p class="module-desc">
+                To compile a Cargo project without running it immediately, run <code style="color:var(--accent-rust);">cargo build</code>. This generates an executable file in <code style="color:var(--accent-rust);">target/debug/</code>.
+            </p>
+            <div class="practice-box">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <span class="dot dot-red"></span>
+                        <span class="dot dot-yellow"></span>
+                        <span class="dot dot-green"></span>
+                    </div>
+                    <span class="terminal-title">Terminal — Cargo Build</span>
+                </div>
+                <div class="editor-body">
+                    <div class="instruction-prompt">Type the terminal command to build your Cargo project:</div>
+                    <div class="target-code">cargo build</div>
+                    <input type="text" class="practice-input" data-target="cargo build" placeholder="Type here..." autocomplete="off" spellcheck="false">
+                    <div class="feedback-area"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXERCISE 7: Building & Running with Cargo -->
+        <section class="module-card">
+            <h2 class="module-title">7. Compiling and Executing with Cargo</h2>
+            <p class="module-desc">
+                <code style="color:var(--accent-rust);">cargo run</code> conveniently compiles your code (if any changes were detected) and immediately runs the resulting executable binary in a single command.
+            </p>
+            <div class="practice-box">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <span class="dot dot-red"></span>
+                        <span class="dot dot-yellow"></span>
+                        <span class="dot dot-green"></span>
+                    </div>
+                    <span class="terminal-title">Terminal — Cargo Run</span>
+                </div>
+                <div class="editor-body">
+                    <div class="instruction-prompt">Type the command to build and execute your Cargo project at once:</div>
+                    <div class="target-code">cargo run</div>
+                    <input type="text" class="practice-input" data-target="cargo run" placeholder="Type here..." autocomplete="off" spellcheck="false">
+                    <div class="feedback-area"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXERCISE 8: Checking Code for Errors -->
+        <section class="module-card">
+            <h2 class="module-title">8. Fast Verification with Cargo Check</h2>
+            <p class="module-desc">
+                <code style="color:var(--accent-rust);">cargo check</code> quickly parses and checks your code for errors without taking the time to produce an executable binary, making it much faster during active development loops.
+            </p>
+            <div class="practice-box">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <span class="dot dot-red"></span>
+                        <span class="dot dot-yellow"></span>
+                        <span class="dot dot-green"></span>
+                    </div>
+                    <span class="terminal-title">Terminal — Fast Verification</span>
+                </div>
+                <div class="editor-body">
+                    <div class="instruction-prompt">Type the command to check your project code without producing a binary:</div>
+                    <div class="target-code">cargo check</div>
+                    <input type="text" class="practice-input" data-target="cargo check" placeholder="Type here..." autocomplete="off" spellcheck="false">
+                    <div class="feedback-area"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- AUTOMATED JAVASCRIPT SYSTEM -->
+    <script>
+        /**
+         * Global Progress Calculator:
+         * Automatically calculates progress based on input fields with `data-target`.
+         * Completely dynamic — zero hardcoded counts required!
+         */
+        function updateProgress() {
+            const inputs = document.querySelectorAll('.practice-input');
+            const total = inputs.length;
+            let correctCount = 0;
+
+            inputs.forEach(input => {
+                const target = input.dataset.target ? input.dataset.target.trim() : '';
+                if (input.value.trim() === target && target !== '') {
+                    correctCount++;
+                }
+            });
+
+            const percentage = total > 0 ? (correctCount / total) * 100 : 0;
+
+            document.getElementById('progress-bar').style.width = percentage + '%';
+            document.getElementById('progress-text').textContent = `${correctCount} / ${total} Exercises Completed`;
+        }
+
+        /**
+         * Declarative Typing Validation Listener:
+         * Evaluates inputs in real-time as you type.
+         */
+        document.addEventListener('input', (e) => {
+            if (e.target.classList.contains('practice-input') && e.target.dataset.target) {
+                const inputEl = e.target;
+                const targetStr = inputEl.dataset.target.trim();
+                const currentVal = inputEl.value.trim();
+                const feedbackEl = inputEl.nextElementSibling; // finds sibling .feedback-area
+
+                if (currentVal === targetStr) {
+                    feedbackEl.textContent = "✓ Correct! Syntax matched perfectly.";
+                    feedbackEl.className = "feedback-area status-correct";
+                } else if (currentVal.length > 0) {
+                    feedbackEl.textContent = `✗ Keep typing... ensure command names, flags, and punctuation match exactly.`;
+                    feedbackEl.className = "feedback-area status-incorrect";
+                } else {
+                    feedbackEl.textContent = "";
+                }
+
+                updateProgress();
+            }
+        });
+
+        // Initialize progress count on page load
+        window.addEventListener('DOMContentLoaded', updateProgress);
+    </script>
+</body>
+</html>

@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!--
+      UX/UI DESIGN METADATA
+      - Mobile Viewport setup for fluid scaling across mobile, tablet, and desktop viewports.
+      - Dark Mode IDE Theme with modern glassmorphism navbar and status indicators.
+    -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rust All-in-One: Book 1, Chapter 3 Practice App</title>
+    
+    <!-- Fonts: Inter for general UI, Fira Code for code blocks and interactive inputs -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* CSS Variables for consistent Design Tokens */
+        :root {
+            --bg-primary: #0f172a;       /* Deep slate background */
+            --bg-card: #1e293b;          /* Dark slate card container */
+            --bg-input: #090d16;         /* Terminal/Code block background */
+            --accent-rust: #f97316;      /* Signature Rust orange */
+            --accent-rust-hover: #ea580c;
+            --accent-green: #22c55e;     /* Success state */
+            --accent-red: #ef4444;       /* Error state */
+            --text-primary: #f8fafc;     /* Clean off-white text */
+            --text-secondary: #94a3b8;   /* Muted grey text */
+            --border-color: #334155;     /* Subtle border divider */
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'Fira Code', monospace;
+        }
+
+        /* Base Reset */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            padding-bottom: 40px;
+        }
+
+        /* Sticky Header Bar */
+        header {
+            background-color: rgba(30, 41, 59, 0.85);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 1.5rem;
+        }
+
+        .header-container {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--text-primary);
+        }
+
+        .logo-badge {
+            background-color: var(--accent-rust);
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-family: var(--font-mono);
+        }
+
+        /* Responsive Layout Container */
+        main {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        /* Module Sections UI */
+        .module-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+
+        .module-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--accent-rust);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .module-desc {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 1.25rem;
+        }
+
+        /* Practice Container (Terminal UI) */
+        .practice-box {
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .terminal-header {
+            background-color: #182232;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .terminal-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .dot-red { background-color: #ff5f56; }
+        .dot-yellow { background-color: #ffbd2e; }
+        .dot-green { background-color: #27c93f; }
+
+        .terminal-title {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .editor-body {
+            padding: 1rem;
+        }
+
+        .instruction-prompt {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+
+        .target-code {
+            font-family: var(--font-mono);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 12px;
+            border-radius: 4px;
+            color: #38bdf8;
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+            word-break: break-all;
+        }
+
+        /* Interactive Inputs */
+        .practice-input {
+            width: 100%;
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-size: 1rem;
+            padding: 10px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .practice-input:focus {
+            border-color: var(--accent-rust);
+        }
+
+        /* Feedback Status Area */
+        .feedback-area {
+            margin-top: 10px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-height: 24px;
+        }
+
+        .status-correct { color: var(--accent-green); }
+        .status-incorrect { color: var(--accent-red); }
+
+        /* Progress Header Tracker */
+        .progress-bar-container {
+            background-color: var(--border-color);
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+
+        .progress-bar-fill {
+            background-color: var(--accent-rust);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        @media (max-width: 600px) {
+            header { padding: 0.8rem 1rem; }
+            .module-card { padding: 1rem; }
+            .practice-input { font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation & Overall Progress Tracker -->
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <span>Rust Mastery</span>
+                <span class="logo-badge">Ch. 3</span>
+            </div>
+            <div style="text-align: right;">
+                <span id="progress-text" style="font-size: 0.85rem; color: var(--text-secondary);">0 / 12 Exercises Completed</span>
+            </div>
+        </div>
+        <div class="progress-bar-container">
+            <div id="progress-bar" class="progress-bar-fill"></div>
+        </div>
+    </header>
+
+    <main>
+        <!-- CHAPTER OVERVIEW CARD -->
+        <section class="module-card">
+            <h1 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Speaking Rust: The Basics</h1>
+            <p class="module-desc">
+                Book 1, Chapter 3 of <em>Rust All-in-One For Dummies</em> by Paul McFedries teaches the foundational building blocks of the language: immutability by default, mutable variables with <code style="color:var(--accent-rust);">mut</code>, constants, shadowing, scalar data types (integers, floats, booleans, chars), and compound data types (tuples and arrays).
+            </p>
+        </section>
+
+        <!-- EXERCISE 1: Declaring Variables -->
+        <section class="module-card">
+            <h2 class="module-title">1. Declaring Variables</h2>
+            <p class="module-desc">
+                Variables in Rust are created using the <code style="color:var(--accent-rust);">let</code> keyword. Rust uses type inference to determine variable types automatically based on assigned values.
+            </p>
+            <div class="practice-box">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <span class="dot dot-red"></span>
+                        <span class="dot dot-yellow"></span>
+                        <span class="dot dot-green"></span>
+                    </div>
+                    <span class="terminal-title">src/main.rs — Variables</span>
+                </div>
+                <div class="editor-body">
+                    <div class="instruction-prompt">Type the statement to declare a variable named <strong>score</strong> set to 100:</div>
+                    <div class="target-code">let score = 100;</div>
+                    <input type="text" class="practice-input" data-target="let score = 100;" placeholder="Type here..." autocomplete="off" spellcheck="false">
+                    <div class="feedback-area"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXERCISE 2: Immutability -->
+        <section class="module-card">
+            <h2 class="module-title">2. Understanding Immutability</h2>
+            <p class="module-desc">
+                By default, variable bindings in Rust are immutable. Once a value is bound to a name, you cannot change that value later unless explicit mutability is specified.
+            </p>
+            <div class="practice-box">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <span class="dot dot-red"></span>
+                        <span class="dot dot-yellow"></span>
+                        <span class="dot dot-green"></span>
+                    </div>
+                    <span class="terminal-title">src/main.rs — Immutability</span>
+                </div>
+                <div class="editor-body">
+                    <div class="instruction-prompt">Type an immutable binding for <strong>username</strong> set to "Alice":</div>
+                    <div class="target-code">let username = "Alice";</div>
+                    <input type="text" class="practice-input" data-target='let username = "Alice";' placeholder="Type here..." autocomplete="off" spellcheck="false">
+                    <div class="feedback-area"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXERCISE 3: Declaring Mutability -->
+        <section class="module-card">
+            <h2 class="module-title">3. Making Variables Mutable</h2>
+            <p class="module-desc">
+                To allow a variable's value to change over time, add the <code style="color:var(--accent-rust);">mut</code> keyword directly after <code style="color:var(--accent-rust);">let</code> during declaration.
+            </p>
+            <div class="practice-box">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <span class="dot dot-red"></span>
+                        <span class="dot dot-yellow"></span>
+                        <span class="dot dot-green"></span>
+                    </div>
+                    <span class="terminal-title">src/main.rs — Mutability</span>
+                </div>
+                <div class="editor-body">
+                    <div class="instruction-prompt">Type a statement declaring a mutable variable <strong>count</strong> set to 5:</div>
+                    <div class="target-code">let mut count = 5;</div>
+                    <input type="text" class="practice-input" data-target="let mut count = 5;" placeholder="Type here..." autocomplete="off" spellcheck="false">
+                    <div class="feedback-area"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXERCISE 4: Working with Constants -->
+        <section class="module-card">
+            <h2 class="module-title">4. Working with Constants</h2>
+            <p class="module-desc">
+                Constants use <code style="color:var(--accent-rust);">const</code> instead of <code style="color:var(--accent-rust);">let</code>, must always be explicitly typed, and cannot be made mutable with <code style="color:var(--accent-rust);">mut</code>.
+            </p>
+            <div class="practice-box">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <span class="dot dot-red"></span>
+                        <span class="dot dot-yellow"></span>
+                        <span class="dot dot-green"></span>
+                    </div>
+                    <span class="terminal-title">src/main.rs — Constants</span>
+                </div>
+                <div class="editor-body">
+                    <div class="instruction-prompt">Type the constant <strong>MAX_POINTS</strong> of type <strong>u32</strong> set to 100000:</div>
+                    <div class="target-code">const MAX_POINTS: u32 = 100000;</div>
+                    <input type="text" class="practice-input" data-target="const MAX_POINTS: u32 = 100000;" placeholder="Type here..." autocomplete="off" spellcheck="false">
+                    <div class="feedback-area"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXERCISE 5: Shadowing Variables -->
+        <section class="module-card">
+            <h2 class="module-title">5. Shadowing Variables</h2>
+            <p class="module-desc">
+                Shadowing allows declaring a new variable with the same name as a previous one using <code style="color:var(--accent-rust);">let</code>. It allows transforming values or types without making the variable mutable.
+            </p>
+            <div class="practice-box">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <span class="dot dot-red"></span>
+                        <span class="dot dot-yellow"></span>
+                        <span class="dot dot-green"></span>
+                    </div>
+                    <span class="terminal-title">src/main.rs — Shadowing</span>
+                </div>
+                <div class="editor-body">
+                    <div class="instruction-prompt">Type a statement that shadows <strong>x</strong> by re-declaring it as <strong>x + 1</strong>:</div>
+                    <div class="target-code">let x = x + 1;</div>
+                    <input type="text" class="practice-input" data-target="let x = x + 1;" placeholder="Type here..." autocomplete="off" spellcheck="false">
+                    <div class="feedback-area"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXERCISE 6: Exploring Data Types -->
+        <section class="module-card">
+            <h2 class="module-title">6. Exploring Data Types</h2>
+            <p class="module-desc">
+                Rust requires every value to have a known data type at compile time. Explicit type annotations use a colon after the variable name: <code style="color:var(--accent-rust);">let x: i32 = 5;</code>
+            </p>
+            <div class="practice-box">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <span class="dot dot-red"></span>
+                        <span class="dot dot-yellow"></span>
+                        <span class="dot dot-green"></span>
+                    </div>
+                    <span class="terminal-title">src/main.rs — Explicit Typing</span>
+                </div>
+                <div class="editor-body">
+                    <div class="instruction-prompt">Type a statement declaring <strong>age</strong> with explicit type <strong>u8</strong> set to 25:</div>
+                    <div class="target-code">let age: u8 = 25;</div>
+                    <input type="text" class="practice-input" data-target="let age: u8 = 25;" placeholder="Type here..." autocomplete="off" spellcheck="false">
+                    <div class="feedback-area"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXERCISE 7: Integer Types -->
+        <section class="module-card">
+            <h2 class="module-title">7. Using Integer Types</h2>
+            <p class="module-desc">
+                Integers are numbers without a fractional component. They come in signed (<code style="color:var(--accent-rust);">i8</code> to <code style="color:var(--accent-rust);">i128</code>) and unsigned (<code style="color:var(--accent-rust);">u8</code> to <code style="color:var(--accent-rust);">u128</code>) variants. The default integer literal is <code style="color:var(--accent-rust);">i32</code>.
+            </p>
+            <div class="practice-box">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <span class="dot dot-red"></span>
+                        <span class="dot dot-yellow"></span>
+                        <span class="dot dot-green"></span>
+                    </div>
+                    <span class="terminal-title">src/main.rs — Integers</span>
+                </div>
+                <div class="editor-body">
+                    <div class="instruction-prompt">Type a statement declaring a signed 64-bit integer <strong>big_num</strong> initialized to -1000:</div>
+                    <div class="target-code">let big_num: i64 = -1000;</div>
+                    <input type="text" class="practice-input" data-target="let big_num: i64 = -1000;" placeholder="Type here..." autocomplete="off" spellcheck="false">
+                    <div class="feedback-area"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXERCISE 8: Floating-Point Types -->
+        <section class="module-card">
+            <h2 class="module-title">8. Using Floating-Point Types</h2>
+            <p class="module-desc">
+                Floating-point numbers are numbers with decimal points. Rust has two primitive float types: <code style="color:var(--accent-rust);">f32</code> and <code style="color:var(--accent-rust);">f64</code> (default).
+            </p>
+            <div class="practice-box">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <span class="dot dot-red"></span>
+                        <span class="dot dot-yellow"></span>
+                        <span class="dot dot-green"></span>
+                    </div>
+                    <span class="terminal-title">src/main.rs — Floats</span>
+                </div>
+                <div class="editor-body">
+                    <div class="instruction-prompt">Type a statement declaring <strong>price</strong> as a 64-bit float (<code style="color:var(--accent-rust);">f64</code>) initialized to 19.99:</div>
+                    <div class="target-code">let price: f64 = 19.99;</div>
+                    <input type="text" class="practice-input" data-target="let price: f64 = 19.99;" placeholder="Type here..." autocomplete="off" spellcheck="false">
+                    <div class="feedback-area"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXERCISE 9: Boolean Type -->
+        <section class="module-card">
+            <h2 class="module-title">9. Working with Booleans</h2>
+            <p class="module-desc">
+                A Boolean type in Rust has two possible values: <code style="color:var(--accent-rust);">true</code> and <code style="color:var(--accent-rust);">false</code>. Booleans are 1 byte in size and specified using <code style="color:var(--accent-rust);">bool</code>.
+            </p>
+            <div class="practice-box">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <span class="dot dot-red"></span>
+                        <span class="dot dot-yellow"></span>
+                        <span class="dot dot-green"></span>
+                    </div>
+                    <span class="terminal-title">src/main.rs — Booleans</span>
+                </div>
+                <div class="editor-body">
+                    <div class="instruction-prompt">Type a statement declaring <strong>is_active</strong> of type <strong>bool</strong> set to true:</div>
+                    <div class="target-code">let is_active: bool = true;</div>
+                    <input type="text" class="practice-input" data-target="let is_active: bool = true;" placeholder="Type here..." autocomplete="off" spellcheck="false">
+                    <div class="feedback-area"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXERCISE 10: Character Type -->
+        <section class="module-card">
+            <h2 class="module-title">10. Working with the Character Type</h2>
+            <p class="module-desc">
+                Rust's <code style="color:var(--accent-rust);">char</code> type represents a Unicode Scalar Value (4 bytes). Literals are specified using single quotes, unlike string literals which use double quotes.
+            </p>
+            <div class="practice-box">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <span class="dot dot-red"></span>
+                        <span class="dot dot-yellow"></span>
+                        <span class="dot dot-green"></span>
+                    </div>
+                    <span class="terminal-title">src/main.rs — Char</span>
+                </div>
+                <div class="editor-body">
+                    <div class="instruction-prompt">Type a statement declaring <strong>letter</strong> as type <strong>char</strong> initialized to 'R':</div>
+                    <div class="target-code">let letter: char = 'R';</div>
+                    <input type="text" class="practice-input" data-target="let letter: char = 'R';" placeholder="Type here..." autocomplete="off" spellcheck="false">
+                    <div class="feedback-area"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXERCISE 11: Tuples -->
+        <section class="module-card">
+            <h2 class="module-title">11. Grouping Values with Tuples</h2>
+            <p class="module-desc">
+                A tuple groups multiple values with a variety of types into one compound type. Tuples have a fixed length once declared.
+            </p>
+            <div class="practice-box">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <span class="dot dot-red"></span>
+                        <span class="dot dot-yellow"></span>
+                        <span class="dot dot-green"></span>
+                    </div>
+                    <span class="terminal-title">src/main.rs — Tuples</span>
+                </div>
+                <div class="editor-body">
+                    <div class="instruction-prompt">Type a tuple <strong>tup</strong> containing an i32 (500), f64 (6.4), and u8 (1):</div>
+                    <div class="target-code">let tup: (i32, f64, u8) = (500, 6.4, 1);</div>
+                    <input type="text" class="practice-input" data-target="let tup: (i32, f64, u8) = (500, 6.4, 1);" placeholder="Type here..." autocomplete="off" spellcheck="false">
+                    <div class="feedback-area"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXERCISE 12: Arrays -->
+        <section class="module-card">
+            <h2 class="module-title">12. Storing Collections with Arrays</h2>
+            <p class="module-desc">
+                Unlike tuples, every element of an array must have the same type. Arrays in Rust have a fixed length specified at compile time inside square brackets: <code style="color:var(--accent-rust);">[Type; Length]</code>.
+            </p>
+            <div class="practice-box">
+                <div class="terminal-header">
+                    <div class="terminal-dots">
+                        <span class="dot dot-red"></span>
+                        <span class="dot dot-yellow"></span>
+                        <span class="dot dot-green"></span>
+                    </div>
+                    <span class="terminal-title">src/main.rs — Arrays</span>
+                </div>
+                <div class="editor-body">
+                    <div class="instruction-prompt">Type an array declaration <strong>numbers</strong> of 5 elements of type <strong>i32</strong> initialized to 1 through 5:</div>
+                    <div class="target-code">let numbers: [i32; 5] = [1, 2, 3, 4, 5];</div>
+                    <input type="text" class="practice-input" data-target="let numbers: [i32; 5] = [1, 2, 3, 4, 5];" placeholder="Type here..." autocomplete="off" spellcheck="false">
+                    <div class="feedback-area"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- AUTOMATED JAVASCRIPT SYSTEM -->
+    <script>
+        /**
+         * Global Progress Calculator:
+         * Automatically calculates progress based on input fields with `data-target`.
+         * Completely dynamic — zero hardcoded counts required!
+         */
+        function updateProgress() {
+            const inputs = document.querySelectorAll('.practice-input');
+            const total = inputs.length;
+            let correctCount = 0;
+
+            inputs.forEach(input => {
+                const target = input.dataset.target ? input.dataset.target.trim() : '';
+                if (input.value.trim() === target && target !== '') {
+                    correctCount++;
+                }
+            });
+
+            const percentage = total > 0 ? (correctCount / total) * 100 : 0;
+
+            document.getElementById('progress-bar').style.width = percentage + '%';
+            document.getElementById('progress-text').textContent = `${correctCount} / ${total} Exercises Completed`;
+        }
+
+        /**
+         * Declarative Typing Validation Listener:
+         * Evaluates inputs in real-time as you type.
+         */
+        document.addEventListener('input', (e) => {
+            if (e.target.classList.contains('practice-input') && e.target.dataset.target) {
+                const inputEl = e.target;
+                const targetStr = inputEl.dataset.target.trim();
+                const currentVal = inputEl.value.trim();
+                const feedbackEl = inputEl.nextElementSibling; // finds sibling .feedback-area
+
+                if (currentVal === targetStr) {
+                    feedbackEl.textContent = "✓ Correct! Syntax matched perfectly.";
+                    feedbackEl.className = "feedback-area status-correct";
+                } else if (currentVal.length > 0) {
+                    feedbackEl.textContent = `✗ Keep typing... ensure spaces, types, and semicolons match exactly.`;
+                    feedbackEl.className = "feedback-area status-incorrect";
+                } else {
+                    feedbackEl.textContent = "";
+                }
+
+                updateProgress();
+            }
+        });
+
+        // Initialize progress count on page load
+        window.addEventListener('DOMContentLoaded', updateProgress);
+    </script>
+</body>
+</html>
