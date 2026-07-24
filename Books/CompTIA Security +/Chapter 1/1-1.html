@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Security+ 1.1: Security Controls Practice</title>
+  <!-- Google Fonts: Inter & Fira Code -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-slate: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-cyan: #38bdf8;
+      --accent-green: #22c55e;
+      --accent-red: #ef4444;
+      --terminal-bg: #090d16;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'Fira Code', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-slate);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      padding-bottom: 3rem;
+    }
+
+    /* Sticky Header */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background-color: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 1rem 1.5rem;
+    }
+
+    .header-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .title-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .badge {
+      background-color: rgba(56, 189, 248, 0.1);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 0.2rem 0.6rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .progress-counter {
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+
+    .progress-bar-container {
+      width: 100%;
+      height: 6px;
+      background-color: #334155;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent-cyan), var(--accent-green));
+      transition: width 0.3s ease;
+    }
+
+    /* Main Container */
+    main {
+      max-width: 1000px;
+      margin: 2rem auto 0;
+      padding: 0 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    /* Cards */
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+    }
+
+    .overview-card h2 {
+      font-size: 1.1rem;
+      color: var(--accent-cyan);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .overview-card p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .module-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .module-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .concept-summary {
+      color: var(--text-muted);
+      font-size: 0.925rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .concept-summary strong {
+      color: var(--text-main);
+    }
+
+    /* Terminal Practice Box */
+    .terminal-box {
+      background-color: var(--terminal-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 0.5rem;
+      overflow: hidden;
+    }
+
+    .terminal-header {
+      background-color: #161f30;
+      padding: 0.5rem 0.75rem;
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .mac-dots {
+      display: flex;
+      gap: 0.35rem;
+      margin-right: 1rem;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .dot-red { background-color: #ff5f56; }
+    .dot-yellow { background-color: #ffbd2e; }
+    .dot-green { background-color: #27c93f; }
+
+    .terminal-title {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .terminal-body {
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .target-prompt {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: #38bdf8;
+      background-color: rgba(56, 189, 248, 0.05);
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.375rem;
+      border-left: 3px solid var(--accent-cyan);
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .prompt-symbol {
+      position: absolute;
+      left: 0.75rem;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      pointer-events: none;
+    }
+
+    .code-input {
+      width: 100%;
+      background-color: #0d1322;
+      border: 1px solid var(--card-border);
+      border-radius: 0.375rem;
+      padding: 0.6rem 0.75rem 0.6rem 2rem;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      color: var(--text-main);
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .code-input:focus {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+    }
+
+    /* Typing Validation Styles */
+    .code-input.is-correct {
+      border-color: var(--accent-green);
+      background-color: rgba(34, 197, 94, 0.05);
+      box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
+    }
+
+    .code-input.is-incorrect {
+      border-color: var(--accent-red);
+      background-color: rgba(239, 68, 68, 0.05);
+      box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+    }
+
+    .status-badge {
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+      display: inline-block;
+      margin-top: 0.25rem;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .status-badge.show {
+      opacity: 1;
+    }
+
+    .status-badge.correct {
+      color: var(--accent-green);
+      background-color: rgba(34, 197, 94, 0.1);
+    }
+
+    .status-badge.incorrect {
+      color: var(--accent-red);
+      background-color: rgba(239, 68, 68, 0.1);
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 640px) {
+      header {
+        padding: 0.75rem 1rem;
+      }
+      main {
+        padding: 0 1rem;
+      }
+      .module-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sticky Top Header -->
+  <header>
+    <div class="header-container">
+      <div class="header-top">
+        <div class="title-group">
+          <h1>Security Controls Interactive Practice</h1>
+          <span class="badge">SY0-701 §1.1</span>
+        </div>
+        <div class="progress-counter">
+          <span id="completed-count">0</span> / <span id="total-count">0</span> Completed
+        </div>
+      </div>
+      <div class="progress-bar-container">
+        <div id="progress-bar" class="progress-bar-fill"></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main>
+
+    <!-- Chapter Overview Card -->
+    <section class="card overview-card">
+      <h2><span>&#128187;</span> Chapter Overview: Security Control Classification</h2>
+      <p>
+        Security controls are safeguards or countermeasures prescribed for an information system to protect the confidentiality, integrity, and availability of its system and its information. CompTIA Security+ categorizes controls in two main ways: by <strong>Category</strong> (how the control is implemented) and by <strong>Functional Type</strong> (what goal the control achieves).
+      </p>
+    </section>
+
+    <!-- Module 1: Control Categories -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3 class="module-title">1. Control Categories</h3>
+        <span class="badge">Implementation Method</span>
+      </div>
+      <p class="concept-summary">
+        Controls are categorized by how they are implemented: <strong>Technical</strong> (hardware/software like firewalls), <strong>Managerial</strong> (administrative oversight and policies), <strong>Operational</strong> (human-executed procedures like security guards or training), and <strong>Physical</strong> (real-world items like locks and fences).
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="mac-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+          <span class="terminal-title">~/security/controls/categories.sh</span>
+        </div>
+        <div class="terminal-body">
+          <div class="target-prompt">Category: Technical | Managerial | Operational | Physical</div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="Category: Technical | Managerial | Operational | Physical"
+              placeholder="Type the target line exactly..." 
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-badge"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Module 2: Preventive & Deterrent -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3 class="module-title">2. Preventive &amp; Deterrent Controls</h3>
+        <span class="badge">Functional Type</span>
+      </div>
+      <p class="concept-summary">
+        <strong>Preventive</strong> controls stop an incident from occurring in the first place (e.g., IPS, firewalls, mandatory access controls). <strong>Deterrent</strong> controls discourage potential attackers from attempting a breach by warning them of consequences (e.g., warning signs, visible cameras).
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="mac-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+          <span class="terminal-title">~/security/controls/preventive_deterrent.sh</span>
+        </div>
+        <div class="terminal-body">
+          <div class="target-prompt">Type: Preventive blocks attacks | Deterrent discourages attempts</div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="Type: Preventive blocks attacks | Deterrent discourages attempts"
+              placeholder="Type the target line exactly..." 
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-badge"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Module 3: Detective & Corrective -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3 class="module-title">3. Detective &amp; Corrective Controls</h3>
+        <span class="badge">Functional Type</span>
+      </div>
+      <p class="concept-summary">
+        <strong>Detective</strong> controls identify and trigger alerts during or after an incident occurs (e.g., IDS, audit logs, motion detectors). <strong>Corrective</strong> controls mitigate damage, restore operations, and fix systems after an incident has taken place (e.g., backups, patch installation, system images).
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="mac-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+          <span class="terminal-title">~/security/controls/detective_corrective.sh</span>
+        </div>
+        <div class="terminal-body">
+          <div class="target-prompt">Type: Detective identifies activity | Corrective restores systems</div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="Type: Detective identifies activity | Corrective restores systems"
+              placeholder="Type the target line exactly..." 
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-badge"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Module 4: Compensating & Directive -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3 class="module-title">4. Compensating &amp; Directive Controls</h3>
+        <span class="badge">Functional Type</span>
+      </div>
+      <p class="concept-summary">
+        <strong>Compensating</strong> controls provide an alternative solution when a primary control is unfeasible or too costly (e.g., using a sandbox environment when a legacy system cannot be patched). <strong>Directive</strong> controls direct human behavior to ensure compliance with security requirements (e.g., Acceptable Use Policies, mandatory training).
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="mac-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+          <span class="terminal-title">~/security/controls/compensating_directive.sh</span>
+        </div>
+        <div class="terminal-body">
+          <div class="target-prompt">Type: Compensating alternate option | Directive enforces policy</div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="Type: Compensating alternate option | Directive enforces policy"
+              placeholder="Type the target line exactly..." 
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-badge"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Module 5: Managerial Controls -->
+<section class="card module-card">
+  <div class="module-header">
+    <h3 class="module-title">5. Managerial &amp; Administrative Controls</h3>
+    <span class="badge">Control Category</span>
+  </div>
+  <p class="concept-summary">
+    <strong>Managerial controls</strong> focus on security governance, risk management, and organizational oversight. They define the rules, policies, frameworks, and assessment strategies used by management (e.g., conducting risk assessments, policy creation, security audits).
+  </p>
+  <div class="terminal-box">
+    <div class="terminal-header">
+      <div class="mac-dots">
+        <span class="dot dot-red"></span>
+        <span class="dot dot-yellow"></span>
+        <span class="dot dot-green"></span>
+      </div>
+      <span class="terminal-title">~/security/controls/managerial.sh</span>
+    </div>
+    <div class="terminal-body">
+      <div class="target-prompt">Managerial: Governance | Risk Assessments | Audits | Policies</div>
+      <div class="input-wrapper">
+        <span class="prompt-symbol">&gt;</span>
+        <input 
+          type="text" 
+          class="code-input" 
+          data-target="Managerial: Governance | Risk Assessments | Audits | Policies"
+          placeholder="Type the target line exactly..." 
+          spellcheck="false"
+          autocomplete="off"
+        />
+      </div>
+      <div class="status-badge"></div>
+    </div>
+  </div>
+</section>
+
+<!-- Module 6: Operational Controls -->
+<section class="card module-card">
+  <div class="module-header">
+    <h3 class="module-title">6. Operational Controls</h3>
+    <span class="badge">Control Category</span>
+  </div>
+  <p class="concept-summary">
+    <strong>Operational controls</strong> are implemented and executed by people rather than automated technical systems. Examples include user security awareness training, disaster recovery plan execution, visitor logging, and security guard patrols.
+  </p>
+  <div class="terminal-box">
+    <div class="terminal-header">
+      <div class="mac-dots">
+        <span class="dot dot-red"></span>
+        <span class="dot dot-yellow"></span>
+        <span class="dot dot-green"></span>
+      </div>
+      <span class="terminal-title">~/security/controls/operational.sh</span>
+    </div>
+    <div class="terminal-body">
+      <div class="target-prompt">Operational: Security Training | Guard Patrols | Backup Execution</div>
+      <div class="input-wrapper">
+        <span class="prompt-symbol">&gt;</span>
+        <input 
+          type="text" 
+          class="code-input" 
+          data-target="Operational: Security Training | Guard Patrols | Backup Execution"
+          placeholder="Type the target line exactly..." 
+          spellcheck="false"
+          autocomplete="off"
+        />
+      </div>
+      <div class="status-badge"></div>
+    </div>
+  </div>
+</section>
+
+<!-- Module 7: Physical Controls -->
+<section class="card module-card">
+  <div class="module-header">
+    <h3 class="module-title">7. Physical Security Controls</h3>
+    <span class="badge">Control Category</span>
+  </div>
+  <p class="concept-summary">
+    <strong>Physical controls</strong> impact the real-world physical environment to protect hardware, facility perimeters, and personnel. Examples include vehicle bollards, fencing, biometric door locks, HVAC systems, and CCTV cameras.
+  </p>
+  <div class="terminal-box">
+    <div class="terminal-header">
+      <div class="mac-dots">
+        <span class="dot dot-red"></span>
+        <span class="dot dot-yellow"></span>
+        <span class="dot dot-green"></span>
+      </div>
+      <span class="terminal-title">~/security/controls/physical.sh</span>
+    </div>
+    <div class="terminal-body">
+      <div class="target-prompt">Physical: Bollards | Fencing | Biometric Locks | CCTV</div>
+      <div class="input-wrapper">
+        <span class="prompt-symbol">&gt;</span>
+        <input 
+          type="text" 
+          class="code-input" 
+          data-target="Physical: Bollards | Fencing | Biometric Locks | CCTV"
+          placeholder="Type the target line exactly..." 
+          spellcheck="false"
+          autocomplete="off"
+        />
+      </div>
+      <div class="status-badge"></div>
+    </div>
+  </div>
+</section>
+
+<!-- Module 8: Multi-Attribute Scenario Analysis -->
+<section class="card module-card">
+  <div class="module-header">
+    <h3 class="module-title">8. Multi-Attribute Scenario Assessment</h3>
+    <span class="badge">Exam Scenario Practice</span>
+  </div>
+  <p class="concept-summary">
+    Every real-world safeguard carries both a <strong>Category</strong> (how it is implemented) and a <strong>Functional Type</strong> (its objective). For example, an Intrusion Prevention System (IPS) is <strong>Technical + Preventive</strong>, while a security guard warning sign is <strong>Physical + Deterrent</strong>.
+  </p>
+  <div class="terminal-box">
+    <div class="terminal-header">
+      <div class="mac-dots">
+        <span class="dot dot-red"></span>
+        <span class="dot dot-yellow"></span>
+        <span class="dot dot-green"></span>
+      </div>
+      <span class="terminal-title">~/security/controls/scenarios.sh</span>
+    </div>
+    <div class="terminal-body">
+      <div class="target-prompt">IPS = Technical Preventive | Guard Sign = Physical Deterrent</div>
+      <div class="input-wrapper">
+        <span class="prompt-symbol">&gt;</span>
+        <input 
+          type="text" 
+          class="code-input" 
+          data-target="IPS = Technical Preventive | Guard Sign = Physical Deterrent"
+          placeholder="Type the target line exactly..." 
+          spellcheck="false"
+          autocomplete="off"
+        />
+      </div>
+      <div class="status-badge"></div>
+    </div>
+  </div>
+</section>
+
+  </main>
+
+  <!-- Automated Framework JavaScript -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Dynamic collection of inputs
+      const inputs = Array.from(document.querySelectorAll('input[data-target]'));
+      const totalCountEl = document.getElementById('total-count');
+      const completedCountEl = document.getElementById('completed-count');
+      const progressBar = document.getElementById('progress-bar');
+
+      const totalModules = inputs.length;
+      totalCountEl.textContent = totalModules;
+
+      // Single Event Listener Framework
+      document.addEventListener('input', (e) => {
+        const input = e.target;
+        if (!input.matches('input[data-target]')) return;
+
+        const targetValue = input.getAttribute('data-target');
+        const userValue = input.value;
+        const statusBadge = input.closest('.terminal-body').querySelector('.status-badge');
+
+        if (userValue === '') {
+          // Empty state
+          input.classList.remove('is-correct', 'is-incorrect');
+          statusBadge.classList.remove('show', 'correct', 'incorrect');
+        } else if (userValue === targetValue) {
+          // Exact match
+          input.classList.remove('is-incorrect');
+          input.classList.add('is-correct');
+          statusBadge.textContent = '[SUCCESS] Perfect syntax match';
+          statusBadge.className = 'status-badge show correct';
+        } else if (targetValue.startsWith(userValue)) {
+          // Typing in progress, correct prefix
+          input.classList.remove('is-correct', 'is-incorrect');
+          statusBadge.textContent = 'Typing...';
+          statusBadge.className = 'status-badge show';
+        } else {
+          // Typo detected
+          input.classList.remove('is-correct');
+          input.classList.add('is-incorrect');
+          statusBadge.textContent = '[ERROR] Typo or invalid syntax';
+          statusBadge.className = 'status-badge show incorrect';
+        }
+
+        updateProgress();
+      });
+
+      function updateProgress() {
+        const completedCount = inputs.filter(input => input.value === input.getAttribute('data-target')).length;
+        completedCountEl.textContent = completedCount;
+        
+        const percentage = totalModules > 0 ? (completedCount / totalModules) * 100 : 0;
+        progressBar.style.width = `${percentage}%`;
+      }
+    });
+  </script>
+</body>
+</html>
