@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SyntaxMaster // Rust Edition</title>
+  <style>
+    /* -------------------------------------------------------------------------- */
+    /* 1. CSS VARIABLES & THEME SETUP                                              */
+    /* -------------------------------------------------------------------------- */
+    :root {
+      --bg-main: #0B0F19;
+      --bg-card: #111827;
+      --bg-input: #1F2937;
+      --border: #374151;
+      --accent: #F97316; /* Rust Orange Accent */
+      --accent-hover: #EA580C;
+      --text-main: #F9FAFB;
+      --text-muted: #9CA3AF;
+      --success: #10B981;
+      --error: #EF4444;
+      --font-code: 'Fira Code', 'Courier New', monospace;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* -------------------------------------------------------------------------- */
+    /* 2. HEADER & NAVIGATION UI                                                  */
+    /* -------------------------------------------------------------------------- */
+    header {
+      background: rgba(17, 24, 39, 0.8);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-weight: 700;
+      font-size: 1.125rem;
+      letter-spacing: -0.025em;
+    }
+
+    .brand-icon {
+      background: var(--accent);
+      color: #fff;
+      padding: 0.35rem 0.6rem;
+      border-radius: 0.5rem;
+      font-family: var(--font-code);
+      font-weight: 800;
+      font-size: 0.9rem;
+    }
+
+    .stats-badge {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      background: var(--bg-input);
+      padding: 0.4rem 0.8rem;
+      border-radius: 9999px;
+      border: 1px solid var(--border);
+    }
+
+    /* -------------------------------------------------------------------------- */
+    /* 3. LAYOUT & RESPONSIVE GRID                                                 */
+    /* -------------------------------------------------------------------------- */
+    main {
+      flex: 1;
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 1.5rem;
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 1.5rem;
+    }
+
+    /* Mobile First Responsive Adjustments */
+    @media (max-width: 1024px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* -------------------------------------------------------------------------- */
+    /* 4. CARDS & MODULE LIST SIDEBAR                                             */
+    /* -------------------------------------------------------------------------- */
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .section-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .snippet-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      max-height: calc(100vh - 120px);
+      overflow-y: auto;
+      padding-right: 0.25rem;
+    }
+
+    .snippet-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .snippet-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .snippet-card.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent);
+    }
+
+    .snippet-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .snippet-card-title {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .badge {
+      font-size: 0.7rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 0.375rem;
+      background: var(--bg-input);
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    /* -------------------------------------------------------------------------- */
+    /* 5. PRACTICE WORKSPACE                                                      */
+    /* -------------------------------------------------------------------------- */
+    .workspace {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+    }
+
+    .workspace-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .action-btn {
+      background: var(--bg-input);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .action-btn:hover {
+      background: var(--border);
+    }
+
+    .action-btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .action-btn.primary:hover {
+      background: var(--accent-hover);
+    }
+
+    /* Code Display Area */
+    .code-container {
+      background: #090D16;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 1.25rem;
+      font-family: var(--font-code);
+      font-size: 0.9rem;
+      line-height: 1.6;
+      overflow-x: auto;
+      white-space: pre;
+      position: relative;
+    }
+
+    .code-container.hidden-target {
+      filter: blur(8px);
+      user-select: none;
+      pointer-events: none;
+    }
+
+    /* Typing Input Area */
+    .typing-area {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    textarea.editor {
+      width: 100%;
+      height: 220px;
+      background: #090D16;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 1.25rem;
+      color: var(--text-main);
+      font-family: var(--font-code);
+      font-size: 0.9rem;
+      line-height: 1.6;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    textarea.editor:focus {
+      border-color: var(--accent);
+    }
+
+    /* Validation Feedback State */
+    textarea.editor.correct {
+      border-color: var(--success);
+      box-shadow: 0 0 0 1px var(--success);
+    }
+
+    textarea.editor.incorrect {
+      border-color: var(--error);
+      box-shadow: 0 0 0 1px var(--error);
+    }
+
+    .feedback-banner {
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      display: none;
+    }
+
+    .feedback-banner.show {
+      display: block;
+    }
+
+    .feedback-banner.success {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid var(--success);
+      color: var(--success);
+    }
+
+    .feedback-banner.error {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid var(--error);
+      color: var(--error);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========================================================================= -->
+  <!-- HEADER BAR                                                                -->
+  <!-- ========================================================================= -->
+  <header>
+    <div class="brand">
+      <span class="brand-icon">RS</span>
+      <span>SyntaxMaster Rust</span>
+    </div>
+    <div class="stats-badge" id="progressTracker">
+      Snippet 1 of 7
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- MAIN LAYOUT                                                               -->
+  <!-- ========================================================================= -->
+  <main>
+    <!-- LEFT SIDEBAR: Snippet Selection -->
+    <aside class="sidebar">
+      <div class="section-title">Rust Lessons & Snippets</div>
+      <div class="snippet-list" id="snippetList">
+        <!-- Rendered dynamically via JavaScript -->
+      </div>
+    </aside>
+
+    <!-- RIGHT WORKSPACE: Code Practice Area -->
+    <section class="workspace">
+      <div class="card">
+        <div class="workspace-header">
+          <div>
+            <h2 id="snippetTitle">Structs & Mutability</h2>
+            <p id="snippetDesc" style="color: var(--text-muted); font-size: 0.875rem; margin-top: 0.25rem;">
+              Practice struct definition and field mutation syntax.
+            </p>
+          </div>
+          <button class="action-btn" id="toggleHideBtn" onclick="toggleTargetHide()">
+            👁️ <span id="toggleText">Hide Code</span>
+          </button>
+        </div>
+
+        <!-- Target Code Reference Block -->
+        <div class="section-title">Reference Code Syntax</div>
+        <div class="code-container" id="codeTarget"></div>
+
+        <!-- Typing Practice Box -->
+        <div class="typing-area">
+          <div class="workspace-header" style="margin-bottom: 0;">
+            <div class="section-title" style="margin: 0;">Type Practice Buffer</div>
+            <button class="action-btn" onclick="resetEditor()">🔄 Reset</button>
+          </div>
+
+          <textarea 
+            class="editor" 
+            id="editor" 
+            placeholder="Type the exact Rust code syntax here to practice..."
+            spellcheck="false"
+            oninput="validateSyntax()"
+          ></textarea>
+
+          <div class="feedback-banner" id="feedbackBanner"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- JAVASCRIPT LOGIC                                                          -->
+  <!-- ========================================================================= -->
+  <script>
+    /*
+      EASY EXTENSION GUIDE:
+      To add new code snippets in the future, simply add a new object to 
+      the `rustSnippets` array below with a title, category, description, and code!
+    */
+    const rustSnippets = [
+      {
+        id: 1,
+        title: "Structs & Mutability",
+        category: "Structs",
+        description: "Defines a custom struct and updates a mutable field instance.",
+        code: `struct Product {
+  name: String,
+  price_in_cents: u32,
+  is_available: bool,
+  stock_count: u32
+}
+
+fn main(){
+  let mut my_product = Product {
+    name: String::from("Wireless Mouse"),
+    price_in_cents: 2500,
+    is_available: true,
+    stock_count: 50,
+  };
+
+  my_product.stock_count = 49;
+  println!("Stock updated for {}: {}", my_product.name, my_product.stock_count);
+}`
+      },
+      {
+        id: 2,
+        title: "Functions & Printing",
+        category: "Basics",
+        description: "Basic function declarations and standard macro printing.",
+        code: `fn main() {
+  println!("Hello World!");
+  another_function();
+}
+
+fn another_function(){
+  println!("Did it work?");
+}`
+      },
+      {
+        id: 3,
+        title: "Arrays, Slices & Strings",
+        category: "Data Types",
+        description: "Deep dive into fixed arrays, stack slices, string allocation, and string slices.",
+        code: `fn main() {
+  let numbers: [i32; 4]= [1,2,3,4];
+  println!("Array of numbers {:?}", numbers);
+
+  let fruits: [&str; 3] = ["apple", "banana", "orange"];
+  println!("Fruits Array: {}", fruits[0]);
+  println!("Fruits Array: {}", fruits[1]);
+  println!("Fruits Array: {}", fruits[2]);
+
+  let number_slices:&[i32] = &[1,2,3,4,5];
+  println!("Number Slice: {:?}", number_slices);
+
+  let animal_slices:&[&str; 4] = &["Tiger", "Lion", "Bear", "Rat"];
+  println!("Animal Slice: {:?}", animal_slices);
+
+  let book_slice:&[&String] = &[&"IT".to_string(), &"Harry Potter".to_string(), &"Zen".to_string()];
+  println!("Book Slice: {:?}", book_slice);
+
+  let mut stone_cold: String = String::from("Hell,");
+  stone_cold.push_str("Yeah");
+  println!("Stone cold says: {}", stone_cold);  
+
+  let string: String = String::from("Hello, World!");
+  let slice: &str = &string[0..=4];
+  println!("Slice Value: {}", slice);  
+}`
+      },
+      {
+        id: 4,
+        title: "While Loops",
+        category: "Control Flow",
+        description: "Basic while loop countdown structure.",
+        code: `fn main () {
+  let mut step_one = 10;
+  while step_one > 0 {
+    println!("{step_one}");
+    step_one -= 1;
+  }
+}`
+      },
+      {
+        id: 5,
+        title: "For Loops & Reversed Ranges",
+        category: "Control Flow",
+        description: "Iterating backwards through inclusive ranges with .rev().",
+        code: `fn main() {
+  let start_days = 20;
+
+  for days in (1..=start_days).rev() {
+    println!("There are {days} until Christmas!");
+  }
+
+  println!("Merry Christmas!!!");
+}`
+      },
+      {
+        id: 6,
+        title: "Simple Liftoff Range",
+        category: "Control Flow",
+        description: "Reversed iteration over simple exclusive ranges.",
+        code: `fn main() {
+  for number in (1..4).rev() {
+    println!("{number}!");
+  }
+  println!("LIFTOFF!!!");
+}`
+      },
+      {
+        id: 7,
+        title: "Infinite Loop & Break",
+        category: "Control Flow",
+        description: "Using the loop keyword with explicit break condition.",
+        code: `fn main() {
+  loop {
+    println!("again!");
+    break;
+  }
+}`
+      }
+    ];
+
+    // State Variables
+    let activeIndex = 0;
+    let isTargetHidden = false;
+
+    // DOM References
+    const snippetListEl = document.getElementById("snippetList");
+    const codeTargetEl = document.getElementById("codeTarget");
+    const editorEl = document.getElementById("editor");
+    const snippetTitleEl = document.getElementById("snippetTitle");
+    const snippetDescEl = document.getElementById("snippetDesc");
+    const progressTrackerEl = document.getElementById("progressTracker");
+    const feedbackBannerEl = document.getElementById("feedbackBanner");
+
+    // Initialize Sidebar Snippet Cards
+    function renderSidebar() {
+      snippetListEl.innerHTML = "";
+      rustSnippets.forEach((snippet, index) => {
+        const card = document.createElement("div");
+        card.className = `snippet-card ${index === activeIndex ? "active" : ""}`;
+        card.onclick = () => selectSnippet(index);
+
+        card.innerHTML = `
+          <div class="snippet-card-header">
+            <span class="snippet-card-title">${snippet.title}</span>
+            <span class="badge">${snippet.category}</span>
+          </div>
+        `;
+        snippetListEl.appendChild(card);
+      });
+    }
+
+    // Select Active Snippet
+    function selectSnippet(index) {
+      activeIndex = index;
+      const snippet = rustSnippets[index];
+
+      // Update UI Text
+      snippetTitleEl.innerText = snippet.title;
+      snippetDescEl.innerText = snippet.description;
+      codeTargetEl.innerText = snippet.code;
+      progressTrackerEl.innerText = `Snippet ${index + 1} of ${rustSnippets.length}`;
+
+      // Reset Typing Editor State
+      resetEditor();
+      renderSidebar();
+    }
+
+    // Toggle Hide / Unhide Code Syntax
+    function toggleTargetHide() {
+      isTargetHidden = !isTargetHidden;
+      const toggleText = document.getElementById("toggleText");
+      
+      if (isTargetHidden) {
+        codeTargetEl.classList.add("hidden-target");
+        toggleText.innerText = "Unhide Code";
+      } else {
+        codeTargetEl.classList.remove("hidden-target");
+        toggleText.innerText = "Hide Code";
+      }
+    }
+
+    // Syntax Validation Function
+    function validateSyntax() {
+      const userInput = editorEl.value;
+      const targetCode = rustSnippets[activeIndex].code;
+
+      // Normalize spaces for softer comparison if needed, or exact match
+      if (userInput === targetCode) {
+        editorEl.className = "editor correct";
+        feedbackBannerEl.className = "feedback-banner show success";
+        feedbackBannerEl.innerText = "🎉 Perfect! Syntax matched exactly!";
+      } else if (userInput.length > 0 && targetCode.startsWith(userInput)) {
+        editorEl.className = "editor";
+        feedbackBannerEl.className = "feedback-banner";
+      } else if (userInput.length > 0) {
+        editorEl.className = "editor incorrect";
+        feedbackBannerEl.className = "feedback-banner show error";
+        feedbackBannerEl.innerText = "⚠️ Mis-match detected. Check indentation, quotes, or trailing semicolons.";
+      } else {
+        editorEl.className = "editor";
+        feedbackBannerEl.className = "feedback-banner";
+      }
+    }
+
+    // Clear Textarea
+    function resetEditor() {
+      editorEl.value = "";
+      editorEl.className = "editor";
+      feedbackBannerEl.className = "feedback-banner";
+    }
+
+    // Initialize App
+    renderSidebar();
+    selectSnippet(0);
+  </script>
+</body>
+</html>
