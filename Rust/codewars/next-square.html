@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mastering Rust: Find Next Square</title>
+    
+    <!-- Google Fonts & Lucide Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* CSS RESET & VARIABLES */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg-body: #090d16;
+            --bg-card: #111827;
+            --bg-card-hover: #1f2937;
+            --accent-primary: #6366f1;
+            --accent-primary-hover: #4f46e5;
+            --accent-glow: rgba(99, 102, 241, 0.25);
+            --text-main: #f9fafb;
+            --text-muted: #9ca3af;
+            --border-color: #1f2937;
+            --success: #10b981;
+            --success-glow: rgba(16, 185, 129, 0.2);
+            --error: #ef4444;
+            --error-glow: rgba(239, 68, 68, 0.2);
+            --code-bg: #030712;
+            
+            --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'Fira Code', monospace;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* HEADER / NAVIGATION */
+        header {
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            padding: 0.875rem 1.25rem;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 800;
+            font-size: 1.125rem;
+            color: var(--text-main);
+            letter-spacing: -0.025em;
+        }
+
+        .logo-icon {
+            background: linear-gradient(135deg, var(--accent-primary), #a855f7);
+            color: white;
+            padding: 0.5rem;
+            border-radius: 0.625rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        .streak-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            padding: 0.375rem 0.75rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        /* MAIN LAYOUT */
+        main {
+            flex: 1;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 1.5rem 1rem;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (min-width: 1024px) {
+            main {
+                grid-template-columns: 320px 1fr;
+                padding: 2rem 1.25rem;
+            }
+        }
+
+        /* SIDEBAR / MODULE SELECTOR */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .module-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 0.875rem;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.875rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .module-card:hover {
+            border-color: rgba(99, 102, 241, 0.4);
+            background: var(--bg-card-hover);
+        }
+
+        .module-card.active {
+            border-color: var(--accent-primary);
+            background: rgba(99, 102, 241, 0.08);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.1);
+        }
+
+        .module-card.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--accent-primary);
+        }
+
+        .module-number {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+
+        .module-card.active .module-number {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        .module-card.completed .module-number {
+            background: var(--success);
+            color: white;
+        }
+
+        .module-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .module-title {
+            font-weight: 600;
+            font-size: 0.9375rem;
+            color: var(--text-main);
+            margin-bottom: 0.125rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .module-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* WORKSPACE / CONTENT AREA */
+        .workspace {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        /* EXPLANATION PANEL */
+        .explanation-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .explanation-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .explanation-text {
+            color: #d1d5db;
+            font-size: 0.9375rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .key-takeaway {
+            background: rgba(99, 102, 241, 0.1);
+            border-left: 3px solid var(--accent-primary);
+            padding: 0.875rem 1rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            font-size: 0.875rem;
+            color: #c7d2fe;
+            display: flex;
+            gap: 0.625rem;
+            align-items: flex-start;
+        }
+
+        /* PRACTICE LAB / IDE */
+        .editor-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #1e293b;
+            padding: 0.75rem 1rem;
+            border-top-left-radius: 0.875rem;
+            border-top-right-radius: 0.875rem;
+            border: 1px solid var(--border-color);
+            border-bottom: none;
+        }
+
+        .editor-title {
+            font-size: 0.8125rem;
+            font-family: var(--font-mono);
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .editor-container {
+            position: relative;
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-bottom-left-radius: 0.875rem;
+            border-bottom-right-radius: 0.875rem;
+            overflow: hidden;
+        }
+
+        .target-prompt {
+            padding: 1rem 1.25rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-family: var(--font-mono);
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            user-select: none;
+        }
+
+        .target-code {
+            color: #a7f3d0;
+            font-weight: 600;
+        }
+
+        .input-wrapper {
+            position: relative;
+            padding: 1.25rem;
+        }
+
+        textarea {
+            width: 100%;
+            height: 110px;
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-family: var(--font-mono);
+            font-size: 0.9375rem;
+            line-height: 1.6;
+            resize: none;
+            outline: none;
+            white-space: pre;
+            overflow-x: auto;
+        }
+
+        .action-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 1rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.625rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            outline: none;
+        }
+
+        .btn-primary {
+            background: var(--accent-primary);
+            color: white;
+            box-shadow: 0 4px 12px var(--accent-glow);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* FEEDBACK / ALERT PANEL */
+        .feedback-panel {
+            padding: 1rem;
+            border-radius: 0.75rem;
+            font-size: 0.875rem;
+            display: none;
+            align-items: center;
+            gap: 0.75rem;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .feedback-panel.success {
+            display: flex;
+            background: var(--success-glow);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #6ee7b7;
+        }
+
+        .feedback-panel.error {
+            display: flex;
+            background: var(--error-glow);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #fca5a5;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* CODE DISPLAY / SYNTAX HIGHLIGHTING (Simplified) */
+        .code-block {
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            font-family: var(--font-mono);
+            font-size: 0.875rem;
+            line-height: 1.7;
+            overflow-x: auto;
+            color: #e5e7eb;
+        }
+
+        .keyword { color: #f472b6; font-weight: 600; }
+        .type { color: #38bdf8; font-weight: 600; }
+        .function { color: #34d399; }
+        .comment { color: #6b7280; font-style: italic; }
+        .number { color: #fbbf24; }
+        .string { color: #a7f3d0; }
+
+        /* PROGRESS FOOTER */
+        .progress-bar-container {
+            width: 100%;
+            height: 6px;
+            background: var(--border-color);
+            border-radius: 9999px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent-primary), var(--success));
+            transition: width 0.4s ease;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER NAVIGATION -->
+    <header>
+        <div class="nav-container">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i data-lucide="cpu" size="20"></i>
+                </div>
+                <span>RustAcademy</span>
+            </div>
+            <div class="streak-badge">
+                <i data-lucide="zap" size="16"></i>
+                <span id="progress-text">Module 1 / 7</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN INTERACTIVE CONTAINER -->
+    <main>
+        <!-- MODULE NAVIGATION SIDEBAR -->
+        <aside class="sidebar" id="module-list">
+            <!-- Dynamically populated via JS -->
+        </aside>
+
+        <!-- ACTIVE MODULE WORKSPACE -->
+        <section class="workspace">
+            
+            <!-- MODULE EXPLANATION CARD -->
+            <div class="card">
+                <div class="explanation-header">
+                    <div class="logo-icon" style="background: rgba(99, 102, 241, 0.15); color: var(--accent-primary); box-shadow: none;">
+                        <i data-lucide="book-open" size="20"></i>
+                    </div>
+                    <div>
+                        <h2 class="explanation-title" id="mod-title">Loading Module...</h2>
+                        <span style="font-size: 0.75rem; color: var(--text-muted);" id="mod-subtitle">Step-by-step concepts</span>
+                    </div>
+                </div>
+
+                <p class="explanation-text" id="mod-description">
+                    Select a module to begin your journey into mastering Rust function declarations, typing, and mathematical logic.
+                </p>
+
+                <div class="key-takeaway">
+                    <i data-lucide="lightbulb" size="18" style="flex-shrink: 0; margin-top: 2px;"></i>
+                    <div id="mod-takeaway">Key takeaway will appear here.</div>
+                </div>
+            </div>
+
+            <!-- CODE SYNTAX PRACTICE LAB -->
+            <div class="card" style="padding: 0; overflow: hidden; border: none; background: transparent;">
+                <div class="editor-header">
+                    <div class="editor-title">
+                        <i data-lucide="code-2" size="16"></i>
+                        <span>PRACTICE_LAB.rs</span>
+                    </div>
+                    <button class="btn btn-secondary" style="padding: 0.25rem 0.625rem; font-size: 0.75rem;" onclick="app.resetInput()">
+                        <i data-lucide="rotate-ccw" size="12"></i> Reset
+                    </button>
+                </div>
+
+                <div class="editor-container">
+                    <div class="target-prompt">
+                        Type the exact syntax: <br>
+                        <span class="target-code" id="mod-target-code">fn find_next_square(sq: u64) -> Option&lt;u64&gt; {</span>
+                    </div>
+                    <div class="input-wrapper">
+                        <textarea id="code-input" placeholder="Type the code snippet here to practice..." spellcheck="false" autocomplete="off" capitalize="off"></textarea>
+                    </div>
+                </div>
+
+                <div class="action-bar">
+                    <button class="btn btn-secondary" onclick="app.showHint()">
+                        <i data-lucide="help-circle" size="16"></i> Show Hint
+                    </button>
+                    <button class="btn btn-primary" onclick="app.verifyCode()">
+                        <i data-lucide="check-circle" size="16"></i> Verify & Next
+                    </button>
+                </div>
+            </div>
+
+            <!-- FEEDBACK ALERT -->
+            <div class="feedback-panel" id="feedback">
+                <i data-lucide="info" id="feedback-icon" size="20"></i>
+                <span id="feedback-message"></span>
+            </div>
+
+            <!-- COMPLETE SOURCE CODE REFERENCE -->
+            <div class="card">
+                <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i data-lucide="file-code" size="18" style="color: var(--accent-primary);"></i>
+                    Full Code Context
+                </h3>
+                <pre class="code-block"><code><span class="comment">// 1. Signature: Takes u64, returns an Option&lt;u64&gt;</span>
+<span class="keyword">fn</span> <span class="function">find_next_square</span>(sq: <span class="type">u64</span>) -&gt; <span class="type">Option</span>&lt;<span class="type">u64</span>&gt; {
+    <span class="comment">// 2. Cast &amp; Sqrt</span>
+    <span class="keyword">let</span> root_float = (sq <span class="keyword">as</span> <span class="type">f64</span>).<span class="function">sqrt</span>();
+
+    <span class="comment">// 3. Integer Check</span>
+    <span class="keyword">if</span> root_float.<span class="function">fract</span>() == <span class="number">0.0</span> {
+        <span class="comment">// 4. Cast back &amp; calculate next root</span>
+        <span class="keyword">let</span> current_root = root_float <span class="keyword">as</span> <span class="type">u64</span>;
+        <span class="keyword">let</span> next_root = current_root + <span class="number">1</span>;
+        
+        <span class="comment">// 5. Return success result wrapped in Some()</span>
+        <span class="type">Some</span>(next_root * next_root)
+    } <span class="keyword">else</span> {
+        <span class="comment">// 6. Return failure wrapped in None</span>
+        <span class="type">None</span>      
+    }
+}</code></pre>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- APP ENGINE & CURRICULUM DATA -->
+    <script>
+        // CURRICULUM DATA DIRECTORY
+        const modulesData = [
+            {
+                id: 1,
+                title: "Function Signature & Option Enum",
+                subtitle: "Understanding input types and optional returns",
+                description: "In Rust, functions explicitly define parameter types and return types using the arrow (->). The Option<u64> type means the function might return a valid unsigned integer inside Some(u64) or nothing via None.",
+                takeaway: "Rust forces explicit error-handling. Instead of returning -1 or null, Option<T> prevents null pointer exceptions at compile-time.",
+                targetCode: "fn find_next_square(sq: u64) -> Option<u64> {"
+            },
+            {
+                id: 2,
+                title: "Type Casting & Square Root Calculation",
+                subtitle: "Converting integer types to float for math",
+                description: "The .sqrt() method is only available on floating-point numbers in Rust. We use explicit casting (sq as f64) to safely convert our 64-bit unsigned integer to a 64-bit float before computing the square root.",
+                takeaway: "Rust does not perform implicit type conversion. You must explicitly convert types using the 'as' keyword.",
+                targetCode: "let root_float = (sq as f64).sqrt();"
+            },
+            {
+                id: 3,
+                title: "Checking for Perfect Squares",
+                subtitle: "Inspecting floating-point fractions",
+                description: "The .fract() method isolates the fractional part of a floating-point number. If the fractional part equals 0.0, the original input was a perfect square.",
+                takeaway: "For example, 11.0.fract() is 0.0 (perfect square), while 10.816.fract() returns 0.816.",
+                targetCode: "if root_float.fract() == 0.0 {"
+            },
+            {
+                id: 4,
+                title: "Casting Float Back to Integer",
+                subtitle: "Restoring precision safety",
+                description: "Once we confirm the floating point number has no fractional component, we convert it back to a u64 integer for exact arithmetic operations without precision loss.",
+                takeaway: "Floating-point math can introduce subtle inaccuracies; converting back to integers ensures accurate multiplication later.",
+                targetCode: "let current_root = root_float as u64;\nlet next_root = current_root + 1;"
+            },
+            {
+                id: 5,
+                title: "Implicit Returns & Some Variant",
+                subtitle: "Returning values without semicolons",
+                description: "In Rust, omitting the trailing semicolon from the last expression in a function or block turns it into an implicit return statement. We wrap the calculated square in Some().",
+                takeaway: "Expressions evaluate to a value. Leaving off the semicolon returns that value directly from the block.",
+                targetCode: "Some(next_root * next_root)"
+            },
+            {
+                id: 6,
+                title: "Handling non-perfect squares",
+                subtitle: "Returning the None variant",
+                description: "If the input number is not a perfect square, execution hits the else block and returns None, safely indicating that no valid next square exists.",
+                takeaway: "None is a first-class value in Rust, providing a safe alternative to returning arbitrary error numbers like -1.",
+                targetCode: "None"
+            },
+            {
+                id: 7,
+                title: "Printing & Debug Formatters",
+                subtitle: "Inspecting Option values in main",
+                description: "Types like Option<T> don't implement simple Display formatting. To print them with println!, we use the debug specifier {:?}.",
+                takeaway: "{:?} tells Rust to use the Debug trait, printing human-readable details like 'Some(144)' or 'None'.",
+                targetCode: "println!(\"Next square after 121: {:?}\", find_next_square(121));"
+            }
+        ];
+
+        // MASTER APP CLASS
+        class RustAcademyApp {
+            constructor(modules) {
+                this.modules = modules;
+                this.currentModuleIndex = 0;
+                this.completedModules = new Set();
+                
+                this.initElements();
+                this.renderModuleList();
+                this.loadModule(0);
+                this.attachEvents();
+            }
+
+            initElements() {
+                this.moduleListEl = document.getElementById("module-list");
+                this.titleEl = document.getElementById("mod-title");
+                this.subtitleEl = document.getElementById("mod-subtitle");
+                this.descEl = document.getElementById("mod-description");
+                this.takeawayEl = document.getElementById("mod-takeaway");
+                this.targetCodeEl = document.getElementById("mod-target-code");
+                this.codeInputEl = document.getElementById("code-input");
+                this.feedbackEl = document.getElementById("feedback");
+                this.feedbackMsgEl = document.getElementById("feedback-message");
+                this.progressTextEl = document.getElementById("progress-text");
+            }
+
+            renderModuleList() {
+                this.moduleListEl.innerHTML = "";
+                this.modules.forEach((mod, idx) => {
+                    const isCompleted = this.completedModules.has(idx);
+                    const isActive = idx === this.currentModuleIndex;
+
+                    const card = document.createElement("div");
+                    card.className = `module-card ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}`;
+                    card.onclick = () => this.loadModule(idx);
+
+                    card.innerHTML = `
+                        <div class="module-number">${isCompleted ? '✓' : idx + 1}</div>
+                        <div class="module-info">
+                            <div class="module-title">${mod.title}</div>
+                            <div class="module-subtitle">Step ${idx + 1} of ${this.modules.length}</div>
+                        </div>
+                    `;
+                    this.moduleListEl.appendChild(card);
+                });
+            }
+
+            loadModule(index) {
+                this.currentModuleIndex = index;
+                const mod = this.modules[index];
+
+                this.titleEl.textContent = mod.title;
+                this.subtitleEl.textContent = mod.subtitle;
+                this.descEl.textContent = mod.description;
+                this.takeawayEl.textContent = mod.takeaway;
+                this.targetCodeEl.textContent = mod.targetCode;
+                
+                this.resetInput();
+                this.hideFeedback();
+                this.renderModuleList();
+                this.updateProgress();
+            }
+
+            resetInput() {
+                this.codeInputEl.value = "";
+                this.codeInputEl.focus();
+                this.hideFeedback();
+            }
+
+            verifyCode() {
+                const target = this.modules[this.currentModuleIndex].targetCode.trim();
+                const userVal = this.codeInputEl.value.trim();
+
+                // Normalize line breaks for comparison
+                const cleanTarget = target.replace(/\r\n/g, "\n");
+                const cleanUser = userVal.replace(/\r\n/g, "\n");
+
+                if (cleanUser === cleanTarget) {
+                    this.completedModules.add(this.currentModuleIndex);
+                    this.showFeedback(true, "Excellent syntax execution! Ready for the next module.");
+                    this.renderModuleList();
+                    this.updateProgress();
+
+                    // Auto-advance after delay
+                    setTimeout(() => {
+                        if (this.currentModuleIndex < this.modules.length - 1) {
+                            this.loadModule(this.currentModuleIndex + 1);
+                        }
+                    }, 1200);
+                } else {
+                    this.showFeedback(false, "Syntax mismatch. Check spaces, types, and punctuation carefully.");
+                }
+            }
+
+            showHint() {
+                const target = this.modules[this.currentModuleIndex].targetCode;
+                this.codeInputEl.value = target.substring(0, Math.ceil(target.length / 2));
+                this.codeInputEl.focus();
+            }
+
+            showFeedback(isSuccess, message) {
+                this.feedbackEl.className = `feedback-panel ${isSuccess ? 'success' : 'error'}`;
+                this.feedbackMsgEl.textContent = message;
+            }
+
+            hideFeedback() {
+                this.feedbackEl.className = "feedback-panel";
+            }
+
+            updateProgress() {
+                this.progressTextEl.textContent = `Module ${this.currentModuleIndex + 1} / ${this.modules.length}`;
+            }
+
+            attachEvents() {
+                // Submit code on Ctrl+Enter or Cmd+Enter
+                this.codeInputEl.addEventListener("keydown", (e) => {
+                    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+                        e.preventDefault();
+                        this.verifyCode();
+                    }
+                });
+            }
+        }
+
+        // INITIALIZE APP AND ICONS
+        let app;
+        document.addEventListener("DOMContentLoaded", () => {
+            app = new RustAcademyApp(modulesData);
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>
