@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rust Massive Project Architecture: Interactive Practice Guide</title>
+  <!-- Google Fonts: Inter & Fira Code -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-slate: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --editor-bg: #090d16;
+      --accent-orange: #f97316;
+      --accent-green: #22c55e;
+      --accent-red: #ef4444;
+      --accent-blue: #38bdf8;
+      --accent-purple: #c084fc;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --font-sans: 'Inter', sans-serif;
+      --font-mono: 'Fira Code', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-slate);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      padding-bottom: 4rem;
+    }
+
+    /* Sticky Header */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background-color: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 1rem 1.5rem;
+    }
+
+    .header-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    @media (min-width: 640px) {
+      .header-container {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+    }
+
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .header-title h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+    }
+
+    .badge {
+      background-color: rgba(249, 115, 22, 0.15);
+      color: var(--accent-orange);
+      border: 1px solid rgba(249, 115, 22, 0.3);
+      padding: 0.2rem 0.6rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .badge-blue {
+      background-color: rgba(56, 189, 248, 0.15);
+      color: var(--accent-blue);
+      border-color: rgba(56, 189, 248, 0.3);
+    }
+
+    .badge-purple {
+      background-color: rgba(192, 132, 252, 0.15);
+      color: var(--accent-purple);
+      border-color: rgba(192, 132, 252, 0.3);
+    }
+
+    .badge-green {
+      background-color: rgba(34, 197, 94, 0.15);
+      color: var(--accent-green);
+      border-color: rgba(34, 197, 94, 0.3);
+    }
+
+    .progress-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      min-width: 220px;
+    }
+
+    .progress-bar-bg {
+      flex: 1;
+      height: 8px;
+      background-color: var(--card-border);
+      border-radius: 9999px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background-color: var(--accent-green);
+      transition: width 0.3s ease;
+    }
+
+    .progress-text {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    /* Layout */
+    main {
+      max-width: 1000px;
+      margin: 2rem auto 0;
+      padding: 0 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    /* Cards */
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .overview-card {
+      border-left: 4px solid var(--accent-blue);
+    }
+
+    .overview-card h2 {
+      font-size: 1.25rem;
+      color: var(--accent-blue);
+      margin-bottom: 0.5rem;
+    }
+
+    .module-card {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .module-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .module-header h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .module-summary {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .module-summary code {
+      font-family: var(--font-mono);
+      background-color: rgba(255, 255, 255, 0.1);
+      color: var(--accent-orange);
+      padding: 0.15rem 0.4rem;
+      border-radius: 0.25rem;
+      font-size: 0.85em;
+    }
+
+    /* Terminal Editor Box */
+    .terminal-box {
+      background-color: var(--editor-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 0.5rem;
+      overflow: hidden;
+      font-family: var(--font-mono);
+    }
+
+    .terminal-header {
+      background-color: #161f30;
+      padding: 0.5rem 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .window-dots {
+      display: flex;
+      gap: 0.4rem;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .dot-red { background-color: #ef4444; }
+    .dot-yellow { background-color: #f59e0b; }
+    .dot-green { background-color: #10b981; }
+
+    .file-path {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .terminal-body {
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .code-prompt {
+      color: #64748b;
+      font-size: 0.85rem;
+      user-select: none;
+      white-space: pre;
+      overflow-x: auto;
+      background: #0d1322;
+      padding: 0.75rem;
+      border-radius: 0.375rem;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .code-prompt span.highlight {
+      color: #f1f5f9;
+      font-weight: 500;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .prompt-symbol {
+      position: absolute;
+      left: 0.75rem;
+      color: var(--accent-orange);
+      font-weight: bold;
+      pointer-events: none;
+    }
+
+    .code-input {
+      width: 100%;
+      background-color: #0f172a;
+      border: 1px solid var(--card-border);
+      border-radius: 0.375rem;
+      color: var(--text-main);
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      padding: 0.6rem 0.75rem 0.6rem 2rem;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .code-input:focus {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+    }
+
+    .code-input.valid {
+      border-color: var(--accent-green);
+      background-color: rgba(34, 197, 94, 0.05);
+      box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
+    }
+
+    .code-input.invalid {
+      border-color: var(--accent-red);
+      background-color: rgba(239, 68, 68, 0.05);
+    }
+
+    .status-msg {
+      font-size: 0.8rem;
+      min-height: 1.2rem;
+      font-family: var(--font-mono);
+      transition: opacity 0.2s;
+    }
+
+    .status-msg.valid-text { color: var(--accent-green); }
+    .status-msg.invalid-text { color: var(--accent-red); }
+  </style>
+</head>
+<body>
+
+  <!-- Sticky Header -->
+  <header>
+    <div class="header-container">
+      <div class="header-title">
+        <h1>Massive Project Architecture in Rust</h1>
+        <span class="badge">Production Architecture</span>
+      </div>
+      <div class="progress-section">
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="progress-fill"></div>
+        </div>
+        <span class="progress-text" id="progress-text">0 / 0 Completed</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Overview Card -->
+    <section class="card overview-card">
+      <h2>Chapter Overview: Scaling Monorepos & Large Rust Codebases</h2>
+      <p>As Rust applications grow from microservices into enterprise systems, maintaining fast compile times, clean boundaries, and high maintainability requires disciplined architecture. Learn Cargo workspaces, workspace inheritance, feature flags, trait-based dependency inversion, clean layer isolation, benchmarking, and CI/CD policies.</p>
+    </section>
+
+    <!-- Module 1: Cargo Workspace Layout -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3>Level 1: Multi-Crate Cargo Workspace</h3>
+        <span class="badge">Workspaces</span>
+      </div>
+      <p class="module-summary">
+        Break large applications into smaller, isolated crates managed by a top-level root <code>Cargo.toml</code>. This enforces boundary separation and speeds up incremental builds.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="file-path">Cargo.toml — Root workspace definition</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-prompt">Target:
+<span class="highlight">[workspace]
+members = [
+    "crates/core",
+    "crates/api",
+]</span></div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target='[workspace] members = [ "crates/core", "crates/api" ]'
+              placeholder="Type root Cargo.toml workspace layout..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-msg"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Module 2: Workspace Dependency Inheritance -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3>Level 2: Workspace Dependency Inheritance</h3>
+        <span class="badge badge-blue">Dependencies</span>
+      </div>
+      <p class="module-summary">
+        Centralize dependency versions across all crates using <code>[workspace.dependencies]</code> in the root manifest to prevent version mismatches across internal crates.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="file-path">Cargo.toml — Workspace dependencies</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-prompt">Target:
+<span class="highlight">[workspace.dependencies]
+tokio = { version = "1.38", features = ["full"] }</span></div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target='[workspace.dependencies] tokio = { version = "1.38", features = ["full"] }'
+              placeholder="Type workspace dependency specification..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-msg"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Module 3: Internal Workspace Crate References -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3>Level 3: Member Crate Inherited Imports</h3>
+        <span class="badge badge-blue">Dependencies</span>
+      </div>
+      <p class="module-summary">
+        Inside child crate <code>Cargo.toml</code> files, inherit dependencies defined in the root workspace using <code>workspace = true</code> to avoid repeating version numbers.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="file-path">crates/api/Cargo.toml — Child dependencies</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-prompt">Target:
+<span class="highlight">[dependencies]
+tokio = { workspace = true }</span></div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target='[dependencies] tokio = { workspace = true }'
+              placeholder="Type inherited child dependency definition..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-msg"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Module 4: Modular Feature Flags -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3>Level 4: Conditional Feature Compilation</h3>
+        <span class="badge badge-purple">Feature Flags</span>
+      </div>
+      <p class="module-summary">
+        Keep binary sizes small and compile times fast by isolating optional integrations (e.g., database drivers or metrics) behind feature gates.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="file-path">crates/core/src/lib.rs — Feature conditional compilation</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-prompt">Target:
+<span class="highlight">#[cfg(feature = "postgres")]
+pub mod db;</span></div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target='#[cfg(feature = "postgres")] pub mod db;'
+              placeholder="Type feature flag conditional attribute..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-msg"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Module 5: Dependency Inversion via Repository Traits -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3>Level 5: Service Layer Abstraction</h3>
+        <span class="badge badge-green">Clean Architecture</span>
+      </div>
+      <p class="module-summary">
+        Decouple business domain logic from storage mechanisms using async trait abstractions bounded by <code>Send + Sync</code> for thread-safe dependency injection.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="file-path">crates/core/src/ports.rs — Repository trait</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-prompt">Target:
+<span class="highlight">#[async_trait]
+pub trait UserRepository: Send + Sync {
+    async fn find_by_id(&amp;self, id: u64) -&gt; Result&lt;User, Error&gt;;
+}</span></div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="#[async_trait] pub trait UserRepository: Send + Sync { async fn find_by_id(&self, id: u64) -> Result<User, Error>; }"
+              placeholder="Type repository trait contract..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-msg"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Module 6: Application Service Layer Injection -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3>Level 6: Generic Application Service Injection</h3>
+        <span class="badge badge-green">Clean Architecture</span>
+      </div>
+      <p class="module-summary">
+        Inject implementations into application services using generics or boxed trait objects so core domain handlers remain 100% testable with mock structs.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="file-path">crates/core/src/service.rs — Application service struct</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-prompt">Target:
+<span class="highlight">pub struct UserService&lt;R: UserRepository&gt; {
+    repo: R,
+}</span></div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="pub struct UserService<R: UserRepository> { repo: R }"
+              placeholder="Type generic service struct declaration..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-msg"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Module 7: Criterion Performance Benchmarking -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3>Level 7: System Performance Benchmarking</h3>
+        <span class="badge">Performance</span>
+      </div>
+      <p class="module-summary">
+        Prevent performance regressions in critical hot loops across large codebases using Criterion macro groups and benchmark harnesses.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="file-path">benches/core_bench.rs — Benchmark entry point</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-prompt">Target:
+<span class="highlight">criterion_group!(benches, bench_pipeline);
+criterion_main!(benches);</span></div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="criterion_group!(benches, bench_pipeline); criterion_main!(benches);"
+              placeholder="Type Criterion macro harness calls..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-msg"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Module 8: Strict CI/CD Clippy Linter Policies -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3>Level 8: Strict CI Code Quality Enforcement</h3>
+        <span class="badge">CI/CD Pipeline</span>
+      </div>
+      <p class="module-summary">
+        Enforce strict coding standards, prevent unhandled warnings, and block anti-patterns in CI pipelines using strict Clippy flags across all workspace members.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="file-path">.github/workflows/ci.yml — Linter command</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-prompt">Target:
+<span class="highlight">cargo clippy --workspace --all-targets -- -D warnings</span></div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="cargo clippy --workspace --all-targets -- -D warnings"
+              placeholder="Type strict CI linter command..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-msg"></div>
+        </div>
+      </div>
+    </section>
+    <!-- Add Mod 9 -->
+<!-- Module 9: Conditional Compilation with cfg-if -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3>Level 9: Clean Target-Specific Branching</h3>
+        <span class="badge badge-purple">Feature Flags</span>
+      </div>
+      <p class="module-summary">
+        Avoid nested <code>#[cfg]</code> attributes when supporting multiple target platforms or feature combinations. Use the <code>cfg_if!</code> macro for clean, readable conditional compilation.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="file-path">crates/core/src/sys.rs — Clean feature branching</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-prompt">Target:
+<span class="highlight">cfg_if::cfg_if! {
+    if #[cfg(unix)] {
+        pub use unix::sys_info;
+    } else {
+        pub use fallback::sys_info;
+    }
+}</span></div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="cfg_if::cfg_if! { if #[cfg(unix)] { pub use unix::sys_info; } else { pub use fallback::sys_info; } }"
+              placeholder="Type cfg_if conditional macro block..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-msg"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Module 10: Centralized Workspace Lints -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3>Level 10: Centralized Workspace Lint Table</h3>
+        <span class="badge">CI/CD Pipeline</span>
+      </div>
+      <p class="module-summary">
+        Manage compiler and Clippy lints centrally in the root <code>Cargo.toml</code> using <code>[workspace.lints]</code>, and inherit them in child crates with <code>[lints] workspace = true</code>.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="file-path">Cargo.toml — Centralized workspace lints</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-prompt">Target:
+<span class="highlight">[workspace.lints.clippy]
+unwrap_used = "deny"
+enum_glob_use = "warn"</span></div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target='[workspace.lints.clippy] unwrap_used = "deny" enum_glob_use = "warn"'
+              placeholder="Type workspace lint configuration..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-msg"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Module 11: Re-exporting Internal Dependencies (Facade Pattern) -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3>Level 11: Internal Dependency Facade</h3>
+        <span class="badge badge-blue">Dependencies</span>
+      </div>
+      <p class="module-summary">
+        Re-export internal crate types through a top-level facade crate so consumers only need to depend on one primary crate instead of juggling multiple workspace members.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="file-path">crates/facade/src/lib.rs — Clean library entry point</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-prompt">Target:
+<span class="highlight">pub use my_app_core::User;
+pub use my_app_api::Server;</span></div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="pub use my_app_core::User; pub use my_app_api::Server;"
+              placeholder="Type facade re-export declarations..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-msg"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Module 12: Automated Workspace MSRV Policy -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3>Level 12: Explicit MSRV Specification</h3>
+        <span class="badge">CI/CD Pipeline</span>
+      </div>
+      <p class="module-summary">
+        Prevent unexpected compilation failures for downstream enterprise users by locking and declaring your Minimum Supported Rust Version (MSRV) across the workspace.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="file-path">Cargo.toml — Workspace package metadata</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-prompt">Target:
+<span class="highlight">[workspace.package]
+rust-version = "1.75.0"</span></div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target='[workspace.package] rust-version = "1.75.0"'
+              placeholder="Type MSRV workspace declaration..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-msg"></div>
+        </div>
+      </div>
+    </section>
+    <!-- Add Mod 13 -->
+     <!-- Module 13: Build Scripts (build.rs) for Codegen / FFI -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3>Level 13: Build Script Code Generation</h3>
+        <span class="badge">Build Pipeline</span>
+      </div>
+      <p class="module-summary">
+        Use a root or crate-level <code>build.rs</code> script to generate Rust bindings, compile Protocol Buffers, or run C/C++ compilation steps before cargo compiles your application.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="file-path">build.rs — Build script entry point</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-prompt">Target:
+<span class="highlight">fn main() {
+    println!("cargo:rerun-if-changed=proto/service.proto");
+}</span></div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target='fn main() { println!("cargo:rerun-if-changed=proto/service.proto"); }'
+              placeholder="Type build script rerun directive..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-msg"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Module 14: Profile-Guided Optimization & LTO -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3>Level 14: Release Profile Optimization (LTO)</h3>
+        <span class="badge">Performance</span>
+      </div>
+      <p class="module-summary">
+        Configure link-time optimization (LTO) and codegen units in <code>Cargo.toml</code> to strip dead code across workspace bounds and maximize production binary speed.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="file-path">Cargo.toml — Release profile settings</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-prompt">Target:
+<span class="highlight">[profile.release]
+lto = true
+codegen-units = 1</span></div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="[profile.release] lto = true codegen-units = 1"
+              placeholder="Type release profile LTO settings..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-msg"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Module 15: Dependency Graph Auditing (cargo-deny) -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3>Level 15: Supply Chain & License Auditing</h3>
+        <span class="badge">Security</span>
+      </div>
+      <p class="module-summary">
+        In large enterprise codebases, audit dependency trees for vulnerable crates, duplicate crate versions, and restrictive licenses using automated security rules.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="file-path">deny.toml — Dependency policy check</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-prompt">Target:
+<span class="highlight">[licenses]
+allow = ["MIT", "Apache-2.0"]</span></div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target='[licenses] allow = ["MIT", "Apache-2.0"]'
+              placeholder="Type dependency license policy..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-msg"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Module 16: Nextest Parallel Runner Integration -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3>Level 16: Fast Parallel Test Execution</h3>
+        <span class="badge">CI/CD Pipeline</span>
+      </div>
+      <p class="module-summary">
+        Replace default single-threaded test execution in huge monorepos with <code>cargo nextest</code> to execute unit and integration test suites concurrently in isolated processes.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="file-path">.github/workflows/ci.yml — Fast test execution</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-prompt">Target:
+<span class="highlight">cargo nextest run --workspace --all-targets</span></div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="cargo nextest run --workspace --all-targets"
+              placeholder="Type nextest CLI command..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-msg"></div>
+        </div>
+      </div>
+    </section>
+    <!-- Add Mod 17 -->
+     <!-- Module 17: Distributed CI Caching (sccache) -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3>Level 17: Shared Compilation Caching</h3>
+        <span class="badge">CI/CD Pipeline</span>
+      </div>
+      <p class="module-summary">
+        Speed up CI pipeline builds across teams and pull requests by caching compiled crate dependencies using <code>sccache</code> with remote storage backends.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="file-path">.github/workflows/ci.yml — Compiler cache wrapper</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-prompt">Target:
+<span class="highlight">env:
+  RUSTC_WRAPPER: sccache</span></div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="env: RUSTC_WRAPPER: sccache"
+              placeholder="Type sccache environment wrapper..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-msg"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Module 18: Structured Telemetry & Tracing (tracing) -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3>Level 18: Contextual Distributed Tracing</h3>
+        <span class="badge">Observability</span>
+      </div>
+      <p class="module-summary">
+        Track request lifecycles across complex async crate boundaries by annotating functions with <code>#[tracing::instrument]</code> to capture arguments and field contexts automatically.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="file-path">crates/api/src/handlers.rs — Instrumented function</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-prompt">Target:
+<span class="highlight">#[tracing::instrument(skip(repo))]
+pub async fn process_order(repo: &amp;OrderRepo, id: u64) -&gt; Result&lt;()&gt;</span></div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="#[tracing::instrument(skip(repo))] pub async fn process_order(repo: &OrderRepo, id: u64) -> Result<()>"
+              placeholder="Type tracing instrument attribute..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-msg"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Module 19: Workspace-Wide Formatting Enforcers (.rustfmt.toml) -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3>Level 19: Strict Workspace Formatter Policy</h3>
+        <span class="badge">CI/CD Pipeline</span>
+      </div>
+      <p class="module-summary">
+        Maintain a uniform coding style across dozens of contributors by defining a root <code>.rustfmt.toml</code> configuration for automated code formatting checks in CI.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="file-path">.rustfmt.toml — Formatter rules</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-prompt">Target:
+<span class="highlight">edition = "2021"
+imports_granularity = "Crate"
+group_imports = "StdExternalCrate"</span></div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target='edition = "2021" imports_granularity = "Crate" group_imports = "StdExternalCrate"'
+              placeholder="Type rustfmt import grouping rules..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-msg"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Module 20: Vendor Dependencies for Offline/Hermetic Builds -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3>Level 20: Hermetic Offline Cargo Vendor</h3>
+        <span class="badge">Build Pipeline</span>
+      </div>
+      <p class="module-summary">
+        Guarantee reliable, repeatable production builds in isolated environments by vendoring all external crate dependencies directly inside the repository workspace.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="file-path">.cargo/config.toml — Vendored source routing</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-prompt">Target:
+<span class="highlight">[source.crates-io]
+replace-with = "vendored-sources"
+
+[source.vendored-sources]
+directory = "vendor"</span></div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target='[source.crates-io] replace-with = "vendored-sources" [source.vendored-sources] directory = "vendor"'
+              placeholder="Type cargo vendored source configuration..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-msg"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const inputs = document.querySelectorAll('input[data-target]');
+      const progressFill = document.getElementById('progress-fill');
+      const progressText = document.getElementById('progress-text');
+      const totalModules = inputs.length;
+
+      // Whitespace and syntax normalization helper
+      const normalize = str => str.replace(/\s+/g, ' ').trim();
+
+      function updateProgress() {
+        let completed = 0;
+        inputs.forEach(input => {
+          if (input.classList.contains('valid')) {
+            completed++;
+          }
+        });
+
+        const percentage = totalModules > 0 ? (completed / totalModules) * 100 : 0;
+        progressFill.style.width = `${percentage}%`;
+        progressText.textContent = `${completed} / ${totalModules} Completed`;
+      }
+
+      function handleInput(e) {
+        const input = e.target;
+        const rawTarget = input.getAttribute('data-target');
+        const targetValue = normalize(rawTarget);
+        const currentValue = normalize(input.value);
+        const statusMsg = input.closest('.terminal-body').querySelector('.status-msg');
+
+        if (currentValue === targetValue) {
+          input.classList.remove('invalid');
+          input.classList.add('valid');
+          statusMsg.textContent = '✓ Architecture pattern validated!';
+          statusMsg.className = 'status-msg valid-text';
+        } else if (currentValue.length > 0 && targetValue.startsWith(currentValue)) {
+          input.classList.remove('valid', 'invalid');
+          statusMsg.textContent = '...typing';
+          statusMsg.className = 'status-msg';
+        } else if (currentValue.length > 0) {
+          input.classList.remove('valid');
+          input.classList.add('invalid');
+          statusMsg.textContent = '✗ Syntax error or typo in specification.';
+          statusMsg.className = 'status-msg invalid-text';
+        } else {
+          input.classList.remove('valid', 'invalid');
+          statusMsg.textContent = '';
+          statusMsg.className = 'status-msg';
+        }
+
+        updateProgress();
+      }
+
+      inputs.forEach(input => {
+        input.addEventListener('input', handleInput);
+      });
+
+      updateProgress();
+    });
+  </script>
+</body>
+</html>

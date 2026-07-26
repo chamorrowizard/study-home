@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Peak Rust: Interactive Practice Guide</title>
+  <!-- Google Fonts: Inter & Fira Code -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-slate: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --editor-bg: #090d16;
+      --accent-orange: #f97316;
+      --accent-green: #22c55e;
+      --accent-red: #ef4444;
+      --accent-blue: #38bdf8;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --font-sans: 'Inter', sans-serif;
+      --font-mono: 'Fira Code', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-slate);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      padding-bottom: 4rem;
+    }
+
+    /* Sticky Header */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background-color: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 1rem 1.5rem;
+    }
+
+    .header-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    @media (min-width: 640px) {
+      .header-container {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+    }
+
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .header-title h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+    }
+
+    .badge {
+      background-color: rgba(249, 115, 22, 0.15);
+      color: var(--accent-orange);
+      border: 1px solid rgba(249, 115, 22, 0.3);
+      padding: 0.2rem 0.6rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .progress-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      min-width: 220px;
+    }
+
+    .progress-bar-bg {
+      flex: 1;
+      height: 8px;
+      background-color: var(--card-border);
+      border-radius: 9999px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background-color: var(--accent-green);
+      transition: width 0.3s ease;
+    }
+
+    .progress-text {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    /* Main Content Layout */
+    main {
+      max-width: 1000px;
+      margin: 2rem auto 0;
+      padding: 0 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    /* Cards */
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    .overview-card {
+      border-left: 4px solid var(--accent-blue);
+    }
+
+    .overview-card h2 {
+      font-size: 1.25rem;
+      color: var(--accent-blue);
+      margin-bottom: 0.5rem;
+    }
+
+    .module-card {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .module-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .module-header h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .module-summary {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .module-summary code {
+      font-family: var(--font-mono);
+      background-color: rgba(255, 255, 255, 0.1);
+      color: var(--accent-orange);
+      padding: 0.15rem 0.4rem;
+      border-radius: 0.25rem;
+      font-size: 0.85em;
+    }
+
+    /* Terminal Editor Box */
+    .terminal-box {
+      background-color: var(--editor-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 0.5rem;
+      overflow: hidden;
+      font-family: var(--font-mono);
+    }
+
+    .terminal-header {
+      background-color: #161f30;
+      padding: 0.5rem 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .window-dots {
+      display: flex;
+      gap: 0.4rem;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .dot-red { background-color: #ef4444; }
+    .dot-yellow { background-color: #f59e0b; }
+    .dot-green { background-color: #10b981; }
+
+    .file-path {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .terminal-body {
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .code-prompt {
+      color: #64748b;
+      font-size: 0.85rem;
+      user-select: none;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .code-prompt span.highlight {
+      color: #f1f5f9;
+      font-weight: 500;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .prompt-symbol {
+      position: absolute;
+      left: 0.75rem;
+      color: var(--accent-orange);
+      font-weight: bold;
+      pointer-events: none;
+    }
+
+    .code-input {
+      width: 100%;
+      background-color: #0f172a;
+      border: 1px solid var(--card-border);
+      border-radius: 0.375rem;
+      color: var(--text-main);
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      padding: 0.6rem 0.75rem 0.6rem 2rem;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .code-input:focus {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+    }
+
+    /* State Feedback Visuals */
+    .code-input.valid {
+      border-color: var(--accent-green);
+      background-color: rgba(34, 197, 94, 0.05);
+      box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
+    }
+
+    .code-input.invalid {
+      border-color: var(--accent-red);
+      background-color: rgba(239, 68, 68, 0.05);
+    }
+
+    .status-msg {
+      font-size: 0.8rem;
+      min-height: 1.2rem;
+      font-family: var(--font-mono);
+      transition: opacity 0.2s;
+    }
+
+    .status-msg.valid-text { color: var(--accent-green); }
+    .status-msg.invalid-text { color: var(--accent-red); }
+  </style>
+</head>
+<body>
+
+  <!-- Sticky Header -->
+  <header>
+    <div class="header-container">
+      <div class="header-title">
+        <h1>Peak Rust: Compile-Time Bug Deletion</h1>
+        <span class="badge">Type System</span>
+      </div>
+      <div class="progress-section">
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="progress-fill"></div>
+        </div>
+        <span class="progress-text" id="progress-text">0 / 0 Completed</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- High-level Overview Card -->
+    <section class="card overview-card">
+      <h2>Chapter Overview: Making Bad States Unrepresentable</h2>
+      <p>Traditional code heavily relies on runtime checks (e.g., <code>if !conn.is_open { return Err(...) }</code>). In Rust, we can shift these checks from runtime panics to <strong>compile-time guarantees</strong>. By leveraging Enums, Newtypes, and the Typestate pattern, we eliminate invalid states before the program even runs.</p>
+    </section>
+
+    <!-- Module 1 -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3>Level 1: Data Modeling with Enums</h3>
+        <span class="badge">Enums</span>
+      </div>
+      <p class="module-summary">
+        Instead of using a struct with optional fields like <code>paid: bool</code>, <code>receipt: Option&lt;Receipt&gt;</code>, and <code>error: Option&lt;String&gt;</code> (which allows invalid states like paid with an error), use an enum. Enums enforce that an entity exists in <strong>exactly one valid state</strong> at a time.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="file-path">src/invoice.rs — Define state enum</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-prompt">Target: <span class="highlight">enum Invoice { Pending, Paid(Receipt), Failed(String) }</span></div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="enum Invoice { Pending, Paid(Receipt), Failed(String) }"
+              placeholder="Type the enum definition..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-msg"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Module 2 -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3>Level 1.5: Exhaustive Pattern Matching</h3>
+        <span class="badge">Match</span>
+      </div>
+      <p class="module-summary">
+        Rust's <code>match</code> expressions force you to handle every enum variant. If a new state is added in the future, the compiler alerts you immediately everywhere that state isn't handled.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="file-path">src/invoice.rs — Exhaustive match</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-prompt">Target: <span class="highlight">match invoice { Invoice::Pending => wait(), Invoice::Paid(r) => store(r), Invoice::Failed(e) => log(e) }</span></div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="match invoice { Invoice::Pending => wait(), Invoice::Paid(r) => store(r), Invoice::Failed(e) => log(e) }"
+              placeholder="Type the match expression..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-msg"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Module 3 -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3>Level 2: Domain Modeling with Newtypes</h3>
+        <span class="badge">Newtypes</span>
+      </div>
+      <p class="module-summary">
+        Raw primitive types like <code>f64</code> for currency or <code>String</code> for emails allow invalid data (e.g., negative amounts, invalid emails, rounding bugs). Wrap primitives in custom tuple structs (Newtypes) that can only be constructed via validated constructors.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="file-path">src/domain.rs — Define Email wrapper</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-prompt">Target: <span class="highlight">pub struct Email(String);</span></div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="pub struct Email(String);"
+              placeholder="Type the newtype definition..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-msg"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Module 4 -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3>Level 3: The Typestate Pattern</h3>
+        <span class="badge">Typestate</span>
+      </div>
+      <p class="module-summary">
+        Move dynamic boolean flags (like <code>is_open: bool</code>) into zero-sized state marker types (e.g., <code>Open</code>, <code>Closed</code>). By binding state-specific methods directly to specific generic implementations, invalid actions (like sending data over a closed connection) fail at <strong>compile time</strong>.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="file-path">src/connection.rs — Typestate implementation</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-prompt">Target: <span class="highlight">impl Connection&lt;Open&gt; { pub fn send(&self, msg: String) {} }</span></div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="impl Connection<Open> { pub fn send(&self, msg: String) {} }"
+              placeholder="Type the typestate method..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-msg"></div>
+        </div>
+      </div>
+    </section>
+<!-- Added Mod 5 -->
+ <!-- Module 5: Type-Safe Builders & Typestate Validation -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3>Level 4: Compile-Time Builder Pattern</h3>
+        <span class="badge">Builder</span>
+      </div>
+      <p class="module-summary">
+        Avoid runtime errors from missing required fields when constructing complex structs. Use phantom generic markers (e.g., <code>Set</code> vs <code>Unset</code>) so required setter methods must be called before <code>.build()</code> becomes available in the type system.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="file-path">src/builder.rs — Type-safe builder</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-prompt">Target: <span class="highlight">impl ConfigBuilder&lt;Set, Set&gt; { pub fn build(self) -&gt; Config { Config } }</span></div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="impl ConfigBuilder<Set, Set> { pub fn build(self) -> Config { Config } }"
+              placeholder="Type the builder method..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-msg"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Module 6: Zero-Cost Fallible Conversions -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3>Level 5: Explicit Validation via TryFrom</h3>
+        <span class="badge">Traits</span>
+      </div>
+      <p class="module-summary">
+        Never expose public constructors like <code>Email::new(String)</code> or <code>.from(f64)</code> if raw values could be invalid. Implement <code>TryFrom</code> to parse domain objects safely at input boundaries (APIs, DBs) and force error handling during construction.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="file-path">src/domain.rs — Fallible conversion</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-prompt">Target: <span class="highlight">impl TryFrom&lt;String&gt; for Email { type Error = ParseError; }</span></div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="impl TryFrom<String> for Email { type Error = ParseError; }"
+              placeholder="Type the TryFrom implementation..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-msg"></div>
+        </div>
+      </div>
+    </section>
+    <!-- Add Mod 7 -->
+     <!-- Module 7: Panic-Free Error Handling with anyhow & thiserror -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3>Level 6: Contextual Error Handling</h3>
+        <span class="badge">Error Handling</span>
+      </div>
+      <p class="module-summary">
+        Avoid raw <code>.unwrap()</code> or generic string errors in production. Use <code>thiserror</code> for domain-specific library errors or attach context with <code>anyhow</code> at boundary calls so runtime failures explain <em>why</em> they happened.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="file-path">src/main.rs — Contextual Result</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-prompt">Target: <span class="highlight">conn.connect().context("Failed to establish server connection")?</span></div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target='conn.connect().context("Failed to establish server connection")?'
+              placeholder="Type the error context call..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-msg"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Module 8: Resource Leak Prevention with Drop Trait (RAII) -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3>Level 7: RAII & Automatic Cleanup</h3>
+        <span class="badge">RAII</span>
+      </div>
+      <p class="module-summary">
+        Never rely on manual cleanup calls like <code>conn.close()</code> which can be forgotten. Implement the <code>Drop</code> trait so state cleanup, file handles, or network sockets are automatically flushed and closed when going out of scope.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="file-path">src/connection.rs — Drop implementation</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-prompt">Target: <span class="highlight">impl&lt;S&gt; Drop for Connection&lt;S&gt; { fn drop(&amp;mut self) { self.flush(); } }</span></div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="impl<S> Drop for Connection<S> { fn drop(&mut self) { self.flush(); } }"
+              placeholder="Type the Drop implementation..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-msg"></div>
+        </div>
+      </div>
+    </section>
+    <!-- Add Mod 9 -->
+     <!-- Module 9: Zero-Allocation Strings via Cow (Copy-On-Write) -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3>Level 8: Zero-Allocation Strings</h3>
+        <span class="badge">Performance</span>
+      </div>
+      <p class="module-summary">
+        Avoid unnecessary heap allocations when accepting or returning string data that might not need mutation. Use <code>Cow&lt;'a, str&gt;</code> to borrow string slices by default and only allocate a new <code>String</code> when modification is required.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="file-path">src/sanitize.rs — Cow String wrapper</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-prompt">Target: <span class="highlight">pub fn sanitize&lt;'a&gt;(input: &amp;'a str) -&gt; Cow&lt;'a, str&gt; { Cow::Borrowed(input) }</span></div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="pub fn sanitize<'a>(input: &'a str) -> Cow<'a, str> { Cow::Borrowed(input) }"
+              placeholder="Type the Cow implementation..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-msg"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Module 10: Extension Traits for Modular API Extensions -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3>Level 9: Extension Traits Pattern</h3>
+        <span class="badge">API Design</span>
+      </div>
+      <p class="module-summary">
+        Extend foreign types or standard library types safely without violating the orphan rule. Define a local trait and implement it for the target type to add clean, chainable domain methods to external structures.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="file-path">src/ext.rs — Extension trait</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-prompt">Target: <span class="highlight">pub trait StrExt { fn is_valid_email(&amp;self) -&gt; bool; } impl StrExt for str { fn is_valid_email(&amp;self) -&gt; bool { true } }</span></div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="pub trait StrExt { fn is_valid_email(&self) -> bool; } impl StrExt for str { fn is_valid_email(&self) -> bool { true } }"
+              placeholder="Type the extension trait..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-msg"></div>
+        </div>
+      </div>
+    </section>
+    <!-- Add Mod 11 -->
+     <!-- Module 11: Sealing Traits for Controlled Polymorphism -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3>Level 10: Sealed Traits Pattern</h3>
+        <span class="badge">API Security</span>
+      </div>
+      <p class="module-summary">
+        Prevent downstream crates or external consumers from implementing your public traits. By requiring a private, un-exported supertrait constraint (e.g., <code>private::Sealed</code>), you preserve the ability to safely add trait methods in future updates without breaking external code.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="file-path">src/lib.rs — Sealed trait declaration</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-prompt">Target: <span class="highlight">pub trait Config: private::Sealed { fn validate(&amp;self); }</span></div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="pub trait Config: private::Sealed { fn validate(&self); }"
+              placeholder="Type the sealed trait declaration..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-msg"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Module 12: Declarative Guard Clauses via Newtype Deref DerefMut -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3>Level 11: Zero-Overhead Smart Wrappers</h3>
+        <span class="badge">Ergonomics</span>
+      </div>
+      <p class="module-summary">
+        When creating Newtypes for validated data, implement <code>Deref</code> to transparently expose methods from the underlying inner type. This gives you compile-time type safety at boundary checks without sacrificing ergonomic access to standard inner methods.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="file-path">src/domain.rs — Deref smart wrapper</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-prompt">Target: <span class="highlight">impl Deref for Email { type Target = str; fn deref(&amp;self) -&gt; &amp;str { &amp;self.0 } }</span></div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="impl Deref for Email { type Target = str; fn deref(&self) -> &str { &self.0 } }"
+              placeholder="Type the Deref implementation..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-msg"></div>
+        </div>
+      </div>
+    </section>
+    <!-- Add Mod 13 -->
+     <!-- Module 13: Async Cancellation Safety -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3>Level 12: Async Cancellation Safety</h3>
+        <span class="badge">Async</span>
+      </div>
+      <p class="module-summary">
+        Dropping a future at an <code>.await</code> point can leave state partially mutated. Wrap state updates in a atomic transactional guard or hold locks across state transitions so cancellation never causes state corruption.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="file-path">src/async_state.rs — Cancellation-safe transaction</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-prompt">Target: <span class="highlight">tokio::select! {
+  res = rx.recv() => handle(res),
+  _ = shutdown.changed() => cleanup(),
+}</span></div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="tokio::select! { res = rx.recv() => handle(res), _ = shutdown.changed() => cleanup() }"
+              placeholder="Type the cancellation-safe select block..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-msg"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Module 14: Non-Exhaustive Enums & Structs -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3>Level 13: Non-Exhaustive API Stability</h3>
+        <span class="badge">API Stability</span>
+      </div>
+      <p class="module-summary">
+        When publishing libraries, adding enum variants or struct fields breaks downstream code. Mark public types with <code>#[non_exhaustive]</code> to preserve semver compatibility while allowing future updates.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="file-path">src/api.rs — Non-exhaustive declaration</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-prompt">Target: <span class="highlight">#[non_exhaustive]
+pub enum PaymentStatus {
+    Pending,
+    Completed,
+}</span></div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="#[non_exhaustive] pub enum PaymentStatus { Pending, Completed }"
+              placeholder="Type the non-exhaustive enum definition..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-msg"></div>
+        </div>
+      </div>
+    </section>
+    <!-- Add Mod 15 -->
+     <!-- Module 15: Zero-Cost Typestate State Machine Transitions -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3>Level 14: Typestate State Transitions</h3>
+        <span class="badge">Type System</span>
+      </div>
+      <p class="module-summary">
+        Consume self by value during typestate state transitions to guarantee that the previous state cannot be reused or accessed after transitioning.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="file-path">src/state_machine.rs — Consuming transition</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-prompt">Target:
+<span class="highlight">impl Connection&lt;Closed&gt; {
+    pub fn connect(self) -&gt; Connection&lt;Open&gt; {
+        Connection { state: PhantomData }
+    }
+}</span></div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="impl Connection<Closed> { pub fn connect(self) -> Connection<Open> { Connection { state: PhantomData } } }"
+              placeholder="Type the state transition method..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-msg"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Module 16: Pinning & Self-Referential Guarantees -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3>Level 15: Pinning Unmovable Types</h3>
+        <span class="badge">Memory</span>
+      </div>
+      <p class="module-summary">
+        Use <code>Pin&lt;Box&lt;T&gt;&gt;</code> or <code>tokio::pin!</code> for self-referential structs or futures across <code>.await</code> points to ensure memory locations remain fixed and pointer references stay valid.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="file-path">src/pinning.rs — Pinning future</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-prompt">Target:
+<span class="highlight">let fut = async { process().await };
+tokio::pin!(fut);
+(&amp;mut fut).await;</span></div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="let fut = async { process().await }; tokio::pin!(fut); (&mut fut).await;"
+              placeholder="Type the pinning pattern..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-msg"></div>
+        </div>
+      </div>
+    </section>
+<!-- Add Mod 17 -->
+<!-- Module 17: Thread Safety & Shared State (Arc & RwLock) -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3>Level 16: Thread-Safe Shared State</h3>
+        <span class="badge">Concurrency</span>
+      </div>
+      <p class="module-summary">
+        Share state safely across concurrent threads or async tasks without race conditions. Use <code>Arc&lt;RwLock&lt;T&gt;&gt;</code> to allow multiple concurrent readers or a single exclusive writer.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="file-path">src/state.rs — Thread-safe wrapper</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-prompt">Target:
+<span class="highlight">pub type SharedState&lt;T&gt; = Arc&lt;RwLock&lt;T&gt;&gt;;</span></div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="pub type SharedState<T> = Arc<RwLock<T>>;"
+              placeholder="Type the shared state alias..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-msg"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Module 18: Lifetime Annotations & Borrowed Data -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3>Level 17: Explicit Struct Lifetimes</h3>
+        <span class="badge">Lifetimes</span>
+      </div>
+      <p class="module-summary">
+        Store references inside structs without copying or cloning underlying data. Explicitly tie the struct's validity lifetime to the borrowed inner data.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="file-path">src/borrow.rs — Struct lifetime annotation</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-prompt">Target:
+<span class="highlight">pub struct Parser&lt;'a&gt; {
+    input: &amp;'a str,
+}</span></div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="pub struct Parser<'a> { input: &'a str }"
+              placeholder="Type the struct lifetime definition..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-msg"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Module 19: Static vs Dynamic Dispatch (dyn Trait) -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3>Level 18: Dynamic Dispatch via Trait Objects</h3>
+        <span class="badge">Dispatch</span>
+      </div>
+      <p class="module-summary">
+        Store diverse types implementing a common trait in a single collection by using dynamic dispatch with heap-allocated trait objects (<code>Box&lt;dyn Trait&gt;</code>).
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="file-path">src/dispatch.rs — Trait object collection</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-prompt">Target:
+<span class="highlight">pub type PluginList = Vec&lt;Box&lt;dyn Plugin&gt;&gt;;</span></div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="pub type PluginList = Vec<Box<dyn Plugin>>;"
+              placeholder="Type the trait object alias..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-msg"></div>
+        </div>
+      </div>
+    </section>
+    <!-- Add Mod 20 -->
+     <!-- Module 20: Lock-Free Concurrency via Atomics -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3>Level 19: Lock-Free Atomic State</h3>
+        <span class="badge">Atomics</span>
+      </div>
+      <p class="module-summary">
+        For high-performance primitive flags or counters shared across threads, avoid mutex locking overhead. Use atomic types (like <code>AtomicBool</code>) with explicit memory ordering (e.g., <code>Ordering::SeqCst</code>).
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="file-path">src/flag.rs — Lock-free atomic swap</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-prompt">Target:
+<span class="highlight">pub fn set_ready(flag: &amp;AtomicBool) {
+    flag.store(true, Ordering::SeqCst);
+}</span></div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="pub fn set_ready(flag: &AtomicBool) { flag.store(true, Ordering::SeqCst); }"
+              placeholder="Type the atomic store execution..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-msg"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Module 21: FFI Safety & C-Interoperability (repr(C)) -->
+    <section class="card module-card">
+      <div class="module-header">
+        <h3>Level 20: Safe Foreign Function Interfaces</h3>
+        <span class="badge">FFI</span>
+      </div>
+      <p class="module-summary">
+        When passing structs across C binary boundaries or interfacing with system libraries, override Rust's struct layout optimization using <code>#[repr(C)]</code> to guarantee C-compatible memory layout alignment.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span class="file-path">src/ffi.rs — C-compatible struct layout</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-prompt">Target:
+<span class="highlight">#[repr(C)]
+pub struct NativePacket {
+    pub id: u32,
+    pub payload_len: u64,
+}</span></div>
+          <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="#[repr(C)] pub struct NativePacket { pub id: u32, pub payload_len: u64 }"
+              placeholder="Type the C-repr struct definition..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="status-msg"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+ 
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const inputs = document.querySelectorAll('input[data-target]');
+      const progressFill = document.getElementById('progress-fill');
+      const progressText = document.getElementById('progress-text');
+      const totalModules = inputs.length;
+
+      function updateProgress() {
+        let completed = 0;
+        inputs.forEach(input => {
+          if (input.classList.contains('valid')) {
+            completed++;
+          }
+        });
+
+        const percentage = totalModules > 0 ? (completed / totalModules) * 100 : 0;
+        progressFill.style.width = `${percentage}%`;
+        progressText.textContent = `${completed} / ${totalModules} Completed`;
+      }
+
+      function handleInput(e) {
+        const input = e.target;
+        const targetValue = input.getAttribute('data-target');
+        const currentValue = input.value;
+        const statusMsg = input.closest('.terminal-body').querySelector('.status-msg');
+
+        if (currentValue === targetValue) {
+          input.classList.remove('invalid');
+          input.classList.add('valid');
+          statusMsg.textContent = '✓ Correct syntax! State validated.';
+          statusMsg.className = 'status-msg valid-text';
+        } else if (currentValue.length > 0 && targetValue.startsWith(currentValue)) {
+          input.classList.remove('valid', 'invalid');
+          statusMsg.textContent = '...typing';
+          statusMsg.className = 'status-msg';
+        } else if (currentValue.length > 0) {
+          input.classList.remove('valid');
+          input.classList.add('invalid');
+          statusMsg.textContent = '✗ Syntax error or typo detected.';
+          statusMsg.className = 'status-msg invalid-text';
+        } else {
+          input.classList.remove('valid', 'invalid');
+          statusMsg.textContent = '';
+          statusMsg.className = 'status-msg';
+        }
+
+        updateProgress();
+      }
+
+      // Attach listener dynamically to all data-target inputs
+      inputs.forEach(input => {
+        input.addEventListener('input', handleInput);
+      });
+
+      // Initialize counter state
+      updateProgress();
+    });
+  </script>
+</body>
+</html>
