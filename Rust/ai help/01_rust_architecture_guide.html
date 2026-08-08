@@ -317,7 +317,7 @@ fn main() -> Result<(), Box<dyn std.error::Error>> {
             <!-- Code Tab 3: account.rs -->
             <div id="content-utils" class="tab-content hidden">
               <pre><code class="language-rust">// src/account.rs
-//! Submodule handling explicit Domain Invariants
+//! Submodule handling explicit Domain Invariants & Visibility Modifiers
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Currency {
@@ -328,16 +328,17 @@ pub enum Currency {
 
 #[derive(Debug)]
 pub struct BankAccount {
-    owner: String,      // Private: protects against illegal external mutation
-    balance: f64,        // Private: forces all mutations through method guards
-    pub currency: Currency, // Public enum field
+    owner: String,      // Private: enforces constructor usage & protects invariants
+    balance: f64,        // Private: prevents illegal external mutation
+    pub currency: Currency, // Public field
 }
 
 impl BankAccount {
+    /// Public Constructor: External code MUST use this (struct literals are blocked)
     pub fn new(owner: &str, initial_balance: f64, currency: Currency) -> Self {
         Self {
             owner: owner.to_string(),
-            balance: initial_balance.max(0.0),
+            balance: initial_balance.max(0.0), // Guard against invalid initial state
             currency,
         }
     }
@@ -356,6 +357,12 @@ impl BankAccount {
         }
         self.balance += amount;
         Ok(())
+    }
+
+    /// Restricted Visibility: Visible anywhere inside this crate (e.g., in lib.rs),
+    /// but COMPLETELY hidden from external users importing this crate!
+    pub(crate) fn audit_log(&self) {
+        println!("[AUDIT] Account owner: {}, balance: {}", self.owner, self.balance);
     }
 }</code></pre>
             </div>
@@ -446,6 +453,42 @@ impl BankAccount {
               </div>
             </div>
           </div>
+
+          <!-- Card 5: Fine-Grained Visibility -->
+<div class="glass-card rounded-xl p-6 relative overflow-hidden">
+  <div class="flex items-start gap-4">
+    <div class="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400">
+      <i data-lucide="lock" class="w-6 h-6"></i>
+    </div>
+    <div class="space-y-2">
+      <h3 class="text-lg font-semibold text-white">Fine-Grained Visibility (<code class="text-amber-400">pub(crate)</code>)</h3>
+      <p class="text-sm text-gray-300 leading-relaxed">
+        Visibility isn't just binary. Using <code class="text-rust-400 font-mono">pub(crate)</code> or <code class="text-rust-400 font-mono">pub(super)</code> allows submodules to share internal engine methods without leaking them into your public API surface.
+      </p>
+      <div class="pt-2 text-xs font-mono text-gray-400 border-t border-white/5">
+        CS Concept: Principle of Least Privilege & Restricted Scope
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Card 6: Facade Pattern & Re-exports -->
+<div class="glass-card rounded-xl p-6 relative overflow-hidden">
+  <div class="flex items-start gap-4">
+    <div class="p-3 rounded-lg bg-teal-500/10 border border-teal-500/30 text-teal-400">
+      <i data-lucide="layout-template" class="w-6 h-6"></i>
+    </div>
+    <div class="space-y-2">
+      <h3 class="text-lg font-semibold text-white">API Facade (<code class="text-teal-400">pub use</code> Re-exporting)</h3>
+      <p class="text-sm text-gray-300 leading-relaxed">
+        Using <code class="text-rust-400 font-mono">pub use account::BankAccount;</code> inside <code class="text-rust-400 font-mono">lib.rs</code> flattens deeply nested internal folder structures into a clean, flat public API for external consumers.
+      </p>
+      <div class="pt-2 text-xs font-mono text-gray-400 border-t border-white/5">
+        CS Concept: Structural Design Patterns (Facade Pattern)
+      </div>
+    </div>
+  </div>
+</div>
 
         </div>
       </section>

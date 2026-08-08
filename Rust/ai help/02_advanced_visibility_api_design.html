@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rust Level 2: Advanced Visibility & API Design</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            rust: {
+              500: '#e05a00',
+              600: '#c24100',
+              400: '#ff7728',
+            },
+            darkbg: '#0B0F17',
+            glass: 'rgba(17, 24, 39, 0.75)',
+            glassborder: 'rgba(255, 255, 255, 0.08)'
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['Fira Code', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Prism.js for Syntax Highlighting -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-rust.min.js"></script>
+
+  <style>
+    body {
+      background-color: #0B0F17;
+      font-family: 'Inter', sans-serif;
+      color: #E2E8F0;
+      overflow-x: hidden;
+    }
+    
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0B0F17;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1E293B;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
+
+    .glass-panel {
+      background: rgba(17, 24, 39, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .glass-card {
+      background: rgba(30, 41, 59, 0.4);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .glass-card:hover {
+      border-color: rgba(224, 90, 0, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px -10px rgba(224, 90, 0, 0.15);
+    }
+
+    .glow-rust {
+      box-shadow: 0 0 50px -10px rgba(224, 90, 0, 0.25);
+    }
+
+    pre[class*="language-"] {
+      background: #0D1117 !important;
+      margin: 0 !important;
+      border-radius: 0 0 0.75rem 0.75rem !important;
+      font-family: 'Fira Code', monospace !important;
+      font-size: 0.85rem !important;
+    }
+    code[class*="language-"] {
+      font-family: 'Fira Code', monospace !important;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-rust-500/30 selection:text-rust-400">
+
+  <!-- Ambient Glow Background Effects -->
+  <div class="fixed top-0 right-1/4 w-[400px] sm:w-[600px] h-[400px] sm:h-[600px] bg-rust-500/10 rounded-full blur-[140px] pointer-events-none -z-10"></div>
+  <div class="fixed bottom-1/3 left-1/4 w-[300px] sm:w-[500px] h-[300px] sm:h-[500px] bg-purple-500/5 rounded-full blur-[150px] pointer-events-none -z-10"></div>
+
+  <!-- Header -->
+  <header class="sticky top-0 z-50 glass-panel border-b border-glassborder">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-lg bg-rust-500/20 border border-rust-500/40 flex items-center justify-center text-rust-400 font-bold">
+          <i data-lucide="layers-3" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <span class="font-bold tracking-tight text-white flex items-center gap-2 text-sm sm:text-base">
+            Rust Module Architecture • Level 2
+          </span>
+          <span class="text-xs text-gray-400 font-mono hidden md:inline-block">Advanced API Boundaries & Metaprogramming Patterns</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 sm:gap-4">
+        <div class="px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-mono">
+          Level 2 Advanced
+        </div>
+        <div class="px-3 py-1 rounded-full bg-rust-500/10 border border-rust-500/20 text-rust-400 text-xs font-mono hidden sm:block">
+          Rust 2024
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex-grow flex flex-col lg:flex-row gap-8">
+
+    <!-- Desktop Sidebar Navigation -->
+    <aside class="w-64 flex-shrink-0 hidden lg:block sticky top-24 h-[calc(100vh-8rem)]">
+      <nav class="space-y-2">
+        <div class="text-xs font-mono text-gray-400 uppercase tracking-wider px-3 mb-3">Navigation</div>
+        <a href="#hero" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-colors group">
+          <i data-lucide="sparkles" class="w-4 h-4 text-rust-400 group-hover:scale-110 transition-transform"></i>
+          Level 2 Overview
+        </a>
+        <a href="#code-viewer" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-colors group">
+          <i data-lucide="code-2" class="w-4 h-4 text-rust-400 group-hover:scale-110 transition-transform"></i>
+          Advanced Architecture
+        </a>
+        <a href="#concepts" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-colors group">
+          <i data-lucide="cpu" class="w-4 h-4 text-rust-400 group-hover:scale-110 transition-transform"></i>
+          Level 2 System Pillars
+        </a>
+        <a href="#scaling" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-colors group">
+          <i data-lucide="workflow" class="w-4 h-4 text-rust-400 group-hover:scale-110 transition-transform"></i>
+          Production API Lifecycles
+        </a>
+      </nav>
+
+      <!-- Key Takeaway Box -->
+      <div class="mt-8 p-4 rounded-xl glass-card border border-glassborder">
+        <div class="flex items-center gap-2 text-rust-400 font-semibold text-xs mb-2">
+          <i data-lucide="shield-alert" class="w-4 h-4"></i> Level 2 Insight
+        </div>
+        <p class="text-xs text-gray-400 leading-relaxed">
+          Advanced crate design protects internal implementation details using <code class="text-rust-400 font-mono">Sealed</code> traits and feature guards (<code class="text-rust-400 font-mono">#[cfg]</code>), ensuring zero breaking changes as systems evolve.
+        </p>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 min-w-0 space-y-8 sm:space-y-12">
+
+      <!-- Hero Section -->
+      <section id="hero" class="glass-panel rounded-2xl p-6 sm:p-8 glow-rust relative overflow-hidden">
+        <div class="absolute -right-10 -bottom-10 opacity-10 pointer-events-none text-rust-500 hidden sm:block">
+          <i data-lucide="shield" class="w-96 h-96"></i>
+        </div>
+
+        <div class="max-w-3xl">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-mono mb-4">
+            <i data-lucide="award" class="w-3.5 h-3.5"></i> Level 2 Master Class
+          </div>
+          <h1 class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight mb-4 leading-tight">
+            Advanced Crate Architecture: Sealed Traits, Features & Documentation Secrets
+          </h1>
+          <p class="text-gray-300 text-sm sm:text-base leading-relaxed mb-6">
+            Level 2 shifts focus from basic project organization to production-grade library API safety. Master sealed traits, conditional feature flags, modern module file layouts, and internal documentation visibility.
+          </p>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono text-xs">
+            <div class="p-2.5 sm:p-3 rounded-lg bg-black/40 border border-white/5">
+              <span class="text-gray-400 block mb-1">Trait Guard</span>
+              <span class="text-purple-400 font-semibold">Sealed Pattern</span>
+            </div>
+            <div class="p-2.5 sm:p-3 rounded-lg bg-black/40 border border-white/5">
+              <span class="text-gray-400 block mb-1">Conditional</span>
+              <span class="text-rust-400 font-semibold">#[cfg(feature)]</span>
+            </div>
+            <div class="p-2.5 sm:p-3 rounded-lg bg-black/40 border border-white/5">
+              <span class="text-gray-400 block mb-1">Layout</span>
+              <span class="text-emerald-400 font-semibold">Nested Paths</span>
+            </div>
+            <div class="p-2.5 sm:p-3 rounded-lg bg-black/40 border border-white/5">
+              <span class="text-gray-400 block mb-1">Doc Visibility</span>
+              <span class="text-blue-400 font-semibold">#[doc(hidden)]</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Interactive Code Viewer -->
+      <section id="code-viewer" class="space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <h2 class="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+            <i data-lucide="code" class="w-5 h-5 text-rust-400"></i>
+            Level 2 Advanced Code Patterns
+          </h2>
+          <span class="text-xs text-gray-400 font-mono">Select a pattern tab below</span>
+        </div>
+
+        <!-- Terminal Window -->
+        <div class="rounded-xl border border-glassborder overflow-hidden bg-darkbg shadow-2xl">
+          
+          <!-- File Selector Tab Bar (Mobile Scrollable) -->
+          <div class="flex items-center justify-between bg-black/60 px-3 sm:px-4 py-2 border-b border-glassborder overflow-x-auto">
+            <div class="flex items-center gap-2 min-w-max" id="file-tabs">
+              <button onclick="switchTab('sealed')" id="tab-sealed" class="px-3 py-1.5 rounded-md text-xs font-mono font-medium flex items-center gap-2 bg-rust-500/20 text-rust-400 border border-rust-500/30 transition-all">
+                <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+                Sealed Traits
+              </button>
+              <button onclick="switchTab('cfg')" id="tab-cfg" class="px-3 py-1.5 rounded-md text-xs font-mono font-medium flex items-center gap-2 text-gray-400 hover:text-white hover:bg-white/5 transition-all">
+                <i data-lucide="toggle-right" class="w-3.5 h-3.5"></i>
+                #[cfg] Features
+              </button>
+              <button onclick="switchTab('dochidden')" id="tab-dochidden" class="px-3 py-1.5 rounded-md text-xs font-mono font-medium flex items-center gap-2 text-gray-400 hover:text-white hover:bg-white/5 transition-all">
+                <i data-lucide="eye-off" class="w-3.5 h-3.5"></i>
+                #[doc(hidden)]
+              </button>
+            </div>
+            <div class="hidden md:flex items-center gap-1.5 ml-4">
+              <span class="w-3 h-3 rounded-full bg-red-500/80 inline-block"></span>
+              <span class="w-3 h-3 rounded-full bg-yellow-500/80 inline-block"></span>
+              <span class="w-3 h-3 rounded-full bg-green-500/80 inline-block"></span>
+            </div>
+          </div>
+
+          <!-- Code Display Panels -->
+          <div class="relative">
+            
+            <!-- Tab 1: Sealed Traits -->
+            <div id="content-sealed" class="tab-content">
+              <pre><code class="language-rust">// src/execution.rs
+//! Sealed Trait Pattern: Prevents external downstream crates 
+//! from implementing `Executable` on their custom types!
+
+mod private {
+    // Private trait inside a private module
+    pub trait Sealed {}
+}
+
+// Public trait requiring `private::Sealed` as a supertrait
+pub trait Executable: private::Sealed {
+    fn execute(&self) -> Result<(), String>;
+}
+
+pub struct SystemTask;
+
+// WE implement the private marker trait for OUR type
+impl private::Sealed for SystemTask {}
+
+// Now we can implement the public trait!
+impl Executable for SystemTask {
+    fn execute(&self) -> Result<(), String> {
+        println!("Task executed safely!");
+        Ok(())
+    }
+}
+// Downstream consumers can USE `Executable`, but CANNOT implement it for their own structs!</code></pre>
+            </div>
+
+            <!-- Tab 2: #[cfg] Features -->
+            <div id="content-cfg" class="tab-content hidden">
+              <pre><code class="language-rust">// src/lib.rs
+//! Feature-Gated Modules and Structs
+//! Reduces compile times & dependency overhead by conditionally including code.
+
+pub mod core_engine;
+
+// Only compiled when the "async-telemetry" Cargo feature is enabled!
+#[cfg(feature = "async-telemetry")]
+pub mod telemetry;
+
+// Conditionally compile a struct method based on runtime features
+pub struct DatabaseDriver;
+
+impl DatabaseDriver {
+    pub fn connect() {
+        println!("Standard Database Connection");
+    }
+
+    #[cfg(feature = "postgres")]
+    pub fn connect_postgres_pool() {
+        println!("PostgreSQL Pool Initialized");
+    }
+}</code></pre>
+            </div>
+
+            <!-- Tab 3: #[doc(hidden)] -->
+            <div id="content-dochidden" class="tab-content hidden">
+              <pre><code class="language-rust">// src/macro_helpers.rs
+//! Hidden Public Items
+//! Items that MUST be `pub` for procedural macros, but should be hidden from docs.
+
+/// Public function that users should call
+pub fn process_order() {
+    __internal_macro_guard();
+    println!("Order processed.");
+}
+
+/// MUST be `pub` so generated macro code in other crates can invocation-link it.
+/// BUT hidden from generated HTML documentation (`cargo doc`).
+#[doc(hidden)]
+pub fn __internal_macro_guard() {
+    // Internal state check required by macro expansion
+}</code></pre>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- Concept Breakdown Grid (2x2) -->
+      <section id="concepts" class="space-y-6">
+        <h2 class="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+          <i data-lucide="cpu" class="w-5 h-5 text-rust-400"></i>
+          Level 2 System Pillars
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+          
+          <!-- Pillar 1 -->
+          <div class="glass-card rounded-xl p-5 sm:p-6 relative overflow-hidden">
+            <div class="flex items-start gap-4">
+              <div class="p-3 rounded-lg bg-purple-500/10 border border-purple-500/30 text-purple-400 flex-shrink-0">
+                <i data-lucide="lock" class="w-6 h-6"></i>
+              </div>
+              <div class="space-y-2">
+                <h3 class="text-base sm:text-lg font-semibold text-white">Sealed Traits</h3>
+                <p class="text-xs sm:text-sm text-gray-300 leading-relaxed">
+                  Controls who can implement a public trait. By binding it to a private supertrait, you ensure third-party users cannot break future API stability by adding custom impls.
+                </p>
+                <div class="pt-2 text-xs font-mono text-purple-400 border-t border-white/5">
+                  CS Principle: Non-Extensible Interface Contracts
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pillar 2 -->
+          <div class="glass-card rounded-xl p-5 sm:p-6 relative overflow-hidden">
+            <div class="flex items-start gap-4">
+              <div class="p-3 rounded-lg bg-rust-500/10 border border-rust-500/30 text-rust-400 flex-shrink-0">
+                <i data-lucide="sliders" class="w-6 h-6"></i>
+              </div>
+              <div class="space-y-2">
+                <h3 class="text-base sm:text-lg font-semibold text-white">Conditional Features (<code class="text-rust-400">#[cfg]</code>)</h3>
+                <p class="text-xs sm:text-sm text-gray-300 leading-relaxed">
+                  Allows consumers to opt into heavy dependencies (e.g., Tokio, Serde, Postgres) only when needed. Keeps bin targets lightweight and compilation fast.
+                </p>
+                <div class="pt-2 text-xs font-mono text-rust-400 border-t border-white/5">
+                  CS Principle: Dead-Code Elimination & Modular Compiles
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pillar 3 -->
+          <div class="glass-card rounded-xl p-5 sm:p-6 relative overflow-hidden">
+            <div class="flex items-start gap-4">
+              <div class="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex-shrink-0">
+                <i data-lucide="folder-tree" class="w-6 h-6"></i>
+              </div>
+              <div class="space-y-2">
+                <h3 class="text-base sm:text-lg font-semibold text-white">Modern Module Hierarchy</h3>
+                <p class="text-xs sm:text-sm text-gray-300 leading-relaxed">
+                  Avoids `mod.rs` file clutter. Modern Rust uses `src/account.rs` alongside a sub-folder `src/account/nested.rs` for clean, unambiguous navigation in large codebases.
+                </p>
+                <div class="pt-2 text-xs font-mono text-emerald-400 border-t border-white/5">
+                  CS Principle: File System & Namespace Cohesion
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pillar 4 -->
+          <div class="glass-card rounded-xl p-5 sm:p-6 relative overflow-hidden">
+            <div class="flex items-start gap-4">
+              <div class="p-3 rounded-lg bg-blue-500/10 border border-blue-500/30 text-blue-400 flex-shrink-0">
+                <i data-lucide="eye-off" class="w-6 h-6"></i>
+              </div>
+              <div class="space-y-2">
+                <h3 class="text-base sm:text-lg font-semibold text-white">Macro Helper Protection</h3>
+                <p class="text-xs sm:text-sm text-gray-300 leading-relaxed">
+                  Using <code class="text-rust-400 font-mono">#[doc(hidden)]</code> allows internal functions to be marked `pub` for procedural macros without cluttering public API documentation.
+                </p>
+                <div class="pt-2 text-xs font-mono text-blue-400 border-t border-white/5">
+                  CS Principle: Metaprogramming Boundary Control
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- API Lifecycle Section -->
+      <section id="scaling" class="space-y-6">
+        <h2 class="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+          <i data-lucide="workflow" class="w-5 h-5 text-rust-400"></i>
+          Production API Evolution Roadmap
+        </h2>
+
+        <div class="glass-panel rounded-xl p-6 sm:p-8 space-y-6">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="p-4 rounded-lg bg-black/40 border border-white/5 space-y-2">
+              <span class="text-xs font-mono text-rust-400">STAGE 01</span>
+              <h4 class="font-semibold text-white text-sm">Internal Crate API</h4>
+              <p class="text-xs text-gray-400">Use <code class="text-rust-400 font-mono">pub(crate)</code> to allow internal modules to share utilities without exposing them externally.</p>
+            </div>
+            <div class="p-4 rounded-lg bg-black/40 border border-white/5 space-y-2">
+              <span class="text-xs font-mono text-purple-400">STAGE 02</span>
+              <h4 class="font-semibold text-white text-sm">Public Sealed API</h4>
+              <p class="text-xs text-gray-400">Expose traits with Sealed patterns so users can invoke methods without introducing uncontrolled trait implementations.</p>
+            </div>
+            <div class="p-4 rounded-lg bg-black/40 border border-white/5 space-y-2">
+              <span class="text-xs font-mono text-emerald-400">STAGE 03</span>
+              <h4 class="font-semibold text-white text-sm">Feature-Gated Library</h4>
+              <p class="text-xs text-gray-400">Wrap external dependencies inside <code class="text-rust-400 font-mono">#[cfg(feature)]</code> to allow consumers to opt into light vs heavy builds.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Footer -->
+  <footer class="glass-panel border-t border-glassborder mt-12 sm:mt-16 py-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-400 font-mono">
+      <div class="flex items-center gap-2">
+        <i data-lucide="layers" class="w-4 h-4 text-rust-500"></i>
+        <span>Rust Advanced Systems Curriculum • Level 2</span>
+      </div>
+      <div>
+        Interactive Reference Module
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    function switchTab(tabKey) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('#file-tabs button').forEach(el => {
+        el.className = 'px-3 py-1.5 rounded-md text-xs font-mono font-medium flex items-center gap-2 text-gray-400 hover:text-white hover:bg-white/5 transition-all';
+      });
+
+      document.getElementById('content-' + tabKey).classList.remove('hidden');
+      const activeTab = document.getElementById('tab-' + tabKey);
+      activeTab.className = 'px-3 py-1.5 rounded-md text-xs font-mono font-medium flex items-center gap-2 bg-rust-500/20 text-rust-400 border border-rust-500/30 transition-all';
+    }
+  </script>
+</body>
+</html>
