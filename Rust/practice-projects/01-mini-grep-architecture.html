@@ -654,3 +654,41 @@ Fast compile times matter.</textarea>
   </script>
 </body>
 </html>
+
+<!-- 1. Rust Language Mastery
+Command-Line Argument Parsing (std::env::args):
+Learn how to capture runtime arguments passed to your process and consume iterators directly rather than cloning string slices in memory.
+
+File System Operations (std::fs):
+Understand how to open files, read contents into memory (fs::read_to_string), and interact with the underlying operating system's file handles.
+
+Idiomatic Error Propagation (Result & ?):
+Shift away from unrecoverable panics (panic!) toward graceful error handling using Result<T, Box<dyn Error>> and the ? operator.
+
+Environment Configuration (std::env::var):
+Read OS environment variables (like IGNORE_CASE=1) dynamically to toggle program behavior without requiring extra CLI flags.
+
+Zero-Cost Iterators (.lines(), .filter()):
+Master lazy iteration over string slices (&str), filtering datasets without allocating intermediate buffers or memory copies.
+
+Module Organization (lib.rs vs. main.rs):
+Enforce a clean separation of concerns by placing application logic, state, and search algorithms inside lib.rs and keeping main.rs lightweight for process setup. -->
+
+<!-- 2. Core System Design Essentials
+Zero-Copy Memory Views & Lifetimes (&'a str):
+You'll learn how lifetime annotations enable your search functions to return references directly to the loaded buffer in RAM rather than copying matching strings onto the heap.
+
+I/O Bottlenecks & Cache Locality:
+Understand why performing a single contiguous file read into memory is far faster than making repeated context-switching read calls to the OS kernel.
+
+Deterministic Fault Boundaries:
+Learn how library error boundaries prevent unexpected crashes, ensuring failures stay contained and predictable. -->
+
+<!-- 3. Scaling & Architecture Concepts
+This project serves as the foundational building block for real-world enterprise architectures:
+
+From Single-Threaded to Parallel:
+Moving from sequential line scanning to multi-core parallel processing (like ripgrep) using memory mapping (mmap) and work-stealing thread pools (rayon).
+
+From Local Files to Distributed Systems:
+Understanding how local grep engines scale into distributed search platforms (like ElasticSearch or Meilisearch) through inverted indexing, partition hashing, and scatter-gather query aggregation over gRPC. -->
