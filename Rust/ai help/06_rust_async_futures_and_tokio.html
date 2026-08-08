@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rust Level 6: Async Engine, Futures & Tokio Protocols</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            rust: {
+              500: '#e05a00',
+              600: '#c24100',
+              400: '#ff7728',
+            },
+            darkbg: '#0B0F17',
+            glass: 'rgba(17, 24, 39, 0.75)',
+            glassborder: 'rgba(255, 255, 255, 0.08)'
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['Fira Code', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Prism.js for Syntax Highlighting -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-rust.min.js"></script>
+
+  <style>
+    body {
+      background-color: #0B0F17;
+      font-family: 'Inter', sans-serif;
+      color: #E2E8F0;
+      overflow-x: hidden;
+    }
+    
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0B0F17;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1E293B;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
+
+    .glass-panel {
+      background: rgba(17, 24, 39, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .glass-card {
+      background: rgba(30, 41, 59, 0.4);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .glass-card:hover {
+      border-color: rgba(224, 90, 0, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px -10px rgba(224, 90, 0, 0.15);
+    }
+
+    .glow-rust {
+      box-shadow: 0 0 50px -10px rgba(224, 90, 0, 0.25);
+    }
+
+    pre[class*="language-"] {
+      background: #0D1117 !important;
+      margin: 0 !important;
+      border-radius: 0 0 0.75rem 0.75rem !important;
+      font-family: 'Fira Code', monospace !important;
+      font-size: 0.85rem !important;
+    }
+    code[class*="language-"] {
+      font-family: 'Fira Code', monospace !important;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-rust-500/30 selection:text-rust-400">
+
+  <!-- Ambient Glow Background Effects -->
+  <div class="fixed top-0 right-1/4 w-[400px] sm:w-[600px] h-[400px] sm:h-[600px] bg-rust-500/10 rounded-full blur-[140px] pointer-events-none -z-10"></div>
+  <div class="fixed bottom-1/3 left-1/4 w-[300px] sm:w-[500px] h-[300px] sm:h-[500px] bg-emerald-500/5 rounded-full blur-[150px] pointer-events-none -z-10"></div>
+
+  <!-- Header -->
+  <header class="sticky top-0 z-50 glass-panel border-b border-glassborder">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-lg bg-rust-500/20 border border-rust-500/40 flex items-center justify-center text-rust-400 font-bold">
+          <i data-lucide="zap" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <span class="font-bold tracking-tight text-white flex items-center gap-2 text-sm sm:text-base">
+            Rust Async Engine • Level 6
+          </span>
+          <span class="text-xs text-gray-400 font-mono hidden md:inline-block">Futures, Pinning, Wakers & Tokio Concurrency</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 sm:gap-4">
+        <div class="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono">
+          Level 6 Systems
+        </div>
+        <div class="px-3 py-1 rounded-full bg-rust-500/10 border border-rust-500/20 text-rust-400 text-xs font-mono hidden sm:block">
+          Rust 2024
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex-grow flex flex-col lg:flex-row gap-8">
+
+    <!-- Desktop Sidebar Navigation -->
+    <aside class="w-64 flex-shrink-0 hidden lg:block sticky top-24 h-[calc(100vh-8rem)]">
+      <nav class="space-y-2">
+        <div class="text-xs font-mono text-gray-400 uppercase tracking-wider px-3 mb-3">Navigation</div>
+        <a href="#hero" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-colors group">
+          <i data-lucide="sparkles" class="w-4 h-4 text-rust-400 group-hover:scale-110 transition-transform"></i>
+          Level 6 Overview
+        </a>
+        <a href="#code-viewer" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-colors group">
+          <i data-lucide="code-2" class="w-4 h-4 text-rust-400 group-hover:scale-110 transition-transform"></i>
+          Async Code Patterns
+        </a>
+        <a href="#concepts" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-colors group">
+          <i data-lucide="activity" class="w-4 h-4 text-rust-400 group-hover:scale-110 transition-transform"></i>
+          Architectural Pillars
+        </a>
+        <a href="#async-matrix" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-colors group">
+          <i data-lucide="table" class="w-4 h-4 text-rust-400 group-hover:scale-110 transition-transform"></i>
+          Async Protocol Reference
+        </a>
+      </nav>
+
+      <!-- Key Takeaway Box -->
+      <div class="mt-8 p-4 rounded-xl glass-card border border-glassborder">
+        <div class="flex items-center gap-2 text-rust-400 font-semibold text-xs mb-2">
+          <i data-lucide="zap" class="w-4 h-4"></i> Level 6 Insight
+        </div>
+        <p class="text-xs text-gray-400 leading-relaxed">
+          Rust futures are lazy—nothing happens until they are polled. <code class="text-rust-400 font-mono">Pin</code> guarantees that self-referential generator state machines never move in memory during yields.
+        </p>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 min-w-0 space-y-8 sm:space-y-12">
+
+      <!-- Hero Section -->
+      <section id="hero" class="glass-panel rounded-2xl p-6 sm:p-8 glow-rust relative overflow-hidden">
+        <div class="absolute -right-10 -bottom-10 opacity-10 pointer-events-none text-rust-500 hidden sm:block">
+          <i data-lucide="cpu" class="w-96 h-96"></i>
+        </div>
+
+        <div class="max-w-3xl">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-mono mb-4">
+            <i data-lucide="award" class="w-3.5 h-3.5"></i> Level 6 Master Class
+          </div>
+          <h1 class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight mb-4 leading-tight">
+            Async Engine Mechanics: Futures, Pinning & Tokio
+          </h1>
+          <p class="text-gray-300 text-sm sm:text-base leading-relaxed mb-6">
+            Master high-throughput non-blocking Rust systems. Transition from consuming <code class="text-rust-400 font-mono">.await</code> syntax to implementing manual state machines with <code class="text-rust-400 font-mono">Future</code>, <code class="text-rust-400 font-mono">Pin&lt;P&gt;</code>, and <code class="text-rust-400 font-mono">Context/Waker</code> while leveraging Tokio actor channels and select loops.
+          </p>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono text-xs">
+            <div class="p-2.5 sm:p-3 rounded-lg bg-black/40 border border-white/5">
+              <span class="text-gray-400 block mb-1">State Machine</span>
+              <span class="text-amber-400 font-semibold">Future Trait</span>
+            </div>
+            <div class="p-2.5 sm:p-3 rounded-lg bg-black/40 border border-white/5">
+              <span class="text-gray-400 block mb-1">Memory Guarantee</span>
+              <span class="text-rust-400 font-semibold">Pin&lt;Box&lt;T&gt;&gt;</span>
+            </div>
+            <div class="p-2.5 sm:p-3 rounded-lg bg-black/40 border border-white/5">
+              <span class="text-gray-400 block mb-1">Task Notification</span>
+              <span class="text-emerald-400 font-semibold">Waker & Context</span>
+            </div>
+            <div class="p-2.5 sm:p-3 rounded-lg bg-black/40 border border-white/5">
+              <span class="text-gray-400 block mb-1">Multiplexing</span>
+              <span class="text-blue-400 font-semibold">tokio::select!</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Interactive Code Viewer -->
+      <section id="code-viewer" class="space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <h2 class="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+            <i data-lucide="code" class="w-5 h-5 text-rust-400"></i>
+            Async Core Mechanics Patterns
+          </h2>
+          <span class="text-xs text-gray-400 font-mono">Select a tab below</span>
+        </div>
+
+        <!-- Terminal Window -->
+        <div class="rounded-xl border border-glassborder overflow-hidden bg-darkbg shadow-2xl">
+          
+          <!-- File Selector Tab Bar -->
+          <div class="flex items-center justify-between bg-black/60 px-3 sm:px-4 py-2 border-b border-glassborder overflow-x-auto">
+            <div class="flex items-center gap-2 min-w-max" id="file-tabs">
+              <button onclick="switchTab('custom-future')" id="tab-custom-future" class="px-3 py-1.5 rounded-md text-xs font-mono font-medium flex items-center gap-2 bg-rust-500/20 text-rust-400 border border-rust-500/30 transition-all">
+                <i data-lucide="activity" class="w-3.5 h-3.5"></i>
+                1. Manual Future Implementation
+              </button>
+              <button onclick="switchTab('tokio-channels')" id="tab-tokio-channels" class="px-3 py-1.5 rounded-md text-xs font-mono font-medium flex items-center gap-2 text-gray-400 hover:text-white hover:bg-white/5 transition-all">
+                <i data-lucide="radio" class="w-3.5 h-3.5"></i>
+                2. Actor Channels & Tokio mpsc
+              </button>
+              <button onclick="switchTab('select-cancel')" id="tab-select-cancel" class="px-3 py-1.5 rounded-md text-xs font-mono font-medium flex items-center gap-2 text-gray-400 hover:text-white hover:bg-white/5 transition-all">
+                <i data-lucide="timer" class="w-3.5 h-3.5"></i>
+                3. Non-blocking tokio::select!
+              </button>
+            </div>
+            <div class="hidden md:flex items-center gap-1.5 ml-4">
+              <span class="w-3 h-3 rounded-full bg-red-500/80 inline-block"></span>
+              <span class="w-3 h-3 rounded-full bg-yellow-500/80 inline-block"></span>
+              <span class="w-3 h-3 rounded-full bg-green-500/80 inline-block"></span>
+            </div>
+          </div>
+
+          <!-- Code Display Panels -->
+          <div class="relative">
+            
+            <!-- Tab 1: Custom Future -->
+            <div id="content-custom-future" class="tab-content">
+              <pre><code class="language-rust">// 1. Low-Level Manual Future Implementation
+// Demonstrates how Tokio registers interest via Context and Waker callbacks.
+
+use std::future::Future;
+use std::pin::Pin;
+use std::task::{Context, Poll};
+use std::time::{Duration, Instant};
+
+pub struct YieldDelay {
+    when: Instant,
+}
+
+impl YieldDelay {
+    pub fn new(duration: Duration) -> Self {
+        Self { when: Instant::now() + duration }
+    }
+}
+
+impl Future for YieldDelay {
+    type Output = &'static str;
+
+    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
+        if Instant::now() >= self.when {
+            Poll::Ready("Delay Complete")
+        } else {
+            // Register current thread's waker to re-poll when timer fires
+            let waker = cx.waker().clone();
+            let when = self.when;
+            
+            std::thread::spawn(move || {
+                let now = Instant::now();
+                if when > now {
+                    std::thread::sleep(when - now);
+                }
+                waker.wake(); // Re-wake executor loop
+            });
+
+            Poll::Pending
+        }
+    }
+}</code></pre>
+            </div>
+
+            <!-- Tab 2: Tokio Channels -->
+            <div id="content-tokio-channels" class="tab-content hidden">
+              <pre><code class="language-rust">// 2. Concurrent Actor Pattern using Tokio MPSC & Oneshot Channels
+use tokio::sync::{mpsc, oneshot};
+
+enum Command {
+    GetStatus { resp: oneshot::Sender<String> },
+    Increment,
+}
+
+#[tokio::main]
+async fn main() {
+    let (tx, mut rx) = mpsc::channel::<Command>(32);
+
+    // Spawn Actor task loop
+    tokio::spawn(async move {
+        let mut count = 0;
+        while let Some(cmd) = rx.recv().await {
+            match cmd {
+                Command::Increment => count += 1,
+                Command::GetStatus { resp } => {
+                    let _ = resp.send(format!("Current Count: {}", count));
+                }
+            }
+        }
+    });
+
+    // Client messaging
+    tx.send(Command::Increment).await.unwrap();
+    let (resp_tx, resp_rx) = oneshot::channel();
+    tx.send(Command::GetStatus { resp: resp_tx }).await.unwrap();
+
+    let status = resp_rx.await.unwrap();
+    println!("Actor State: {}", status);
+}</code></pre>
+            </div>
+
+            <!-- Tab 3: tokio::select! -->
+            <div id="content-select-cancel" class="tab-content hidden">
+              <pre><code class="language-rust">// 3. Multi-branch Cancellation Safety via tokio::select!
+use tokio::time::{sleep, Duration};
+
+async fn fetch_remote_data() -> &'static str {
+    sleep(Duration::from_millis(150)).await;
+    "Payload Data Received"
+}
+
+#[tokio::main]
+async fn main() {
+    let timeout = sleep(Duration::from_millis(100));
+    tokio::pin!(timeout); // Pin to stack so it can be safely polled in select!
+
+    tokio::select! {
+        res = fetch_remote_data() => {
+            println!("Success: {}", res);
+        }
+        _ = &mut timeout => {
+            println!("Error: Remote request timed out!");
+        }
+    } // Uncompleted branch is safely dropped (cancellation safety guaranteed)
+}</code></pre>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- Concept Breakdown Grid (2x2) -->
+      <section id="concepts" class="space-y-6">
+        <h2 class="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+          <i data-lucide="activity" class="w-5 h-5 text-rust-400"></i>
+          Level 6 Architectural Pillars
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+          
+          <!-- Pillar 1 -->
+          <div class="glass-card rounded-xl p-5 sm:p-6 relative overflow-hidden">
+            <div class="flex items-start gap-4">
+              <div class="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 flex-shrink-0">
+                <i data-lucide="cpu" class="w-6 h-6"></i>
+              </div>
+              <div class="space-y-2">
+                <h3 class="text-base sm:text-lg font-semibold text-white">Cooperative Lazy Futures</h3>
+                <p class="text-xs sm:text-sm text-gray-300 leading-relaxed">
+                  Rust futures do no background computation automatically. They are state machines stepped explicitly by the runtime via <code class="text-rust-400 font-mono">poll()</code> returning <code class="text-rust-400 font-mono">Poll::Pending</code> or <code class="text-rust-400 font-mono">Poll::Ready</code>.
+                </p>
+                <div class="pt-2 text-xs font-mono text-amber-400 border-t border-white/5">
+                  Runtime Principle: Zero-Cost Lazy State Machines
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pillar 2 -->
+          <div class="glass-card rounded-xl p-5 sm:p-6 relative overflow-hidden">
+            <div class="flex items-start gap-4">
+              <div class="p-3 rounded-lg bg-rust-500/10 border border-rust-500/30 text-rust-400 flex-shrink-0">
+                <i data-lucide="anchor" class="w-6 h-6"></i>
+              </div>
+              <div class="space-y-2">
+                <h3 class="text-base sm:text-lg font-semibold text-white"><code class="text-rust-400">Pin&lt;P&gt;</code> & Unpin Guarantees</h3>
+                <p class="text-xs sm:text-sm text-gray-300 leading-relaxed">
+                  Async blocks compile down to self-referential structs holding internal pointers across <code class="text-rust-400 font-mono">.await</code> yields. <code class="text-rust-400 font-mono">Pin</code> ensures memory addresses remain static so internal pointers never invalidate.
+                </p>
+                <div class="pt-2 text-xs font-mono text-rust-400 border-t border-white/5">
+                  Runtime Principle: Safe Self-Referential Pointer Invariance
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pillar 3 -->
+          <div class="glass-card rounded-xl p-5 sm:p-6 relative overflow-hidden">
+            <div class="flex items-start gap-4">
+              <div class="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex-shrink-0">
+                <i data-lucide="bell" class="w-6 h-6"></i>
+              </div>
+              <div class="space-y-2">
+                <h3 class="text-base sm:text-lg font-semibold text-white">Task Waker Notification Protocol</h3>
+                <p class="text-xs sm:text-sm text-gray-300 leading-relaxed">
+                  Avoids spinning CPU loops. When an I/O handle is unblocked, it calls <code class="text-rust-400 font-mono">waker.wake()</code>, signalling Tokio's event loop to put the dormant task back on the active execution queue.
+                </p>
+                <div class="pt-2 text-xs font-mono text-emerald-400 border-t border-white/5">
+                  Runtime Principle: Event-Driven Reaction Engine
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pillar 4 -->
+          <div class="glass-card rounded-xl p-5 sm:p-6 relative overflow-hidden">
+            <div class="flex items-start gap-4">
+              <div class="p-3 rounded-lg bg-blue-500/10 border border-blue-500/30 text-blue-400 flex-shrink-0">
+                <i data-lucide="x-circle" class="w-6 h-6"></i>
+              </div>
+              <div class="space-y-2">
+                <h3 class="text-base sm:text-lg font-semibold text-white">Cancellation Safety in <code class="text-blue-400">select!</code></h3>
+                <p class="text-xs sm:text-sm text-gray-300 leading-relaxed">
+                  When one branch completes in <code class="text-rust-400 font-mono">tokio::select!</code>, all other incomplete futures are instantly dropped. Ensuring code is cancellation-safe avoids dropping partially processed socket data.
+                </p>
+                <div class="pt-2 text-xs font-mono text-blue-400 border-t border-white/5">
+                  Runtime Principle: RAII Scope Drops for Unfinished Tasks
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Protocol Matrix Table -->
+      <section id="async-matrix" class="space-y-6">
+        <h2 class="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+          <i data-lucide="table" class="w-5 h-5 text-rust-400"></i>
+          Tokio Concurrency Protocol Matrix
+        </h2>
+
+        <div class="glass-panel rounded-xl overflow-x-auto">
+          <table class="w-full text-left text-xs sm:text-sm text-gray-300">
+            <thead class="bg-black/60 text-rust-400 font-mono uppercase text-xs border-b border-glassborder">
+              <tr>
+                <th class="p-3 sm:p-4">Concurrency Primitive</th>
+                <th class="p-3 sm:p-4">Producer / Consumer</th>
+                <th class="p-3 sm:p-4">Capacity Type</th>
+                <th class="p-3 sm:p-4">Primary Use Case</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-white/5 font-mono text-xs">
+              <tr class="hover:bg-white/5 transition-colors">
+                <td class="p-3 sm:p-4 font-bold text-amber-400">mpsc::channel</td>
+                <td class="p-3 sm:p-4">N Producers / 1 Consumer</td>
+                <td class="p-3 sm:p-4 text-emerald-400">Bounded / Unbounded</td>
+                <td class="p-3 sm:p-4 text-gray-400">Actor message queues, worker task distribution</td>
+              </tr>
+              <tr class="hover:bg-white/5 transition-colors">
+                <td class="p-3 sm:p-4 font-bold text-rust-400">oneshot::channel</td>
+                <td class="p-3 sm:p-4">1 Producer / 1 Consumer</td>
+                <td class="p-3 sm:p-4 text-emerald-400">Single Value (1)</td>
+                <td class="p-3 sm:p-4 text-gray-400">Returning results from asynchronous worker tasks</td>
+              </tr>
+              <tr class="hover:bg-white/5 transition-colors">
+                <td class="p-3 sm:p-4 font-bold text-blue-400">broadcast::channel</td>
+                <td class="p-3 sm:p-4">N Producers / M Consumers</td>
+                <td class="p-3 sm:p-4 text-amber-400">Bounded Ring Buffer</td>
+                <td class="p-3 sm:p-4 text-gray-400">Pub/Sub event fanout across independent tasks</td>
+              </tr>
+              <tr class="hover:bg-white/5 transition-colors">
+                <td class="p-3 sm:p-4 font-bold text-purple-400">watch::channel</td>
+                <td class="p-3 sm:p-4">1 Producer / N Consumers</td>
+                <td class="p-3 sm:p-4 text-emerald-400">Single State Value</td>
+                <td class="p-3 sm:p-4 text-gray-400">Broadcasting configuration changes or graceful shutdown signals</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Footer -->
+  <footer class="glass-panel border-t border-glassborder mt-12 sm:mt-16 py-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-400 font-mono">
+      <div class="flex items-center gap-2">
+        <i data-lucide="layers" class="w-4 h-4 text-rust-500"></i>
+        <span>Rust Advanced Systems Curriculum • Level 6</span>
+      </div>
+      <div>
+        Interactive Reference Module
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    function switchTab(tabKey) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('#file-tabs button').forEach(el => {
+        el.className = 'px-3 py-1.5 rounded-md text-xs font-mono font-medium flex items-center gap-2 text-gray-400 hover:text-white hover:bg-white/5 transition-all';
+      });
+
+      document.getElementById('content-' + tabKey).classList.remove('hidden');
+      const activeTab = document.getElementById('tab-' + tabKey);
+      activeTab.className = 'px-3 py-1.5 rounded-md text-xs font-mono font-medium flex items-center gap-2 bg-rust-500/20 text-rust-400 border border-rust-500/30 transition-all';
+    }
+  </script>
+</body>
+</html>
