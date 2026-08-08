@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>System Design & Core Rust: Log Parser & Aggregator CLI</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            rust: {
+              500: '#F97316',
+              600: '#EA580C',
+              700: '#C2410C',
+              glow: 'rgba(249, 115, 22, 0.15)'
+            },
+            dark: {
+              base: '#0B0F19',
+              card: '#111827',
+              input: '#1F2937',
+              border: '#374151'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['Fira Code', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Prism.js for Rust Syntax Highlighting -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-rust.min.js"></script>
+
+  <style>
+    .glass-panel {
+      background: rgba(17, 24, 39, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .glass-card {
+      background: rgba(17, 24, 39, 0.6);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .glass-card:hover {
+      border-color: rgba(249, 115, 22, 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px -5px rgba(249, 115, 22, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0B0F19;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1F2937;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #374151;
+    }
+
+    .ambient-glow-rust {
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(249, 115, 22, 0.12) 0%, rgba(0, 0, 0, 0) 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .ambient-glow-emerald {
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, rgba(0, 0, 0, 0) 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    pre[class*="language-"] {
+      background: #090D16 !important;
+      margin: 0 !important;
+      border-radius: 0 0 0.5rem 0.5rem !important;
+      font-family: 'Fira Code', monospace !important;
+      font-size: 0.875rem !important;
+      line-height: 1.7 !important;
+    }
+  </style>
+</head>
+<body class="bg-dark-base text-gray-100 font-sans min-h-screen flex flex-col antialiased selection:bg-rust-500 selection:text-white">
+
+  <div class="ambient-glow-rust top-0 left-1/4"></div>
+  <div class="ambient-glow-emerald top-1/3 right-10"></div>
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-50 glass-panel border-b border-gray-800/80 px-4 lg:px-8 py-3">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <div class="bg-rust-500 text-white p-2 rounded-lg font-mono font-bold text-sm tracking-wide shadow-lg shadow-rust-500/20">
+          RS
+        </div>
+        <div>
+          <h1 class="font-bold text-base tracking-tight leading-none text-white">System Design & Core Rust</h1>
+          <span class="text-xs text-gray-400 font-mono">Module 03 // Log Parser & Aggregator CLI</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-4 text-xs font-mono">
+        <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-dark-input border border-gray-700 text-gray-300">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span>Enum Pattern Matching</span>
+        </div>
+        <div class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-dark-input border border-gray-700 text-gray-300">
+          <span class="w-2 h-2 rounded-full bg-rust-500"></span>
+          <span>Zero-Cost Filtering</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <div class="max-w-7xl mx-auto w-full flex-1 flex flex-col lg:flex-row gap-8 px-4 lg:px-8 py-8 relative z-10">
+
+    <!-- SIDEBAR NAVIGATION -->
+    <aside id="sidebar" class="hidden lg:block w-full lg:w-64 flex-shrink-0">
+      <div class="sticky top-24 space-y-6">
+        <div>
+          <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-3 font-mono">Module Index</h3>
+          <nav class="space-y-1">
+            <a href="#overview" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-dark-input transition-colors">
+              <i data-lucide="book-open" class="w-4 h-4 text-rust-500"></i>
+              <span>Overview</span>
+            </a>
+            <a href="#code" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-dark-input transition-colors">
+              <i data-lucide="code-2" class="w-4 h-4 text-rust-500"></i>
+              <span>Production Code</span>
+            </a>
+            <a href="#components" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-dark-input transition-colors">
+              <i data-lucide="cpu" class="w-4 h-4 text-rust-500"></i>
+              <span>Component Breakdown</span>
+            </a>
+            <a href="#interactive" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-dark-input transition-colors">
+              <i data-lucide="terminal" class="w-4 h-4 text-rust-500"></i>
+              <span>Live Parser</span>
+            </a>
+          </nav>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="flex-1 space-y-12 min-w-0">
+
+      <!-- HERO SECTION -->
+      <section id="overview" class="glass-card rounded-2xl p-6 lg:p-8">
+        <div class="max-w-3xl space-y-4">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rust-500/10 border border-rust-500/20 text-rust-500 text-xs font-mono font-medium">
+            <i data-lucide="terminal" class="w-3.5 h-3.5"></i>
+            <span>Log Processing & Struct Parsing</span>
+          </div>
+          <h2 class="text-3xl lg:text-4xl font-extrabold tracking-tight text-white">
+            Structured <span class="text-transparent bg-clip-text bg-gradient-to-r from-rust-500 to-emerald-400">Log Parser CLI</span>
+          </h2>
+          <p class="text-gray-300 leading-relaxed text-sm lg:text-base">
+            Learn to parse un-structured text into strongly typed Rust domain structures, leverage Enums for compile-time safety, filter streams with iterators, and construct clean telemetry outputs.
+          </p>
+        </div>
+      </section>
+
+      <!-- CODE SECTION -->
+      <section id="code" class="space-y-4">
+        <div class="flex justify-between items-center">
+          <h3 class="text-xl font-bold text-white flex items-center gap-2">
+            <i data-lucide="file-code" class="w-5 h-5 text-rust-500"></i>
+            <span>Production Implementation</span>
+          </h3>
+        </div>
+
+        <div class="rounded-xl border border-gray-800 bg-dark-base overflow-hidden shadow-2xl">
+          <div class="bg-dark-card px-4 py-3 border-b border-gray-800 flex items-center justify-between">
+            <span class="text-xs font-mono text-gray-400">src/main.rs</span>
+            <span class="text-xs font-mono text-rust-500">Rust Edition 2021</span>
+          </div>
+          <pre><code class="language-rust">use std::collections::HashMap;
+
+#[derive(Debug, PartialEq, Eq, Hash, Clone)]
+pub enum LogLevel {
+    Info,
+    Warn,
+    Error,
+    Unknown(String),
+}
+
+impl LogLevel {
+    pub fn from_str(s: &str) -> Self {
+        match s.to_uppercase().as_str() {
+            "INFO" => LogLevel::Info,
+            "WARN" | "WARNING" => LogLevel::Warn,
+            "ERROR" | "ERR" => LogLevel::Error,
+            other => LogLevel::Unknown(other.to_string()),
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct LogEntry {
+    pub timestamp: String,
+    pub level: LogLevel,
+    pub message: String,
+}
+
+impl LogEntry {
+    /// Parses a single log line in the format: [TIMESTAMP] [LEVEL] MESSAGE
+    pub fn parse_line(line: &str) -> Option<Self> {
+        let parts: Vec<&str> = line.splitn(3, ' ').collect();
+        if parts.len() < 3 {
+            return None;
+        }
+
+        let timestamp = parts[0].trim_matches(|c| c == '[' || c == ']').to_string();
+        let level = LogLevel::from_str(parts[1].trim_matches(|c| c == '[' || c == ']'));
+        let message = parts[2].to_string();
+
+        Some(LogEntry { timestamp, level, message })
+    }
+}
+
+pub struct LogAggregator {
+    pub entries: Vec<LogEntry>,
+}
+
+impl LogAggregator {
+    pub fn from_raw_logs(logs: &str) -> Self {
+        let entries = logs
+            .lines()
+            .filter_map(LogEntry::parse_line)
+            .collect();
+        LogAggregator { entries }
+    }
+
+    pub fn count_by_level(&self) -> HashMap<LogLevel, usize> {
+        let mut counts = HashMap::new();
+        for entry in &self.entries {
+            *counts.entry(entry.level.clone()).or_insert(0) += 1;
+        }
+        counts
+    }
+
+    pub fn filter_by_level(&self, target_level: LogLevel) -> Vec<&LogEntry> {
+        self.entries
+            .iter()
+            .filter(|e| e.level == target_level)
+            .collect()
+    }
+}
+
+fn main() {
+    let raw_logs = "\
+[2026-08-07 10:00:01] [INFO] Server started successfully
+[2026-08-07 10:00:05] [WARN] High memory usage detected: 85%
+[2026-08-07 10:00:12] [ERROR] Failed to connect to primary database
+[2026-08-07 10:00:15] [INFO] Retrying database connection...";
+
+    let aggregator = LogAggregator::from_raw_logs(raw_logs);
+    println!("Total Valid Entries: {}", aggregator.entries.len());
+
+    let errors = aggregator.filter_by_level(LogLevel::Error);
+    println!("\nCritical Error Logs ({}):", errors.len());
+    for err in errors {
+        println!(" - [{}] {}", err.timestamp, err.message);
+    }
+}</code></pre>
+        </div>
+      </section>
+
+      <!-- COMPONENT BREAKDOWN GRID -->
+      <section id="components" class="space-y-6">
+        <h3 class="text-xl font-bold text-white flex items-center gap-2">
+          <i data-lucide="cpu" class="w-5 h-5 text-rust-500"></i>
+          <span>Architecture Breakdown</span>
+        </h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="glass-card rounded-xl p-5 space-y-2">
+            <h4 class="font-semibold text-white text-sm">1. Type-Safe Severity Enums</h4>
+            <p class="text-xs text-gray-300">
+              Captures known log levels explicitly while using a fallback variant <code class="font-mono text-rust-500">LogLevel::Unknown(String)</code> for unexpected strings.
+            </p>
+          </div>
+
+          <div class="glass-card rounded-xl p-5 space-y-2">
+            <h4 class="font-semibold text-white text-sm">2. Fail-Safe Line Parsing</h4>
+            <p class="text-xs text-gray-300">
+              Utilizes <code class="font-mono text-rust-500">splitn(3, ' ')</code> and returns <code class="font-mono">Option&lt;LogEntry&gt;</code> to safely discard corrupted lines without crashing execution.
+            </p>
+          </div>
+
+          <div class="glass-card rounded-xl p-5 space-y-2">
+            <h4 class="font-semibold text-white text-sm">3. Zero-Allocation Filtering</h4>
+            <p class="text-xs text-gray-300">
+              Uses <code class="font-mono text-rust-500">filter_map()</code> and borrowed reference iterators to stream log processing through pipeline stages cleanly.
+            </p>
+          </div>
+
+          <div class="glass-card rounded-xl p-5 space-y-2">
+            <h4 class="font-semibold text-white text-sm">4. Aggregator Pipeline</h4>
+            <p class="text-xs text-gray-300">
+              Groups occurrences into key-value counts using `HashMap<LogLevel, usize>`, facilitating rapid metrics generation for monitoring outputs.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- LIVE INTERACTIVE PARSER -->
+      <section id="interactive" class="space-y-4">
+        <h3 class="text-xl font-bold text-white flex items-center gap-2">
+          <i data-lucide="terminal" class="w-5 h-5 text-rust-500"></i>
+          <span>Live Interactive Log Parser</span>
+        </h3>
+
+        <div class="glass-card rounded-xl p-6 space-y-4 border-gray-800">
+          <div>
+            <label class="block text-xs font-mono text-gray-400 mb-1">Raw Log Stream Buffer</label>
+            <textarea id="log-input" rows="5" class="w-full px-3 py-2 bg-dark-base border border-gray-700 rounded-lg text-sm text-white focus:outline-none focus:border-rust-500 font-mono resize-y">[2026-08-07 10:00:01] [INFO] API Gateway listening on port 8080
+[2026-08-07 10:00:04] [WARN] Rate limit approaching for client_id=8921
+[2026-08-07 10:00:10] [ERROR] Database connection pool exhausted
+[2026-08-07 10:00:15] [INFO] Health check status: OK
+[2026-08-07 10:00:22] [ERROR] Failed to flush cache to disk</textarea>
+          </div>
+
+          <!-- Realtime Stats Grid -->
+          <div class="grid grid-cols-3 gap-3 font-mono text-center">
+            <div class="p-3 bg-dark-base rounded-lg border border-gray-800">
+              <div class="text-xs text-emerald-400">INFO Logs</div>
+              <div id="stat-info-count" class="text-lg font-bold text-emerald-400">0</div>
+            </div>
+            <div class="p-3 bg-dark-base rounded-lg border border-gray-800">
+              <div class="text-xs text-amber-400">WARN Logs</div>
+              <div id="stat-warn-count" class="text-lg font-bold text-amber-400">0</div>
+            </div>
+            <div class="p-3 bg-dark-base rounded-lg border border-gray-800">
+              <div class="text-xs text-red-400">ERROR Logs</div>
+              <div id="stat-error-count" class="text-lg font-bold text-red-400">0</div>
+            </div>
+          </div>
+
+          <!-- Filter Control & Output Table -->
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-xs font-mono text-gray-400">Parsed Entries:</span>
+              <select id="level-filter" class="bg-dark-base border border-gray-700 text-xs font-mono text-white px-2 py-1 rounded focus:outline-none focus:border-rust-500">
+                <option value="ALL">Show All Levels</option>
+                <option value="INFO">INFO Only</option>
+                <option value="WARN">WARN Only</option>
+                <option value="ERROR">ERROR Only</option>
+              </select>
+            </div>
+            <div id="parsed-log-list" class="p-3 bg-dark-base border border-gray-800 rounded-lg font-mono text-xs space-y-2 max-h-60 overflow-y-auto">
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    const logInput = document.getElementById('log-input');
+    const levelFilter = document.getElementById('level-filter');
+    const elInfoCount = document.getElementById('stat-info-count');
+    const elWarnCount = document.getElementById('stat-warn-count');
+    const elErrorCount = document.getElementById('stat-error-count');
+    const elLogList = document.getElementById('parsed-log-list');
+
+    function parseLogs() {
+      const text = logInput.value;
+      const lines = text.split('\n');
+      
+      let infoCount = 0;
+      let warnCount = 0;
+      let errorCount = 0;
+      const parsedEntries = [];
+
+      lines.forEach(line => {
+        const trimmed = line.trim();
+        if (!trimmed) return;
+
+        const parts = trimmed.split(/\[|\]/).filter(p => p.trim().length > 0);
+        if (parts.length >= 2) {
+          const timestamp = parts[0].trim();
+          const level = parts[1].trim().toUpperCase();
+          const message = parts.slice(2).join(']').trim();
+
+          if (level === 'INFO') infoCount++;
+          else if (level === 'WARN' || level === 'WARNING') warnCount++;
+          else if (level === 'ERROR' || level === 'ERR') errorCount++;
+
+          parsedEntries.push({ timestamp, level, message });
+        }
+      });
+
+      elInfoCount.innerText = infoCount;
+      elWarnCount.innerText = warnCount;
+      elErrorCount.innerText = errorCount;
+
+      const selectedFilter = levelFilter.value;
+      const filtered = parsedEntries.filter(e => {
+        if (selectedFilter === 'ALL') return true;
+        if (selectedFilter === 'WARN' && (e.level === 'WARN' || e.level === 'WARNING')) return true;
+        if (selectedFilter === 'ERROR' && (e.level === 'ERROR' || e.level === 'ERR')) return true;
+        return e.level === selectedFilter;
+      });
+
+      if (filtered.length === 0) {
+        elLogList.innerHTML = '<span class="text-gray-500">// No entries match current filter criteria</span>';
+      } else {
+        elLogList.innerHTML = filtered.map(e => {
+          let badgeColor = 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+          if (e.level === 'WARN' || e.level === 'WARNING') badgeColor = 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+          if (e.level === 'ERROR' || e.level === 'ERR') badgeColor = 'bg-red-500/10 text-red-400 border-red-500/20';
+
+          return `
+            <div class="p-2 rounded bg-dark-card border border-gray-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span class="text-xs px-2 py-0.5 rounded border ${badgeColor} font-bold">${e.level}</span>
+                <span class="text-gray-300">${e.message}</span>
+              </div>
+              <span class="text-gray-500 text-[10px]">${e.timestamp}</span>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    logInput.addEventListener('input', parseLogs);
+    levelFilter.addEventListener('change', parseLogs);
+    parseLogs();
+  </script>
+</body>
+</html>

@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>System Design & Core Rust: Lock-Free SPSC Ring Buffer</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            rust: {
+              500: '#F97316',
+              600: '#EA580C',
+              700: '#C2410C',
+              glow: 'rgba(249, 115, 22, 0.15)'
+            },
+            dark: {
+              base: '#0B0F19',
+              card: '#111827',
+              input: '#1F2937',
+              border: '#374151'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['Fira Code', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Prism.js for Rust Syntax Highlighting -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-rust.min.js"></script>
+
+  <style>
+    .glass-panel {
+      background: rgba(17, 24, 39, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .glass-card {
+      background: rgba(17, 24, 39, 0.6);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .glass-card:hover {
+      border-color: rgba(249, 115, 22, 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px -5px rgba(249, 115, 22, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0B0F19;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1F2937;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #374151;
+    }
+
+    .ambient-glow-rust {
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(249, 115, 22, 0.12) 0%, rgba(0, 0, 0, 0) 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .ambient-glow-purple {
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(168, 85, 247, 0.08) 0%, rgba(0, 0, 0, 0) 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    pre[class*="language-"] {
+      background: #090D16 !important;
+      margin: 0 !important;
+      border-radius: 0 0 0.5rem 0.5rem !important;
+      font-family: 'Fira Code', monospace !important;
+      font-size: 0.875rem !important;
+      line-height: 1.7 !important;
+    }
+  </style>
+</head>
+<body class="bg-dark-base text-gray-100 font-sans min-h-screen flex flex-col antialiased selection:bg-rust-500 selection:text-white">
+
+  <div class="ambient-glow-rust top-0 left-1/4"></div>
+  <div class="ambient-glow-purple top-1/3 right-10"></div>
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-50 glass-panel border-b border-gray-800/80 px-4 lg:px-8 py-3">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <div class="bg-rust-500 text-white p-2 rounded-lg font-mono font-bold text-sm tracking-wide shadow-lg shadow-rust-500/20">
+          RS
+        </div>
+        <div>
+          <h1 class="font-bold text-base tracking-tight leading-none text-white">System Design & Core Rust</h1>
+          <span class="text-xs text-gray-400 font-mono">Module 12 // Lock-Free SPSC Ring Buffer</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-4 text-xs font-mono">
+        <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-dark-input border border-gray-700 text-gray-300">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span>Lock-Free / Mutexless</span>
+        </div>
+        <div class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-dark-input border border-gray-700 text-gray-300">
+          <span class="w-2 h-2 rounded-full bg-purple-500"></span>
+          <span>Acquire / Release Semantics</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <div class="max-w-7xl mx-auto w-full flex-1 flex flex-col lg:flex-row gap-8 px-4 lg:px-8 py-8 relative z-10">
+
+    <!-- SIDEBAR NAVIGATION -->
+    <aside id="sidebar" class="hidden lg:block w-full lg:w-64 flex-shrink-0">
+      <div class="sticky top-24 space-y-6">
+        <div>
+          <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-3 font-mono">Module Index</h3>
+          <nav class="space-y-1">
+            <a href="#overview" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-dark-input transition-colors">
+              <i data-lucide="book-open" class="w-4 h-4 text-rust-500"></i>
+              <span>Overview</span>
+            </a>
+            <a href="#code" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-dark-input transition-colors">
+              <i data-lucide="code-2" class="w-4 h-4 text-rust-500"></i>
+              <span>Production Code</span>
+            </a>
+            <a href="#components" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-dark-input transition-colors">
+              <i data-lucide="cpu" class="w-4 h-4 text-rust-500"></i>
+              <span>Architecture Breakdown</span>
+            </a>
+            <a href="#interactive" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-dark-input transition-colors">
+              <i data-lucide="activity" class="w-4 h-4 text-rust-500"></i>
+              <span>Queue Simulator</span>
+            </a>
+          </nav>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="flex-1 space-y-12 min-w-0">
+
+      <!-- HERO SECTION -->
+      <section id="overview" class="glass-card rounded-2xl p-6 lg:p-8">
+        <div class="max-w-3xl space-y-4">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rust-500/10 border border-rust-500/20 text-rust-500 text-xs font-mono font-medium">
+            <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+            <span>Lock-Free Concurrent Data Structures</span>
+          </div>
+          <h2 class="text-3xl lg:text-4xl font-extrabold tracking-tight text-white">
+            Lock-Free SPSC <span class="text-transparent bg-clip-text bg-gradient-to-r from-rust-500 to-purple-400">Ring Buffer Queue</span>
+          </h2>
+          <p class="text-gray-300 leading-relaxed text-sm lg:text-base">
+            Build high-performance, single-producer single-consumer queues without thread locks or mutexes. Master explicit hardware memory ordering primitives (`Acquire` and `Release`) in Rust.
+          </p>
+        </div>
+      </section>
+
+      <!-- CODE SECTION -->
+      <section id="code" class="space-y-4">
+        <div class="flex justify-between items-center">
+          <h3 class="text-xl font-bold text-white flex items-center gap-2">
+            <i data-lucide="file-code" class="w-5 h-5 text-rust-500"></i>
+            <span>Production Implementation</span>
+          </h3>
+        </div>
+
+        <div class="rounded-xl border border-gray-800 bg-dark-base overflow-hidden shadow-2xl">
+          <div class="bg-dark-card px-4 py-3 border-b border-gray-800 flex items-center justify-between">
+            <span class="text-xs font-mono text-gray-400">src/main.rs</span>
+            <span class="text-xs font-mono text-rust-500">Lock-Free SPSC Queue</span>
+          </div>
+          <pre><code class="language-rust">use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::Arc;
+use std::thread;
+
+pub struct SpscRingBuffer<T, const N: usize> {
+    buffer: [Option<T>; N],
+    head: AtomicUsize, // Read pointer (Consumer)
+    tail: AtomicUsize, // Write pointer (Producer)
+}
+
+impl<T: Copy, const N: usize> SpscRingBuffer<T, N> {
+    pub const fn new() -> Self {
+        assert!(N > 0 && (N & (N - 1)) == 0, "Capacity must be a power of two");
+        const INIT: Option<T> = None;
+        Self {
+            buffer: [INIT; N],
+            head: AtomicUsize::new(0),
+            tail: AtomicUsize::new(0),
+        }
+    }
+
+    /// Push element into ring buffer (Producer thread)
+    pub fn push(&mut self, item: T) -> Result<(), &'static str> {
+        let tail = self.tail.load(Ordering::Relaxed);
+        let head = self.head.load(Ordering::Acquire);
+
+        if tail.wrapping_sub(head) >= N {
+            return Err("Ring buffer full");
+        }
+
+        let index = tail & (N - 1); // Fast bitwise modulo
+        self.buffer[index] = Some(item);
+
+        // Release ordering ensures item write is visible before updating tail
+        self.tail.store(tail.wrapping_add(1), Ordering::Release);
+        Ok(())
+    }
+
+    /// Pop element from ring buffer (Consumer thread)
+    pub fn pop(&mut self) -> Option<T> {
+        let head = self.head.load(Ordering::Relaxed);
+        let tail = self.tail.load(Ordering::Acquire);
+
+        if head == tail {
+            return None; // Buffer empty
+        }
+
+        let index = head & (N - 1); // Fast bitwise modulo
+        let item = self.buffer[index].take();
+
+        // Release ordering updates head index safely for producer
+        self.head.store(head.wrapping_add(1), Ordering::Release);
+        item
+    }
+}
+
+fn main() {
+    let mut ring_buffer = SpscRingBuffer::<i32, 8>::new();
+
+    // Push items into lock-free queue
+    ring_buffer.push(10).unwrap();
+    ring_buffer.push(20).unwrap();
+    ring_buffer.push(30).unwrap();
+
+    println!("Popped: {:?}", ring_buffer.pop()); // Some(10)
+    println!("Popped: {:?}", ring_buffer.pop()); // Some(20)
+    println!("Popped: {:?}", ring_buffer.pop()); // Some(30)
+    println!("Popped: {:?}", ring_buffer.pop()); // None
+}</code></pre>
+        </div>
+      </section>
+
+      <!-- ARCHITECTURE BREAKDOWN -->
+      <section id="components" class="space-y-6">
+        <h3 class="text-xl font-bold text-white flex items-center gap-2">
+          <i data-lucide="cpu" class="w-5 h-5 text-rust-500"></i>
+          <span>Architecture Breakdown</span>
+        </h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="glass-card rounded-xl p-5 space-y-2">
+            <h4 class="font-semibold text-white text-sm">1. SPSC Guarantee (Single-Producer Single-Consumer)</h4>
+            <p class="text-xs text-gray-300">
+              Only the producer thread modifies `tail`, and only the consumer thread modifies `head`. This design eliminates hardware contention and atomic CAS loop overhead.
+            </p>
+          </div>
+
+          <div class="glass-card rounded-xl p-5 space-y-2">
+            <h4 class="font-semibold text-white text-sm">2. Acquire / Release Ordering Boundaries</h4>
+            <p class="text-xs text-gray-300">
+              `Ordering::Release` ensures memory writes complete before atomic index updates. `Ordering::Acquire` guarantees subsequent reads see memory changes from preceding writes.
+            </p>
+          </div>
+
+          <div class="glass-card rounded-xl p-5 space-y-2">
+            <h4 class="font-semibold text-white text-sm">3. Power-of-Two Bitwise Optimization</h4>
+            <p class="text-xs text-gray-300">
+              Using capacities of $2^N$ simplifies index wrapping to `idx & (capacity - 1)`, replacing expensive division instructions (`%`) with single-cycle CPU bit operations.
+            </p>
+          </div>
+
+          <div class="glass-card rounded-xl p-5 space-y-2">
+            <h4 class="font-semibold text-white text-sm">4. Zero Allocation Static Memory</h4>
+            <p class="text-xs text-gray-300">
+              Allocates backing storage statically using const generics (`[Option<T>; N]`), guaranteeing zero heap allocation during queue pushes and pops.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- LIVE INTERACTIVE SIMULATOR -->
+      <section id="interactive" class="space-y-4">
+        <h3 class="text-xl font-bold text-white flex items-center gap-2">
+          <i data-lucide="activity" class="w-5 h-5 text-rust-500"></i>
+          <span>Ring Buffer Queue Simulator</span>
+        </h3>
+
+        <div class="glass-card rounded-xl p-6 space-y-6 border-gray-800">
+          <!-- Controls -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <button id="btn-push" class="bg-rust-500 hover:bg-rust-600 text-white font-mono text-xs font-bold py-2.5 px-3 rounded-lg transition-colors flex items-center justify-center gap-2">
+              <i data-lucide="arrow-down-right" class="w-4 h-4"></i> PRODUCER: PUSH ITEM
+            </button>
+            <button id="btn-pop" class="bg-purple-600 hover:bg-purple-700 text-white font-mono text-xs font-bold py-2.5 px-3 rounded-lg transition-colors flex items-center justify-center gap-2">
+              <i data-lucide="arrow-up-right" class="w-4 h-4"></i> CONSUMER: POP ITEM
+            </button>
+            <button id="btn-reset" class="bg-dark-input hover:bg-gray-700 text-gray-300 font-mono text-xs font-bold py-2.5 px-3 rounded-lg transition-colors flex items-center justify-center gap-2 border border-gray-700">
+              <i data-lucide="rotate-ccw" class="w-4 h-4"></i> RESET QUEUE
+            </button>
+          </div>
+
+          <!-- Queue Array Visualization -->
+          <div class="p-4 bg-dark-base border border-gray-800 rounded-lg space-y-3">
+            <div class="flex justify-between items-center font-mono text-xs">
+              <span class="text-gray-400">Fixed Buffer Ring Array (Capacity: 8):</span>
+              <div class="flex gap-4">
+                <span id="txt-head" class="text-purple-400">Head: 0</span>
+                <span id="txt-tail" class="text-rust-500">Tail: 0</span>
+              </div>
+            </div>
+
+            <!-- Slots visual grid -->
+            <div id="slots-grid" class="grid grid-cols-4 sm:grid-cols-8 gap-2 py-2">
+              <!-- Rendered via JavaScript -->
+            </div>
+          </div>
+
+          <!-- Log View -->
+          <div class="p-4 bg-dark-base border border-gray-800 rounded-lg space-y-2">
+            <span class="text-xs font-mono text-gray-400">Atomic Event Audit Log:</span>
+            <pre id="log-out" class="font-mono text-xs text-emerald-400 p-3 bg-dark-card rounded border border-gray-800 min-h-[120px] max-h-[160px] overflow-y-auto">// Log events stream</pre>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    const CAPACITY = 8;
+    let buffer = new Array(CAPACITY).fill(null);
+    let head = 0;
+    let tail = 0;
+    let itemCounter = 100;
+
+    const btnPush = document.getElementById('btn-push');
+    const btnPop = document.getElementById('btn-pop');
+    const btnReset = document.getElementById('btn-reset');
+
+    const slotsGrid = document.getElementById('slots-grid');
+    const txtHead = document.getElementById('txt-head');
+    const txtTail = document.getElementById('txt-tail');
+    const logOut = document.getElementById('log-out');
+
+    function log(msg) {
+      logOut.innerText = `[${new Date().toLocaleTimeString()}] ${msg}\n` + logOut.innerText;
+    }
+
+    function renderQueue() {
+      txtHead.innerText = `Head (Consumer): ${head}`;
+      txtTail.innerText = `Tail (Producer): ${tail}`;
+
+      slotsGrid.innerHTML = '';
+      for (let i = 0; i < CAPACITY; i++) {
+        const item = buffer[i];
+        const isHead = (head % CAPACITY) === i && head !== tail;
+        const isTail = (tail % CAPACITY) === i;
+
+        const slotEl = document.createElement('div');
+        slotEl.className = `p-3 rounded-lg border text-center font-mono text-xs flex flex-col items-center justify-between min-h-[70px] ${
+          item !== null 
+            ? 'bg-dark-card border-rust-500/50 text-white' 
+            : 'bg-dark-base border-gray-800 text-gray-600'
+        }`;
+
+        let label = item !== null ? `[${item}]` : '<EMPTY>';
+        let pointerBadges = '';
+
+        if ((head % CAPACITY) === i && (tail % CAPACITY) === i) {
+          if (head === tail) {
+            pointerBadges += `<span class="text-[9px] bg-gray-800 px-1 rounded text-gray-400">H=T</span>`;
+          } else {
+            pointerBadges += `<span class="text-[9px] bg-purple-500/20 text-purple-400 px-1 rounded">FULL</span>`;
+          }
+        } else {
+          if ((head % CAPACITY) === i) pointerBadges += `<span class="text-[9px] bg-purple-500/20 text-purple-400 px-1 rounded">HEAD</span>`;
+          if ((tail % CAPACITY) === i) pointerBadges += `<span class="text-[9px] bg-rust-500/20 text-rust-500 px-1 rounded">TAIL</span>`;
+        }
+
+        slotEl.innerHTML = `
+          <span class="text-[10px] text-gray-500">#${i}</span>
+          <span class="font-bold my-1">${label}</span>
+          <div>${pointerBadges}</div>
+        `;
+
+        slotsGrid.appendChild(slotEl);
+      }
+    }
+
+    btnPush.addEventListener('click', () => {
+      if (tail - head >= CAPACITY) {
+        log('PUSH ERROR: Buffer Full! (Lock-Free backpressure applied)');
+        return;
+      }
+
+      const val = itemCounter++;
+      const slotIdx = tail & (CAPACITY - 1);
+      buffer[slotIdx] = val;
+      tail++;
+
+      log(`PRODUCER: Pushed item [${val}] to slot #${slotIdx} (Release Store -> Tail: ${tail})`);
+      renderQueue();
+    });
+
+    btnPop.addEventListener('click', () => {
+      if (head === tail) {
+        log('POP WARNING: Buffer Empty! (Consumer read returned None)');
+        return;
+      }
+
+      const slotIdx = head & (CAPACITY - 1);
+      const val = buffer[slotIdx];
+      buffer[slotIdx] = null;
+      head++;
+
+      log(`CONSUMER: Popped item [${val}] from slot #${slotIdx} (Release Store -> Head: ${head})`);
+      renderQueue();
+    });
+
+    btnReset.addEventListener('click', () => {
+      buffer = new Array(CAPACITY).fill(null);
+      head = 0;
+      tail = 0;
+      itemCounter = 100;
+      log('QUEUE RESET: Head and Tail reset to 0');
+      renderQueue();
+    });
+
+    // Initialize default render
+    renderQueue();
+    log('Lock-Free SPSC Queue Initialized. Capacity = 8.');
+  </script>
+</body>
+</html>
