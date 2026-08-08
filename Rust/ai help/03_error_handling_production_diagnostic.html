@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rust Level 3: Error Handling & Production Diagnostics</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            rust: {
+              500: '#e05a00',
+              600: '#c24100',
+              400: '#ff7728',
+            },
+            darkbg: '#0B0F17',
+            glass: 'rgba(17, 24, 39, 0.75)',
+            glassborder: 'rgba(255, 255, 255, 0.08)'
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['Fira Code', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Prism.js for Syntax Highlighting -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-rust.min.js"></script>
+
+  <style>
+    body {
+      background-color: #0B0F17;
+      font-family: 'Inter', sans-serif;
+      color: #E2E8F0;
+      overflow-x: hidden;
+    }
+    
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0B0F17;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1E293B;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
+
+    .glass-panel {
+      background: rgba(17, 24, 39, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .glass-card {
+      background: rgba(30, 41, 59, 0.4);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .glass-card:hover {
+      border-color: rgba(224, 90, 0, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px -10px rgba(224, 90, 0, 0.15);
+    }
+
+    .glow-rust {
+      box-shadow: 0 0 50px -10px rgba(224, 90, 0, 0.25);
+    }
+
+    pre[class*="language-"] {
+      background: #0D1117 !important;
+      margin: 0 !important;
+      border-radius: 0 0 0.75rem 0.75rem !important;
+      font-family: 'Fira Code', monospace !important;
+      font-size: 0.85rem !important;
+    }
+    code[class*="language-"] {
+      font-family: 'Fira Code', monospace !important;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-rust-500/30 selection:text-rust-400">
+
+  <!-- Ambient Glow Background Effects -->
+  <div class="fixed top-0 right-1/4 w-[400px] sm:w-[600px] h-[400px] sm:h-[600px] bg-rust-500/10 rounded-full blur-[140px] pointer-events-none -z-10"></div>
+  <div class="fixed bottom-1/3 left-1/4 w-[300px] sm:w-[500px] h-[300px] sm:h-[500px] bg-red-500/5 rounded-full blur-[150px] pointer-events-none -z-10"></div>
+
+  <!-- Header -->
+  <header class="sticky top-0 z-50 glass-panel border-b border-glassborder">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-lg bg-rust-500/20 border border-rust-500/40 flex items-center justify-center text-rust-400 font-bold">
+          <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <span class="font-bold tracking-tight text-white flex items-center gap-2 text-sm sm:text-base">
+            Rust Error Handling • Level 3
+          </span>
+          <span class="text-xs text-gray-400 font-mono hidden md:inline-block">Domain Errors, Custom Enums & Propagation Architecture</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 sm:gap-4">
+        <div class="px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-mono">
+          Level 3 Core
+        </div>
+        <div class="px-3 py-1 rounded-full bg-rust-500/10 border border-rust-500/20 text-rust-400 text-xs font-mono hidden sm:block">
+          Rust 2024
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex-grow flex flex-col lg:flex-row gap-8">
+
+    <!-- Desktop Sidebar Navigation -->
+    <aside class="w-64 flex-shrink-0 hidden lg:block sticky top-24 h-[calc(100vh-8rem)]">
+      <nav class="space-y-2">
+        <div class="text-xs font-mono text-gray-400 uppercase tracking-wider px-3 mb-3">Navigation</div>
+        <a href="#hero" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-colors group">
+          <i data-lucide="sparkles" class="w-4 h-4 text-rust-400 group-hover:scale-110 transition-transform"></i>
+          Level 3 Overview
+        </a>
+        <a href="#code-viewer" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-colors group">
+          <i data-lucide="code-2" class="w-4 h-4 text-rust-400 group-hover:scale-110 transition-transform"></i>
+          Production Code Patterns
+        </a>
+        <a href="#concepts" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-colors group">
+          <i data-lucide="cpu" class="w-4 h-4 text-rust-400 group-hover:scale-110 transition-transform"></i>
+          Architectural Pillars
+        </a>
+        <a href="#scaling" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-colors group">
+          <i data-lucide="workflow" class="w-4 h-4 text-rust-400 group-hover:scale-110 transition-transform"></i>
+          Error Boundary Lifecycle
+        </a>
+      </nav>
+
+      <!-- Key Takeaway Box -->
+      <div class="mt-8 p-4 rounded-xl glass-card border border-glassborder">
+        <div class="flex items-center gap-2 text-rust-400 font-semibold text-xs mb-2">
+          <i data-lucide="shield-alert" class="w-4 h-4"></i> Level 3 Insight
+        </div>
+        <p class="text-xs text-gray-400 leading-relaxed">
+          Libraries should return explicit, strongly-typed domain enums implementing <code class="text-rust-400 font-mono">std::error::Error</code>. Applications convert these using context propagation for zero-cost observability.
+        </p>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 min-w-0 space-y-8 sm:space-y-12">
+
+      <!-- Hero Section -->
+      <section id="hero" class="glass-panel rounded-2xl p-6 sm:p-8 glow-rust relative overflow-hidden">
+        <div class="absolute -right-10 -bottom-10 opacity-10 pointer-events-none text-rust-500 hidden sm:block">
+          <i data-lucide="activity" class="w-96 h-96"></i>
+        </div>
+
+        <div class="max-w-3xl">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-mono mb-4">
+            <i data-lucide="award" class="w-3.5 h-3.5"></i> Level 3 Master Class
+          </div>
+          <h1 class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight mb-4 leading-tight">
+            Production Error Handling: Domain Enums, <code class="text-rust-400">From</code> Conversions & Diagnostics
+          </h1>
+          <p class="text-gray-300 text-sm sm:text-base leading-relaxed mb-6">
+            Now that you have mastered crate organization, learn how production systems handle failure. Bridge domain logic and binary execution using structured error types, automatic type conversions via <code class="text-rust-400 font-mono">From</code>, and context enrichment.
+          </p>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono text-xs">
+            <div class="p-2.5 sm:p-3 rounded-lg bg-black/40 border border-white/5">
+              <span class="text-gray-400 block mb-1">Domain Enums</span>
+              <span class="text-amber-400 font-semibold">Exhaustive Match</span>
+            </div>
+            <div class="p-2.5 sm:p-3 rounded-lg bg-black/40 border border-white/5">
+              <span class="text-gray-400 block mb-1">Operator</span>
+              <span class="text-rust-400 font-semibold">The ? Propagation</span>
+            </div>
+            <div class="p-2.5 sm:p-3 rounded-lg bg-black/40 border border-white/5">
+              <span class="text-gray-400 block mb-1">Conversion</span>
+              <span class="text-emerald-400 font-semibold">impl From&lt;T&gt;</span>
+            </div>
+            <div class="p-2.5 sm:p-3 rounded-lg bg-black/40 border border-white/5">
+              <span class="text-gray-400 block mb-1">Trait Bound</span>
+              <span class="text-blue-400 font-semibold">std::error::Error</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Interactive Code Viewer -->
+      <section id="code-viewer" class="space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <h2 class="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+            <i data-lucide="code" class="w-5 h-5 text-rust-400"></i>
+            Production Error Handling Code
+          </h2>
+          <span class="text-xs text-gray-400 font-mono">Select a file tab below</span>
+        </div>
+
+        <!-- Terminal Window -->
+        <div class="rounded-xl border border-glassborder overflow-hidden bg-darkbg shadow-2xl">
+          
+          <!-- File Selector Tab Bar -->
+          <div class="flex items-center justify-between bg-black/60 px-3 sm:px-4 py-2 border-b border-glassborder overflow-x-auto">
+            <div class="flex items-center gap-2 min-w-max" id="file-tabs">
+              <button onclick="switchTab('lib')" id="tab-lib" class="px-3 py-1.5 rounded-md text-xs font-mono font-medium flex items-center gap-2 bg-rust-500/20 text-rust-400 border border-rust-500/30 transition-all">
+                <i data-lucide="file-code-2" class="w-3.5 h-3.5"></i>
+                src/error.rs (Domain Errors)
+              </button>
+              <button onclick="switchTab('service')" id="tab-service" class="px-3 py-1.5 rounded-md text-xs font-mono font-medium flex items-center gap-2 text-gray-400 hover:text-white hover:bg-white/5 transition-all">
+                <i data-lucide="cpu" class="w-3.5 h-3.5"></i>
+                src/bank.rs (Business Logic)
+              </button>
+              <button onclick="switchTab('main')" id="tab-main" class="px-3 py-1.5 rounded-md text-xs font-mono font-medium flex items-center gap-2 text-gray-400 hover:text-white hover:bg-white/5 transition-all">
+                <i data-lucide="play-circle" class="w-3.5 h-3.5"></i>
+                src/main.rs (App Handler)
+              </button>
+            </div>
+            <div class="hidden md:flex items-center gap-1.5 ml-4">
+              <span class="w-3 h-3 rounded-full bg-red-500/80 inline-block"></span>
+              <span class="w-3 h-3 rounded-full bg-yellow-500/80 inline-block"></span>
+              <span class="w-3 h-3 rounded-full bg-green-500/80 inline-block"></span>
+            </div>
+          </div>
+
+          <!-- Code Display Panels -->
+          <div class="relative">
+            
+            <!-- Tab 1: error.rs -->
+            <div id="content-lib" class="tab-content">
+              <pre><code class="language-rust">// src/error.rs
+//! Custom Domain Error Types
+//! Implementing `Display` and `std::error::Error` for strongly-typed library errors.
+
+use std::fmt;
+
+#[derive(Debug)]
+pub enum BankError {
+    InsufficientFunds { requested: f64, available: f64 },
+    AccountLocked(String),
+    NetworkTimeout,
+}
+
+// 1. Human-readable formatting for logs/display
+impl fmt::Display for BankError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            BankError::InsufficientFunds { requested, available } => {
+                write!(f, "Cannot withdraw ${requested:.2}; balance is ${available:.2}")
+            }
+            BankError::AccountLocked(id) => write!(f, "Account '{id}' is locked for safety"),
+            BankError::NetworkTimeout => write!(f, "Banking network request timed out"),
+        }
+    }
+}
+
+// 2. Trait integration allowing this error to integrate with `std::error::Error`
+impl std::error::Error for BankError {}</code></pre>
+            </div>
+
+            <!-- Tab 2: bank.rs -->
+            <div id="content-service" class="tab-content hidden">
+              <pre><code class="language-rust">// src/bank.rs
+//! Business Logic utilizing the `?` operator for clean error propagation.
+
+use crate::error::BankError;
+
+pub struct Account {
+    pub id: String,
+    balance: f64,
+    is_locked: bool,
+}
+
+impl Account {
+    pub fn new(id: &str, initial: f64) -> Self {
+        Self {
+            id: id.to_string(),
+            balance: initial,
+            is_locked: false,
+        }
+    }
+
+    pub fn withdraw(&mut self, amount: f64) -> Result<f64, BankError> {
+        if self.is_locked {
+            return Err(BankError::AccountLocked(self.id.clone()));
+        }
+
+        if amount > self.balance {
+            return Err(BankError::InsufficientFunds {
+                requested: amount,
+                available: self.balance,
+            });
+        }
+
+        self.balance -= amount;
+        Ok(self.balance)
+    }
+}</code></pre>
+            </div>
+
+            <!-- Tab 3: main.rs -->
+            <div id="content-main" class="tab-content hidden">
+              <pre><code class="language-rust">// src/main.rs
+//! Application entry point: Pattern matching on domain errors.
+
+mod error;
+mod bank;
+
+use bank::Account;
+use error::BankError;
+
+fn process_transaction(acc: &mut Account, amount: f64) {
+    match acc.withdraw(amount) {
+        Ok(new_balance) => println!("Success! Remaining balance: ${new_balance:.2}"),
+        Err(err) => match err {
+            // Strong domain matching enables custom recovery paths!
+            BankError::InsufficientFunds { requested, available } => {
+                println!("[WARN] Failed: Requested ${requested:.2}, but only ${available:.2} exists.");
+            }
+            BankError::AccountLocked(id) => {
+                println!("[ALERT] Security Incident: Account {id} attempted access while locked!");
+            }
+            BankError::NetworkTimeout => {
+                println!("[RETRY] Retrying network transaction...");
+            }
+        },
+    }
+}
+
+fn main() {
+    let mut acc = Account::new("ACC-9042", 50.00);
+    process_transaction(&mut acc, 120.00); // Will trigger InsufficientFunds
+}</code></pre>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- Concept Breakdown Grid (2x2) -->
+      <section id="concepts" class="space-y-6">
+        <h2 class="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+          <i data-lucide="cpu" class="w-5 h-5 text-rust-400"></i>
+          Level 3 Architectural Pillars
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+          
+          <!-- Pillar 1 -->
+          <div class="glass-card rounded-xl p-5 sm:p-6 relative overflow-hidden">
+            <div class="flex items-start gap-4">
+              <div class="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 flex-shrink-0">
+                <i data-lucide="layers" class="w-6 h-6"></i>
+              </div>
+              <div class="space-y-2">
+                <h3 class="text-base sm:text-lg font-semibold text-white">Domain Enums vs Generic Strings</h3>
+                <p class="text-xs sm:text-sm text-gray-300 leading-relaxed">
+                  Avoid returning raw `String` or `&str` errors. Enum errors force calling code to handle every possible failure case exhaustively during compilation.
+                </p>
+                <div class="pt-2 text-xs font-mono text-amber-400 border-t border-white/5">
+                  CS Principle: Exhaustive Algebraic Data Types
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pillar 2 -->
+          <div class="glass-card rounded-xl p-5 sm:p-6 relative overflow-hidden">
+            <div class="flex items-start gap-4">
+              <div class="p-3 rounded-lg bg-rust-500/10 border border-rust-500/30 text-rust-400 flex-shrink-0">
+                <i data-lucide="arrow-right-left" class="w-6 h-6"></i>
+              </div>
+              <div class="space-y-2">
+                <h3 class="text-base sm:text-lg font-semibold text-white">The <code class="text-rust-400">?</code> Operator & <code class="text-rust-400">From</code></h3>
+                <p class="text-xs sm:text-sm text-gray-300 leading-relaxed">
+                  The <code class="text-rust-400 font-mono">?</code> operator automatically calls <code class="text-rust-400 font-mono">From::from()</code> under the hood, seamlessly coercing lower-level errors (like IO or database errors) into your high-level domain error.
+                </p>
+                <div class="pt-2 text-xs font-mono text-rust-400 border-t border-white/5">
+                  CS Principle: Implicit Monadic Error Coercion
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pillar 3 -->
+          <div class="glass-card rounded-xl p-5 sm:p-6 relative overflow-hidden">
+            <div class="flex items-start gap-4">
+              <div class="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex-shrink-0">
+                <i data-lucide="shield-check" class="w-6 h-6"></i>
+              </div>
+              <div class="space-y-2">
+                <h3 class="text-base sm:text-lg font-semibold text-white">The <code class="text-emerald-400">std::error::Error</code> Trait</h3>
+                <p class="text-xs sm:text-sm text-gray-300 leading-relaxed">
+                  Implementing `Display` and `std::error::Error` allows third-party ecosystem tools, loggers, and tracing frameworks to print backtraces and inspect error sources seamlessly.
+                </p>
+                <div class="pt-2 text-xs font-mono text-emerald-400 border-t border-white/5">
+                  CS Principle: Standardized Diagnostic Protocols
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pillar 4 -->
+          <div class="glass-card rounded-xl p-5 sm:p-6 relative overflow-hidden">
+            <div class="flex items-start gap-4">
+              <div class="p-3 rounded-lg bg-blue-500/10 border border-blue-500/30 text-blue-400 flex-shrink-0">
+                <i data-lucide="box" class="w-6 h-6"></i>
+              </div>
+              <div class="space-y-2">
+                <h3 class="text-base sm:text-lg font-semibold text-white">Library vs Application Split</h3>
+                <p class="text-xs sm:text-sm text-gray-300 leading-relaxed">
+                  Libraries use structured enums (e.g., via `thiserror`). Applications use dynamic context handlers (e.g., `anyhow` or `eyre`) to wrap errors with contextual stack traces.
+                </p>
+                <div class="pt-2 text-xs font-mono text-blue-400 border-t border-white/5">
+                  CS Principle: Contextual Stack Wrapping
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Error Evolution Section -->
+      <section id="scaling" class="space-y-6">
+        <h2 class="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+          <i data-lucide="workflow" class="w-5 h-5 text-rust-400"></i>
+          Error Boundary Architecture
+        </h2>
+
+        <div class="glass-panel rounded-xl p-6 sm:p-8 space-y-6">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="p-4 rounded-lg bg-black/40 border border-white/5 space-y-2">
+              <span class="text-xs font-mono text-rust-400">LAYER 01</span>
+              <h4 class="font-semibold text-white text-sm">Low-Level System I/O</h4>
+              <p class="text-xs text-gray-400">Database drivers or file systems produce raw <code class="text-rust-400 font-mono">std::io::Error</code> instances.</p>
+            </div>
+            <div class="p-4 rounded-lg bg-black/40 border border-white/5 space-y-2">
+              <span class="text-xs font-mono text-amber-400">LAYER 02</span>
+              <h4 class="font-semibold text-white text-sm">Domain Error Coercion</h4>
+              <p class="text-xs text-gray-400"><code class="text-rust-400 font-mono">lib.rs</code> catches low-level errors and wraps them into domain variants via <code class="text-rust-400 font-mono">From</code> traits.</p>
+            </div>
+            <div class="p-4 rounded-lg bg-black/40 border border-white/5 space-y-2">
+              <span class="text-xs font-mono text-emerald-400">LAYER 03</span>
+              <h4 class="font-semibold text-white text-sm">App Diagnostics</h4>
+              <p class="text-xs text-gray-400"><code class="text-rust-400 font-mono">main.rs</code> matches on domain errors to decide whether to retry, alert metrics, or gracefully crash.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Footer -->
+  <footer class="glass-panel border-t border-glassborder mt-12 sm:mt-16 py-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-400 font-mono">
+      <div class="flex items-center gap-2">
+        <i data-lucide="layers" class="w-4 h-4 text-rust-500"></i>
+        <span>Rust Advanced Systems Curriculum • Level 3</span>
+      </div>
+      <div>
+        Interactive Reference Module
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    function switchTab(tabKey) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('#file-tabs button').forEach(el => {
+        el.className = 'px-3 py-1.5 rounded-md text-xs font-mono font-medium flex items-center gap-2 text-gray-400 hover:text-white hover:bg-white/5 transition-all';
+      });
+
+      document.getElementById('content-' + tabKey).classList.remove('hidden');
+      const activeTab = document.getElementById('tab-' + tabKey);
+      activeTab.className = 'px-3 py-1.5 rounded-md text-xs font-mono font-medium flex items-center gap-2 bg-rust-500/20 text-rust-400 border border-rust-500/30 transition-all';
+    }
+  </script>
+</body>
+</html>
