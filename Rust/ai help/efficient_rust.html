@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en" class="dark scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rust Systems Masterclass: Guided Interactive Lessons</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        rust: {
+                            500: '#e05320',
+                            600: '#c84213',
+                            900: '#431203',
+                        },
+                        dark: {
+                            bg: '#0a0d12',
+                            card: 'rgba(18, 24, 38, 0.75)',
+                            border: 'rgba(255, 255, 255, 0.08)'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts & Lucide Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Prism Syntax Highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-rust.min.js"></script>
+
+    <style>
+        body {
+            background-color: #0a0d12;
+            color: #f3f4f6;
+            font-family: 'Inter', sans-serif;
+            background-image: 
+                radial-gradient(circle at 10% 15%, rgba(224, 83, 32, 0.12) 0%, transparent 35%),
+                radial-gradient(circle at 90% 65%, rgba(16, 185, 129, 0.08) 0%, transparent 40%);
+            background-attachment: fixed;
+        }
+
+        .glass {
+            background: rgba(18, 24, 38, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* Prism Code Block Customization */
+        pre[class*="language-"] {
+            background: transparent !important;
+            margin: 0 !important;
+            font-family: 'Fira Code', monospace !important;
+            font-size: 0.85rem !important;
+            line-height: 1.8 !important;
+            padding: 0.75rem 0 !important;
+            white-space: pre !important;
+            overflow-x: auto !important;
+        }
+
+        .line-row {
+            display: flex;
+            align-items: stretch;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+        .line-row:hover {
+            background: rgba(255, 255, 255, 0.04);
+        }
+        .line-row.active-line {
+            background: rgba(224, 83, 32, 0.2) !important;
+        }
+        .line-row.active-line .line-number {
+            color: #e05320;
+            font-weight: 600;
+            background: rgba(224, 83, 32, 0.1);
+        }
+
+        .line-number {
+            user-select: none;
+            width: 3rem;
+            min-width: 3rem;
+            text-align: right;
+            padding-right: 0.85rem;
+            color: #4b5563;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.75rem;
+            line-height: 1.8;
+            border-right: 1px solid rgba(255, 255, 255, 0.06);
+            background: #080b11;
+        }
+
+        .line-code {
+            padding-left: 1rem;
+            padding-right: 1rem;
+            flex: 1;
+            white-space: pre;
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-rust-500/30 selection:text-rust-500">
+
+    <!-- HEADER -->
+    <header class="sticky top-0 z-50 glass border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-rust-500 to-amber-600 flex items-center justify-center shadow-lg shadow-rust-500/20 shrink-0">
+                        <i data-lucide="graduation-cap" class="w-5 h-5 text-white"></i>
+                    </div>
+                    <div>
+                        <span class="font-bold text-base sm:text-lg tracking-tight text-white">Rust<span class="text-rust-500">Academy</span></span>
+                        <span class="hidden sm:inline-block text-xs text-gray-400 ml-2 border-l border-white/10 pl-2">Interactive Educator</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-2 bg-rust-500/10 border border-rust-500/20 px-3 py-1 rounded-full text-xs font-semibold text-rust-500">
+                    <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
+                    <span id="lesson-progress-badge">Lesson 1 of 6</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex-1 w-full">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+
+            <!-- LESSON SELECTOR SIDEBAR -->
+            <aside class="lg:col-span-4 space-y-4">
+                <div class="glass rounded-2xl p-4 border border-white/10">
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3 px-1">Curriculum Lessons</h2>
+                    <div id="lesson-tabs" class="flex lg:flex-col gap-2 overflow-x-auto no-scrollbar pb-1 lg:pb-0">
+                        <!-- Dynamic Lesson Tabs -->
+                    </div>
+                </div>
+
+                <!-- EDUCATOR / TEACHER PANEL -->
+                <div class="glass rounded-2xl p-5 border border-rust-500/30 bg-gradient-to-b from-rust-500/5 to-transparent relative overflow-hidden">
+                    <div class="flex items-center space-x-3 mb-3">
+                        <div class="w-8 h-8 rounded-full bg-rust-500/20 border border-rust-500/40 flex items-center justify-center text-rust-500 shrink-0">
+                            <i data-lucide="user-check" class="w-4 h-4"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-bold text-white">Educator Breakdown</h3>
+                            <p class="text-[10px] text-rust-400">Click any line in the code for an explicit explanation</p>
+                        </div>
+                    </div>
+                    <div id="educator-explanation" class="text-xs sm:text-sm text-gray-300 leading-relaxed space-y-2">
+                        <!-- Dynamic Educator Explanation -->
+                    </div>
+                </div>
+            </aside>
+
+            <!-- MAIN WORKSPACE -->
+            <main class="lg:col-span-8 space-y-6">
+
+                <!-- LESSON HEADER -->
+                <section class="glass rounded-2xl p-5 sm:p-6 border border-white/10 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span id="current-category" class="text-xs font-semibold uppercase tracking-wider text-rust-500 bg-rust-500/10 px-2.5 py-1 rounded-md">Category</span>
+                        <div class="flex space-x-2">
+                            <button id="prev-btn" onclick="prevLesson()" class="p-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 disabled:opacity-30">
+                                <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                            </button>
+                            <button id="next-btn" onclick="nextLesson()" class="p-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 disabled:opacity-30">
+                                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <h1 id="current-title" class="text-xl sm:text-2xl font-extrabold text-white">Loading...</h1>
+                    <p id="current-description" class="text-xs sm:text-sm text-gray-300 leading-relaxed">Loading...</p>
+                </section>
+
+                <!-- CODE EDITOR DISPLAY -->
+                <section class="space-y-2">
+                    <div class="flex items-center justify-between px-1">
+                        <span class="text-xs text-gray-400 font-mono flex items-center gap-1.5">
+                            <i data-lucide="code" class="w-3.5 h-3.5 text-rust-500"></i> Interactive Blueprint
+                        </span>
+                        <button onclick="copyCurrentCode()" class="flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 transition">
+                            <i data-lucide="copy" class="w-3 h-3"></i>
+                            <span id="copy-btn-text">Copy Code</span>
+                        </button>
+                    </div>
+
+                    <div class="rounded-2xl overflow-hidden glass border border-white/10 shadow-2xl bg-[#0b0f17]">
+                        <!-- Terminal Bar -->
+                        <div class="bg-[#121620] px-4 py-2.5 flex items-center justify-between border-b border-white/5">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-2.5 h-2.5 rounded-full bg-red-500/80"></div>
+                                <div class="w-2.5 h-2.5 rounded-full bg-yellow-500/80"></div>
+                                <div class="w-2.5 h-2.5 rounded-full bg-green-500/80"></div>
+                                <span id="file-name" class="text-xs font-mono text-gray-400 ml-2">lesson.rs</span>
+                            </div>
+                            <span class="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">Runnable</span>
+                        </div>
+
+                        <!-- Separate Line Number & Code Container -->
+                        <div class="overflow-x-auto">
+                            <div id="code-container" class="py-2">
+                                <!-- Rendered dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAKEAWAYS & KEY CONCEPTS -->
+                <section class="glass p-5 rounded-2xl border border-white/10 space-y-3">
+                    <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                        <i data-lucide="lightbulb" class="w-4 h-4 text-amber-400"></i> Key Takeaways
+                    </h3>
+                    <ul id="takeaway-list" class="space-y-2 text-xs sm:text-sm text-gray-300">
+                        <!-- Dynamic Takeaways -->
+                    </ul>
+                </section>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT ENGINE -->
+    <script>
+        const LESSONS = [
+            {
+                id: 1,
+                category: "Memory & Ownership",
+                title: "Lesson 1: Safe Concurrent Wrapper (Arc & Instant)",
+                fileName: "src/entry.rs",
+                description: "Compare costly dynamic allocations and naive clones with zero-cost reference counting and monotonic time checks.",
+                takeaways: [
+                    "<b>Before:</b> Cloning raw data across threads duplicates memory allocations on the heap.",
+                    "<b>After:</b> <code>Arc&lt;T&gt;</code> shares heap allocations across CPU threads safely with single atomic reference increments.",
+                    "<b>Instant:</b> Monotonic clocks prevent invalid TTL checks caused by NTP system time updates."
+                ],
+                lines: [
+                    { code: "// ❌ BEFORE: Deep cloning large payloads across threads", note: "Cloning data structures directly multiplies heap allocations exponentially." },
+                    { code: "pub fn share_data_before(data: Vec<u8>) {", note: "Takes full ownership of payload." },
+                    { code: "    let copy_for_thread = data.clone(); // ⚠️ Expensive heap memcpy!", note: "Duplicates memory in RAM before moving into a new thread." },
+                    { code: "}", note: "" },
+                    { code: "", note: "" },
+                    { code: "// ✅ AFTER: Shared ownership via Arc & Instant TTL", note: "Atomic reference counting allows zero-copy reads across threads." },
+                    { code: "use std::sync::Arc;", note: "Atomic Reference Counted wrapper." },
+                    { code: "use tokio::time::Instant;", note: "Monotonic clock guaranteed never to run backward." },
+                    { code: "", note: "" },
+                    { code: "#[derive(Clone, Debug)]", note: "Cloning CacheEntry only increments the inner Arc pointer count." },
+                    { code: "pub struct CacheEntry<V> {", note: "Generic thread-safe cache entry wrapper." },
+                    { code: "    pub value: Arc<V>, // ✨ Zero-copy pointer sharing", note: "Stores payload inside an Arc pointer for O(1) cloning." },
+                    { code: "    pub expires_at: Instant,", note: "Exact point in time when this entry becomes stale." },
+                    { code: "}", note: "" },
+                    { code: "impl<V> CacheEntry<V> {", note: "" },
+                    { code: "    pub fn is_expired(&self) -> bool {", note: "Borrows reference to evaluate expiration status." },
+                    { code: "        Instant::now() > self.expires_at", note: "Implicit boolean return without keyword." },
+                    { code: "    }", note: "" },
+                    { code: "}", note: "" }
+                ]
+            },
+            {
+                id: 2,
+                category: "Concurrency & Lock-Striping",
+                title: "Lesson 2: Fine-Grained Sharding (DashMap)",
+                fileName: "src/sharded_cache.rs",
+                description: "Compare global lock bottleneck contention against high-throughput, lock-striped concurrent maps.",
+                takeaways: [
+                    "<b>Before:</b> <code>Mutex&lt;HashMap&gt;</code> blocks every single thread globally, even during simultaneous read operations.",
+                    "<b>After:</b> <code>DashMap</code> partitions entries into independent shards to maximize CPU concurrency.",
+                    "Trait bounds like <code>Send + Sync</code> enforce compile-time multi-threaded safety."
+                ],
+                lines: [
+                    { code: "// ❌ BEFORE: Global Mutex bottleneck", note: "All thread readers/writers compete for a single synchronization primitive." },
+                    { code: "type NaiveCache<K, V> = std::sync::Mutex<std::collections::HashMap<K, V>>;", note: "⚠️ Thread A reading key 1 blocks Thread B trying to read key 2!" },
+                    { code: "", note: "" },
+                    { code: "// ✅ AFTER: Fine-Grained Lock-Striped DashMap", note: "Splits internal storage across multiple independent locks." },
+                    { code: "use dashmap::DashMap;", note: "Concurrent lock-free/lock-striped map engine." },
+                    { code: "use std::sync::Arc;", note: "Shared handle for background async tasks." },
+                    { code: "", note: "" },
+                    { code: "#[derive(Clone)]", note: "Cloning the wrapper struct increments internal ref counts effortlessly." },
+                    { code: "pub struct ShardedCache<K, V>", note: "Main thread-safe cache engine." },
+                    { code: "where K: Eq + std::hash::Hash + Send + Sync + 'static,", note: "Ensures Keys can be hashed and moved safely between threads." },
+                    { code: "      V: Clone + Send + Sync + 'static", note: "Ensures Values can be safely read concurrently." },
+                    { code: "{", note: "" },
+                    { code: "    store: Arc<DashMap<K, V>>, // ✨ Lock-striped sharding", note: "Threads touch separate memory shards without blocking each other." },
+                    { code: "}", note: "" }
+                ]
+            },
+            {
+                id: 3,
+                category: "Zero-Cost Abstractions",
+                title: "Lesson 3: Lazy Evaluation & Closure Monomorphization",
+                fileName: "src/lazy_eval.rs",
+                description: "Compare eager, expensive fallback computations with lazy FnOnce execution on cache misses.",
+                takeaways: [
+                    "<b>Before:</b> Passing pre-computed fallback functions executes heavy operations even on cache hits.",
+                    "<b>After:</b> <code>FnOnce()</code> closures compute heavy fallbacks lazily ONLY when cache misses occur.",
+                    "Rust monomorphizes generic closures at compile time, achieving dynamic behavior with zero runtime dispatch cost."
+                ],
+                lines: [
+                    { code: "// ❌ BEFORE: Eager computation forces DB call every time", note: "The expensive payload is calculated BEFORE checking if the key exists!" },
+                    { code: "pub fn get_eager<V>(&self, key: &str, fallback_val: V) -> V {", note: "Evaluates 'fallback_val' argument prior to function entry." },
+                    { code: "    if let Some(v) = self.store.get(key) { return v.clone(); }", note: "Cache hit! But fallback_val was already computed pointlessly." },
+                    { code: "    fallback_val", note: "" },
+                    { code: "}", note: "" },
+                    { code: "", note: "" },
+                    { code: "// ✅ AFTER: Lazy evaluation via FnOnce closure", note: "Defers execution until a cache miss is confirmed." },
+                    { code: "pub fn get_or_compute<F, V>(&self, key: K, compute: F) -> V", note: "Accepts closure parameter F without dynamic trait object heap allocation." },
+                    { code: "where F: FnOnce() -> V,", note: "Guarantees closure executes at most ONCE." },
+                    { code: "{", note: "" },
+                    { code: "    if let Some(val) = self.store.get(&key) {", note: "Fast Read Path." },
+                    { code: "        return val.value.clone(); // ✨ Skips execution!", note: "Instantly returns cached item without executing closure." },
+                    { code: "    }", note: "" },
+                    { code: "    let fresh_value = compute(); // ⚡ Executes ONLY on cache miss!", note: "Runs expensive operation (DB query / API call) lazily." },
+                    { code: "    self.store.insert(key, fresh_value.clone());", note: "Stores fresh item in cache." },
+                    { code: "    fresh_value", note: "" },
+                    { code: "}", note: "" }
+                ]
+            },
+            {
+                id: 4,
+                category: "Memory & Allocations",
+                title: "Lesson 4: Heap Reduction via SmallVec & Cow",
+                fileName: "src/alloc_opt.rs",
+                description: "Compare naive string cloning and vector allocations against zero-copy Cow and stack-allocated SmallVec.",
+                takeaways: [
+                    "<b>Before:</b> Returning owned <code>String</code> forces a heap allocation even when no changes are made.",
+                    "<b>After:</b> <code>Cow&lt;'a, str&gt;</code> returns borrowed slices zero-copy, allocating only when mutated.",
+                    "<b>SmallVec:</b> Replaces standard <code>Vec</code> to keep small collections entirely on the stack."
+                ],
+                lines: [
+                    { code: "// ❌ BEFORE: Always allocates a new String on the heap", note: "The naive approach allocates fresh memory even when the string doesn't need changes." },
+                    { code: "pub fn sanitize_before(input: &str) -> String {", note: "Signature forces returning an owned heap-allocated String." },
+                    { code: "    if input.contains('\\r') { input.replace('\\r', \"\") }", note: "Allocates a new String on modification." },
+                    { code: "    else { input.to_string() } // ⚠️ Unnecessary heap allocation!", note: "Clones the clean string into heap memory pointlessly." },
+                    { code: "}", note: "" },
+                    { code: "", note: "" },
+                    { code: "// ✅ AFTER: Zero-allocation on clean inputs using Cow", note: "Clone-on-Write defers allocation until modification is strictly needed." },
+                    { code: "pub fn sanitize_after<'a>(input: &'a str) -> Cow<'a, str> {", note: "Returns a Cow enum holding either a borrowed slice or an owned String." },
+                    { code: "    if input.contains('\\r') {", note: "Check condition." },
+                    { code: "        Cow::Owned(input.replace('\\r', \"\")) // Heap path", note: "Allocates only when modifications actually occur." },
+                    { code: "    } else {", note: "" },
+                    { code: "        Cow::Borrowed(input) // ✨ Zero-allocation path!", note: "Returns the original reference instantly with zero overhead." },
+                    { code: "    }", note: "" },
+                    { code: "}", note: "" },
+                    { code: "", note: "" },
+                    { code: "// ✅ Stack Spilling with SmallVec", note: "Prevents heap allocation for small item counts." },
+                    { code: "pub type StackTags = smallvec::SmallVec<[String; 4]>;", note: "Keeps up to 4 elements on the stack; spills to heap only if capacity > 4." }
+                ]
+            },
+            {
+                id: 5,
+                category: "Hardware & CPU Cache",
+                title: "Lesson 5: False Sharing & Cache Line Padding",
+                fileName: "src/cache_line.rs",
+                description: "Learn how unaligned adjacent atomics cause CPU cache line ping-pong and how align(64) eliminates it.",
+                takeaways: [
+                    "<b>Before:</b> Unaligned atomic counters share a 64-byte L1 cache line, causing cross-core cache invalidation.",
+                    "<b>After:</b> <code>#[repr(align(64))]</code> isolates counters to dedicated cache lines.",
+                    "Crucial optimization for multi-threaded counters, metrics, and high-throughput channels."
+                ],
+                lines: [
+                    { code: "// ❌ BEFORE: Susceptible to CPU False Sharing", note: "Two instances of this struct will share the exact same 64-byte cache line." },
+                    { code: "pub struct UnalignedCounter {", note: "Standard layout without alignment guarantees." },
+                    { code: "    pub value: AtomicU64, // 8 bytes", note: "When Thread A modifies this, Thread B's CPU cache line gets invalidated!" },
+                    { code: "}", note: "" },
+                    { code: "", note: "" },
+                    { code: "// ✅ AFTER: Cache Line Aligned (No False Sharing)", note: "Forces 64-byte boundary isolation across CPU cores." },
+                    { code: "#[repr(align(64))]", note: "<b>Align(64):</b> Tells the compiler to pad this struct so it owns a full 64-byte cache line." },
+                    { code: "pub struct AlignedCounter {", note: "High-performance cache-isolated counter." },
+                    { code: "    pub value: AtomicU64,", note: "Occupies 8 bytes of payload + 56 bytes of implicit compiler padding." },
+                    { code: "}", note: "" },
+                    { code: "impl AlignedCounter {", note: "" },
+                    { code: "    pub fn inc(&self) {", note: "Increments counter without invalidating neighboring CPU cores' cache." },
+                    { code: "        self.value.fetch_add(1, Ordering::Relaxed);", note: "Relaxed atomic ordering for low-cost metrics." },
+                    { code: "    }", note: "" },
+                    { code: "}", note: "" }
+                ]
+            },
+            {
+                id: 6,
+                category: "Standard Library Traps",
+                title: "Lesson 6: Fast Hashing & Capacity Pre-allocation",
+                fileName: "src/hash_opt.rs",
+                description: "Compare default re-allocating vectors and SipHash against pre-allocated memory and hardware-accelerated AHash.",
+                takeaways: [
+                    "<b>Before:</b> <code>Vec::new()</code> triggers dynamic heap resizes ($O(\\log N)$ re-allocations) as it grows.",
+                    "<b>After:</b> <code>Vec::with_capacity()</code> pre-allocates memory in a single syscall.",
+                    "<b>AHash:</b> Bypasses default DOS-resistant SipHash overhead for internal lookups."
+                ],
+                lines: [
+                    { code: "// ❌ BEFORE: Multiple heap re-allocations during loop", note: "Growing from 0 capacity repeatedly reallocates and copies memory buffers." },
+                    { code: "pub fn process_before(count: usize) -> Vec<usize> {", note: "Standard empty vector initialization." },
+                    { code: "    let mut results = Vec::new(); // Capacity = 0", note: "Starts with 0 space on the heap." },
+                    { code: "    for i in 0..count { results.push(i * 2); } // ⚠️ Triggers multiple resizes!", note: "Forces vector to allocate, copy, and grow capacities (4 -> 8 -> 16...)." },
+                    { code: "    results", note: "" },
+                    { code: "}", note: "" },
+                    { code: "", note: "" },
+                    { code: "// ✅ AFTER: Single upfront heap allocation", note: "Allocates exact buffer size immediately." },
+                    { code: "pub fn process_after(count: usize) -> Vec<usize> {", note: "Pre-allocated vector path." },
+                    { code: "    let mut results = Vec::with_capacity(count); // ✨ 1 Syscall", note: "Pre-allocates buffer for 'count' items upfront." },
+                    { code: "    for i in 0..count { results.push(i * 2); }", note: "Pushes directly into existing memory with zero reallocation." },
+                    { code: "    results", note: "" },
+                    { code: "}", note: "" },
+                    { code: "", note: "" },
+                    { code: "// ✅ Fast Non-Cryptographic Hashing", note: "Swaps SipHash for AES hardware-accelerated AHash." },
+                    { code: "pub type FastMap<K, V> = std::collections::HashMap<K, V, ahash::RandomState>;", note: "2x–5x faster map lookups for trusted, internal data structures." }
+                ]
+            },
+            {
+                id: 7,
+                category: "Bounds & SIMD",
+                title: "Lesson 7: Iterator Combinators & Bounds Checks",
+                fileName: "src/iter_opt.rs",
+                description: "Eliminate runtime array indexing bounds check panic branches and enable compiler SIMD auto-vectorization.",
+                takeaways: [
+                    "<b>Before:</b> Manual array indexing (<code>slice[i]</code>) injects a runtime boundary check on every loop step.",
+                    "<b>After:</b> Idiomatic iterators (<code>.iter().sum()</code>) mathematically prove bounds at compile time.",
+                    "Eliminating check branches allows LLVM to vectorize loops using SIMD CPU instructions."
+                ],
+                lines: [
+                    { code: "// ❌ BEFORE: Manual indexing forces a runtime check on every step", note: "The compiler cannot prove 'i' stays inside bounds, forcing it to generate a panic branch." },
+                    { code: "pub fn sum_before(slice: &[u64]) -> u64 {", note: "Accepts a slice reference." },
+                    { code: "    let mut total = 0;", note: "Accumulator variable." },
+                    { code: "    for i in 0..slice.len() {", note: "Standard range loop." },
+                    { code: "        total += slice[i]; // ⚠️ Checked indexing: checks i < slice.len()", note: "Adds a dynamic boundary check instruction inside the inner loop body." },
+                    { code: "    }", note: "End loop." },
+                    { code: "    total", note: "Returns calculated sum." },
+                    { code: "}", note: "" },
+                    { code: "", note: "" },
+                    { code: "// ✅ AFTER: Iterators eliminate bounds checks completely", note: "Iterators guarantee safety by design, stripping away branch instructions entirely." },
+                    { code: "pub fn sum_after(slice: &[u64]) -> u64 {", note: "Accepts slice reference." },
+                    { code: "    slice.iter().sum() // ✨ Zero-cost & enables CPU SIMD vectorization!", note: "Zero runtime bounds checks. LLVM compiles this down to fast vector operations." },
+                    { code: "}", note: "End function." }
+                ]
+            },
+            {
+                id: 8,
+                category: "Memory Layout",
+                title: "Lesson 8: Struct Field Packing & Memory Padding",
+                fileName: "src/struct_packing.rs",
+                description: "Reorder struct fields to eliminate CPU alignment padding and fit more structures into L1/L2 cache lines.",
+                takeaways: [
+                    "<b>Before:</b> Interleaving small fields between large fields creates wasted alignment padding.",
+                    "<b>After:</b> Sorting fields from largest to smallest eliminates wasted RAM bytes.",
+                    "Higher cache density means fewer CPU memory stalls during heavy iterations."
+                ],
+                lines: [
+                    { code: "// ❌ BEFORE: Poor field alignment wastes 14 bytes per instance", note: "CPU requires 8-byte alignment for u64, inserting 7 bytes of dead padding twice." },
+                    { code: "#[repr(C)]", note: "C-compatible memory layout." },
+                    { code: "pub struct UnpaddedStruct {", note: "Unoptimized struct definition." },
+                    { code: "    pub flag: bool,   // 1 byte + 7 bytes padding ⚠️", note: "Pad bytes inserted to align next u64 field." },
+                    { code: "    pub value: u64,   // 8 bytes", note: "Aligned on 8-byte boundary." },
+                    { code: "    pub active: bool, // 1 byte + 7 bytes padding ⚠️", note: "Pad bytes inserted to align struct size." },
+                    { code: "}", note: "Total size = 24 bytes (14 bytes wasted!)." },
+                    { code: "", note: "" },
+                    { code: "// ✅ AFTER: Ordered fields eliminate alignment gaps", note: "Placing 8-byte fields first allows trailing booleans to pack tightly together." },
+                    { code: "#[repr(C)]", note: "C-compatible memory layout." },
+                    { code: "pub struct PackedStruct {", note: "Optimized struct definition." },
+                    { code: "    pub value: u64,   // 8 bytes", note: "Largest alignment requirement first." },
+                    { code: "    pub flag: bool,   // 1 byte", note: "Packs cleanly after u64." },
+                    { code: "    pub active: bool, // 1 byte + 6 bytes trailing padding", note: "Trailing padding packs multiple small fields together." },
+                    { code: "}", note: "Total size = 16 bytes (Saved 33% memory per instance!)." }
+                ]
+            },
+            {
+                id: 9,
+                category: "Compile-Time Execution",
+                title: "Lesson 9: Zero-Cost Compute via const fn",
+                fileName: "src/const_compute.rs",
+                description: "Shift runtime initialization overhead and lookup table generation directly to compile time.",
+                takeaways: [
+                    "<b>Before:</b> Generating dynamic lookup tables during app startup creates runtime initialization lag.",
+                    "<b>After:</b> <code>const fn</code> evaluates complex logic at compile time.",
+                    "Pre-computed tables are embedded directly into the binary's static read-only memory (`.rodata`)."
+                ],
+                lines: [
+                    { code: "// ❌ BEFORE: Computes lookups dynamically at runtime", note: "App startup spends execution cycles generating static calculations." },
+                    { code: "pub fn compute_table_before() -> [usize; 256] {", note: "Standard function." },
+                    { code: "    let mut table = [0; 256];", note: "Initializes mutable array on stack." },
+                    { code: "    for i in 0..256 { table[i] = i * i; } // ⚠️ Executes at runtime", note: "Performs 256 loop iterations on application load." },
+                    { code: "    table", note: "" },
+                    { code: "}", note: "" },
+                    { code: "", note: "" },
+                    { code: "// ✅ AFTER: Calculates table entirely at compile time", note: "Evaluation happens during 'cargo build', embedding final array into binary." },
+                    { code: "pub const fn compute_table_after() -> [usize; 256] {", note: "Const function capable of compile-time evaluation." },
+                    { code: "    let mut table = [0; 256];", note: "Initializes array." },
+                    { code: "    let mut i = 0;", note: "Index variable." },
+                    { code: "    while i < 256 { table[i] = i * i; i += 1; } // Evaluated by compiler", note: "Compile-time while loop." },
+                    { code: "    table", note: "" },
+                    { code: "}", note: "" },
+                    { code: "// ✨ Binary embeds pre-calculated array into read-only memory (.rodata)", note: "Zero initialization time at runtime!" },
+                    { code: "pub static PRECOMPUTED_TABLE: [usize; 256] = compute_table_after();", note: "Static read-only memory reference." }
+                ]
+            },
+            {
+                id: 10,
+                category: "Registers vs Stack",
+                title: "Lesson 10: Register Passing for Small Copy Types",
+                fileName: "src/pass_by_val.rs",
+                description: "Avoid reference pointer dereferencing for small types by passing values directly in high-speed CPU registers.",
+                takeaways: [
+                    "<b>Before:</b> Passing 8-byte primitives by reference (`&u64`) forces a 64-bit pointer indirection step.",
+                    "<b>After:</b> Passing small `Copy` types by value passes data directly inside hardware registers.",
+                    "Eliminates pointer dereferencing instructions and CPU memory fetch operations."
+                ],
+                lines: [
+                    { code: "// ❌ BEFORE: Pointer indirection for a small 64-bit primitive", note: "Passing a pointer forces the CPU to dereference a memory address to read 8 bytes." },
+                    { code: "pub fn process_id_before(id: &u64) -> u64 {", note: "Accepts reference parameter (&u64)." },
+                    { code: "    *id + 1 // ⚠️ Requires dereferencing pointer address in memory", note: "Generates pointer dereference assembly instruction." },
+                    { code: "}", note: "" },
+                    { code: "", note: "" },
+                    { code: "// ✅ AFTER: Direct CPU register parameter passing", note: "Small types fit directly inside CPU registers without pointer memory lookup." },
+                    { code: "pub fn process_id_after(id: u64) -> u64 {", note: "Accepts u64 directly by value." },
+                    { code: "    id + 1 // ✨ Zero indirection (CPU register holds value directly)", note: "Operates directly on CPU hardware register (e.g., RAX register)." },
+                    { code: "}", note: "End function." }
+                ]
+            },
+            {
+                id: 11,
+                category: "Dispatch Overhead",
+                title: "Lesson 11: Static Monomorphization vs Dynamic Dispatch",
+                fileName: "src/dispatch_opt.rs",
+                description: "Compare dynamic trait object pointer vtables against static compiler monomorphization and inlining.",
+                takeaways: [
+                    "<b>Before:</b> <code>&dyn Trait</code> relies on dynamic vtable pointer lookup, preventing function inlining.",
+                    "<b>After:</b> <code>impl Trait</code> triggers compile-time monomorphization, allowing LLVM to inline code.",
+                    "Eliminates indirect CPU jump instructions on hot execution paths."
+                ],
+                lines: [
+                    { code: "// ❌ BEFORE: Dynamic Dispatch via vtable", note: "Requires double-pointer dereference to locate function address at runtime." },
+                    { code: "pub fn process_dyn(processor: &dyn Fn(u32) -> u32, val: u32) -> u32 {", note: "Dynamic trait object pointer." },
+                    { code: "    processor(val) // ⚠️ Vtable lookup prevents CPU inlining", note: "Indirect function call overhead." },
+                    { code: "}", note: "" },
+                    { code: "", note: "" },
+                    { code: "// ✅ AFTER: Static Dispatch via Monomorphization", note: "Generates concrete machine code per type at compile time." },
+                    { code: "pub fn process_static(processor: impl Fn(u32) -> u32, val: u32) -> u32 {", note: "Static generic parameter." },
+                    { code: "    processor(val) // ✨ Inlined into caller assembly directly!", note: "Zero runtime call overhead." },
+                    { code: "}", note: "" }
+                ]
+            },
+            {
+                id: 12,
+                category: "Slice Borrowing",
+                title: "Lesson 12: Split Slices Zero-Copy (split_at_mut)",
+                fileName: "src/slice_split.rs",
+                description: "Safely mutate two separate sections of a slice concurrently without unsafe pointers or allocations.",
+                takeaways: [
+                    "<b>Before:</b> Trying to borrow two mutable elements from one slice triggers borrow checker errors or requires copying.",
+                    "<b>After:</b> <code>split_at_mut()</code> cleanly splits a slice into two non-overlapping mutable references.",
+                    "Zero-copy, zero allocation, and 100% safe Rust."
+                ],
+                lines: [
+                    { code: "// ❌ BEFORE: Borrow checker error or buffer cloning required", note: "Rust forbids multiple mutable borrows of the same container simultaneously." },
+                    { code: "// let first = &mut slice[0]; let second = &mut slice[1]; // ⚠️ Fails to compile!", note: "Borrow checker blocks multiple mut references to 'slice'." },
+                    { code: "", note: "" },
+                    { code: "// ✅ AFTER: Disjoint slice splitting", note: "Informs the compiler that memory sub-slices are non-overlapping." },
+                    { code: "pub fn mutate_both(slice: &mut [u32]) {", note: "Accepts mutable slice." },
+                    { code: "    let (left, right) = slice.split_at_mut(1); // ✨ Safe zero-copy split", note: "Splits slice into two disjoint mutable references." },
+                    { code: "    left[0] += 1;  // Mutates index 0", note: "Safe access to left partition." },
+                    { code: "    right[0] += 2; // Mutates index 1", note: "Safe access to right partition." },
+                    { code: "}", note: "" }
+                ]
+            },
+            {
+                id: 13,
+                category: "Map Lookups",
+                title: "Lesson 13: Single-Lookup Entry API",
+                fileName: "src/entry_api.rs",
+                description: "Eliminate duplicate key hashing and map traversals when inserting items into HashMaps.",
+                takeaways: [
+                    "<b>Before:</b> Calling <code>contains_key()</code> followed by <code>insert()</code> hashes the key twice and traverses the bucket tree twice.",
+                    "<b>After:</b> <code>entry().or_insert_with()</code> hashes the key once and modifies memory in-place.",
+                    "Saves 50% of hashing overhead on HashMap write operations."
+                ],
+                lines: [
+                    { code: "// ❌ BEFORE: Double hash calculation & double tree traversal", note: "Checks for existence, hashes key, then repeats hashing to insert." },
+                    { code: "pub fn update_before(map: &mut HashMap<String, Vec<u32>>, key: String, val: u32) {", note: "Map update function." },
+                    { code: "    if !map.contains_key(&key) { // ⚠️ Hash lookup #1", note: "Calculates hash and checks bucket." },
+                    { code: "        map.insert(key.clone(), Vec::new()); // ⚠️ Hash lookup #2", note: "Recalculates hash and traverses tree again." },
+                    { code: "    }", note: "" },
+                    { code: "    map.get_mut(&key).unwrap().push(val); // ⚠️ Hash lookup #3", note: "Third hash lookup!" },
+                    { code: "}", note: "" },
+                    { code: "", note: "" },
+                    { code: "// ✅ AFTER: Single hash entry lookup", note: "Locates bucket position once and performs conditional insertion." },
+                    { code: "pub fn update_after(map: &mut HashMap<String, Vec<u32>>, key: String, val: u32) {", note: "Optimized entry path." },
+                    { code: "    map.entry(key) // ✨ Single hash lookup!", note: "Hashes key exactly once." },
+                    { code: "       .or_insert_with(Vec::new)", note: "Creates vector lazily ONLY if key was missing." },
+                    { code: "       .push(val);", note: "Pushes value directly into map buffer." },
+                    { code: "}", note: "" }
+                ]
+            },
+            {
+                id: 14,
+                category: "CPU Instruction Cache",
+                title: "Lesson 14: Cold Branch Optimization (#[cold])",
+                fileName: "src/cold_branch.rs",
+                description: "Keep error-handling panic branches out of the primary CPU instruction pipeline.",
+                takeaways: [
+                    "<b>Before:</b> Inline panic code bloats function byte size, crowding hot execution paths out of CPU L1 i-cache.",
+                    "<b>After:</b> <code>#[cold]</code> moves rare error logic into isolated memory addresses.",
+                    "Keeps primary loop instructions compact for maximum CPU instruction cache efficiency."
+                ],
+                lines: [
+                    { code: "// ❌ BEFORE: Error logic pollutes L1 Instruction Cache", note: "Uncommon panic formatting instructions get placed inline with hot code." },
+                    { code: "pub fn process_fast_before(val: u32) -> u32 {", note: "Hot path function." },
+                    { code: "    if val == 0 { panic!(\"Invalid zero value provided!\"); } // ⚠️ Inlined error code", note: "Inlines heavy panic/string formatting into hot assembly." },
+                    { code: "    val * 42", note: "Hot execution path." },
+                    { code: "}", note: "" },
+                    { code: "", note: "" },
+                    { code: "// ✅ AFTER: #[cold] attribute relocates error path", note: "Moves panic machinery to out-of-line memory sections." },
+                    { code: "#[cold]", note: "Tells compiler this function is rarely executed." },
+                    { code: "#[inline(never)]", note: "Prevents inlining rare error logic into hot loops." },
+                    { code: "fn cold_panic() -> ! { panic!(\"Invalid zero value provided!\"); }", note: "Out-of-line panic helper." },
+                    { code: "", note: "" },
+                    { code: "pub fn process_fast_after(val: u32) -> u32 {", note: "Clean hot function path." },
+                    { code: "    if val == 0 { cold_panic(); } // ✨ Keeps main function tiny", note: "Main function assembly remains extremely small and fits in L1 i-cache." },
+                    { code: "    val * 42", note: "Primary CPU path." },
+                    { code: "}", note: "" }
+                ]
+            },
+            {
+                id: 15,
+                category: "Uninitialized Memory",
+                title: "Lesson 15: Fast Buffer Pre-allocation (MaybeUninit)",
+                fileName: "src/buffer_opt.rs",
+                description: "Avoid wasting CPU cycles zero-filling dynamic byte buffers before writing data into them.",
+                takeaways: [
+                    "<b>Before:</b> <code>vec![0u8; len]</code> writes zero to every byte in RAM before you fill it with actual data.",
+                    "<b>After:</b> <code>MaybeUninit&lt;[u8]&gt;</code> allocates raw memory without zero-initialization overhead.",
+                    "Saves substantial memory bandwidth when reading large files or network sockets into buffers."
+                ],
+                lines: [
+                    { code: "// ❌ BEFORE: Unnecessary double-write byte zeroing", note: "Writes zeros across RAM buffer, then overwrites them immediately with incoming stream." },
+                    { code: "pub fn read_socket_before(stream: &mut impl Read) -> Vec<u8> {", note: "Buffer reader function." },
+                    { code: "    let mut buf = vec![0u8; 8192]; // ⚠️ Wasted CPU cycles zero-filling 8KB!", note: "Fills 8192 bytes with zero in memory first." },
+                    { code: "    let _ = stream.read(&mut buf);", note: "Overwrites zeroed bytes with real data." },
+                    { code: "    buf", note: "" },
+                    { code: "}", note: "" },
+                    { code: "", note: "" },
+                    { code: "// ✅ AFTER: Raw uninitialized allocation via MaybeUninit", note: "Allocates uninitialized stack/heap memory directly without zeroing overhead." },
+                    { code: "use std::mem::MaybeUninit;", note: "Type wrapper for uninitialized memory values." },
+                    { code: "", note: "" },
+                    { code: "pub fn read_socket_after(stream: &mut impl Read) -> Vec<u8> {", note: "Optimized buffer initialization path." },
+                    { code: "    let mut buf: Vec<MaybeUninit<u8>> = Vec::with_capacity(8192);", note: "✨ Zero cost! Allocates uninitialized memory capacity." },
+                    { code: "    unsafe { buf.set_len(8192); } // Assumes caller correctly writes buffer", note: "Informs Rust vector of buffer payload size." },
+                    { code: "    // Safety: Buffer must be initialized before reading slice!", note: "Enforces raw memory buffer invariant." },
+                    { code: "    unsafe { std::mem::transmute(buf) }", note: "Converts vector to initialized u8 bytes." },
+                    { code: "}", note: "" }
+                ]
+            },
+            {
+                id: 16,
+                category: "Branch Hints",
+                title: "Lesson 16: Compiler Hints & Unreachable Optimization",
+                fileName: "src/branch_hints.rs",
+                description: "Inform LLVM compiler optimizer about mathematically impossible code branches.",
+                takeaways: [
+                    "<b>Before:</b> Standard enum match blocks include unnecessary default branch boundary checks.",
+                    "<b>After:</b> <code>unreachable_unchecked()</code> strips branch instructions from output assembly.",
+                    "Allows LLVM to eliminate dead code and produce hyper-streamlined machine code."
+                ],
+                lines: [
+                    { code: "// ❌ BEFORE: Match statement generates fallback branch check", note: "Compiler emits unnecessary check branch instructions in assembly." },
+                    { code: "pub fn parse_mode_before(val: u8) -> &'static str {", note: "Mode parser function." },
+                    { code: "    match val % 3 {", note: "Modulo arithmetic guarantees values 0, 1, or 2." },
+                    { code: "        0 => \"Read\",", note: "Branch 0." },
+                    { code: "        1 => \"Write\",", note: "Branch 1." },
+                    { code: "        2 => \"Exec\",", note: "Branch 2." },
+                    { code: "        _ => \"Unknown\", // ⚠️ Emits unreachable check branch in binary", note: "Compiler adds check branch even though % 3 can never exceed 2." },
+                    { code: "    }", note: "" },
+                    { code: "}", note: "" },
+                    { code: "", note: "" },
+                    { code: "// ✅ AFTER: Stripping impossible branches via unreachable_unchecked", note: "Eliminates unreachable branch code from compiled binary assembly." },
+                    { code: "pub fn parse_mode_after(val: u8) -> &'static str {", note: "Optimized path." },
+                    { code: "    match val % 3 {", note: "Evaluates modulo." },
+                    { code: "        0 => \"Read\",", note: "Branch 0." },
+                    { code: "        1 => \"Write\",", note: "Branch 1." },
+                    { code: "        2 => \"Exec\",", note: "Branch 2." },
+                    { code: "        _ => unsafe { std::hint::unreachable_unchecked() }, // ✨ Branch eliminated!", note: "Tells LLVM compiler this arm is impossible, stripping branch assembly entirely." },
+                    { code: "    }", note: "" },
+                    { code: "}", note: "" }
+                ]
+            },
+            {
+                id: 17,
+                category: "SIMD Vectorization",
+                title: "Lesson 17: Explicit SIMD Parallelism (core::simd)",
+                fileName: "src/simd_opt.rs",
+                description: "Process multiple numeric elements simultaneously in single CPU instruction cycles using AVX/NEON registers.",
+                takeaways: [
+                    "<b>Before:</b> Standard scalar loops execute arithmetic instructions element by element.",
+                    "<b>After:</b> <code>Simd&lt;f32, 4&gt;</code> processes 4 floating-point numbers in a single hardware cycle.",
+                    "Provides 2x to 8x throughput increases on bulk matrix/vector mathematical processing."
+                ],
+                lines: [
+                    { code: "// ❌ BEFORE: Scalar processing operates on 1 number per loop iteration", note: "Standard loops perform individual CPU arithmetic instructions sequentially." },
+                    { code: "pub fn add_arrays_before(a: &[f32; 4], b: &[f32; 4]) -> [f32; 4] {", note: "Scalar array addition." },
+                    { code: "    let mut res = [0.0; 4];", note: "Result array." },
+                    { code: "    for i in 0..4 { res[i] = a[i] + b[i]; } // ⚠️ 4 separate CPU adds", note: "4 distinct scalar addition cycles." },
+                    { code: "    res", note: "" },
+                    { code: "}", note: "" },
+                    { code: "", note: "" },
+                    { code: "// ✅ AFTER: Explicit SIMD vector hardware processing", note: "Loads values directly into 128-bit vector CPU registers." },
+                    { code: "use std::simd::f32x4;", note: "4-lane floating-point SIMD vector type." },
+                    { code: "", note: "" },
+                    { code: "pub fn add_arrays_after(a: &[f32; 4], b: &[f32; 4]) -> [f32; 4] {", note: "SIMD optimized path." },
+                    { code: "    let va = f32x4::from_array(*a);", note: "Loads 4 floats into AVX/NEON SIMD register." },
+                    { code: "    let vb = f32x4::from_array(*b);", note: "Loads 4 floats into AVX/NEON SIMD register." },
+                    { code: "    (va + vb).to_array() // ✨ 1 single SIMD vector hardware add cycle!", note: "Executes 4 mathematical additions in a single CPU register cycle." },
+                    { code: "}", note: "" }
+                ]
+            },
+            {
+                id: 18,
+                category: "String Scanning",
+                title: "Lesson 18: SIMD Fast Scanning (memchr)",
+                fileName: "src/str_scan.rs",
+                description: "Scan raw byte buffers for delimiters at extreme hardware speed using SIMD byte searches.",
+                takeaways: [
+                    "<b>Before:</b> <code>str::split()</code> checks character boundaries linearly byte-by-byte.",
+                    "<b>After:</b> <code>memchr::memchr()</code> uses low-level AVX2 SIMD registers to scan 32 bytes per cycle.",
+                    "Essential technique for ultra-fast CSV, HTTP header, and JSON log parsing."
+                ],
+                lines: [
+                    { code: "// ❌ BEFORE: Standard linear character delimiter search", note: "Iterates character by character through memory buffer." },
+                    { code: "pub fn find_delimiter_before(text: &str) -> Option<usize> {", note: "String search function." },
+                    { code: "    text.find('\\n') // ⚠️ Linear byte-by-byte comparison loop", note: "Checks each byte individually." },
+                    { code: "}", note: "" },
+                    { code: "", note: "" },
+                    { code: "// ✅ AFTER: SIMD accelerated byte searching via memchr", note: "Scans byte buffers using hardware vector instructions." },
+                    { code: "use memchr::memchr;", note: "Hyper-optimized SIMD byte search library." },
+                    { code: "", note: "Accepts raw byte slice." },
+                    { code: "pub fn find_delimiter_after(text: &[u8]) -> Option<usize> {", note: "SIMD slice search." },
+                    { code: "    memchr(b'\\n', text) // ✨ Scans 32 to 64 bytes per CPU clock cycle!", note: "Uses AVX2/AVX-512 SIMD assembly to search byte chunks in parallel." },
+                    { code: "}", note: "" }
+                ]
+            },
+            {
+                id: 19,
+                category: "Arena Allocation",
+                title: "Lesson 19: Arena Allocation via Bumpalo",
+                fileName: "src/bump_arena.rs",
+                description: "Replace thousands of tiny heap allocations with ultra-fast pointer-bump arena allocations.",
+                takeaways: [
+                    "<b>Before:</b> Allocating thousands of small AST/Tree nodes invokes dynamic system global malloc overhead.",
+                    "<b>After:</b> <code>Bump::new()</code> allocates nodes by simply incrementing an arena memory pointer.",
+                    "Deallocates thousands of objects simultaneously in $O(1)$ constant time when the arena resets."
+                ],
+                lines: [
+                    { code: "// ❌ BEFORE: Individual heap allocations per node", note: "Every node instantiation invokes global system allocator (malloc)." },
+                    { code: "pub struct Node { pub val: u32, pub next: Option<Box<Node>> }", note: "Heavy boxed node pointers." },
+                    { code: "pub fn create_nodes_before() {", note: "Loop creation." },
+                    { code: "    let mut root = Box::new(Node { val: 0, next: None }); // ⚠️ Malloc call", note: "System malloc syscall." },
+                    { code: "}", note: "" },
+                    { code: "", note: "" },
+                    { code: "// ✅ AFTER: Ultra-fast bump pointer allocation", note: "Allocates memory contiguously inside an arena chunk." },
+                    { code: "use bumpalo::Bump;", note: "Fast arena allocator." },
+                    { code: "", note: "" },
+                    { code: "pub fn create_nodes_after() {", note: "Arena allocation path." },
+                    { code: "    let arena = Bump::new(); // Arena chunk initialization", note: "Allocates 1 contiguous slab of memory." },
+                    { code: "    let node1 = arena.alloc(42); // ✨ Pointer bump allocation (1 assembly instruction!)", note: "Increments internal pointer offset without invoking malloc." },
+                    { code: "    let node2 = arena.alloc(100);", note: "Instant contiguous bump allocation." },
+                    { code: "    // Entire arena dropped at once in O(1) time when arena goes out of scope!", note: "Zero per-node free/deallocation overhead." },
+                    { code: "}", note: "" }
+                ]
+            },
+            {
+                id: 20,
+                category: "Reader-Writer Locks",
+                title: "Lesson 20: Parallel Reads via RwLock",
+                fileName: "src/rwlock_opt.rs",
+                description: "Prevent reader thread contention in read-heavy shared data workloads.",
+                takeaways: [
+                    "<b>Before:</b> <code>Mutex</code> forces reader threads to queue sequentially, blocking read parallelism.",
+                    "<b>After:</b> <code>RwLock</code> allows unlimited concurrent reader threads to access memory simultaneously.",
+                    "Drastically boosts multi-core throughput for read-heavy cache architectures."
+                ],
+                lines: [
+                    { code: "// ❌ BEFORE: Mutex blocks concurrent readers sequentially", note: "Multiple reader threads must wait in line for lock release." },
+                    { code: "use std::sync::Mutex;", note: "Exclusive access lock." },
+                    { code: "pub struct ConfigMutex { data: Mutex<String> }", note: "Exclusive configuration store." },
+                    { code: "pub fn read_config_before(cfg: &ConfigMutex) -> String {", note: "Read method." },
+                    { code: "    let guard = cfg.data.lock().unwrap(); // ⚠️ Thread A blocks Thread B reader!", note: "Locks out all other reader threads." },
+                    { code: "    guard.clone()", note: "" },
+                    { code: "}", note: "" },
+                    { code: "", note: "" },
+                    { code: "// ✅ AFTER: Shared parallel read access via RwLock", note: "Allows parallel reads while maintaining exclusive write protection." },
+                    { code: "use std::sync::RwLock;", note: "Read-Write lock." },
+                    { code: "pub struct ConfigRwLock { data: RwLock<String> }", note: "Shared-read configuration store." },
+                    { code: "pub fn read_config_after(cfg: &ConfigRwLock) -> String {", note: "Optimized reader path." },
+                    { code: "    let guard = cfg.read().unwrap(); // ✨ Multiple threads read in parallel!", note: "Unlimited concurrent reader threads access data without blocking each other." },
+                    { code: "    guard.clone()", note: "" },
+                    { code: "}", note: "" }
+                ]
+            },
+            {
+                id: 21,
+                category: "Async Performance",
+                title: "Lesson 21: Offloading CPU Work in Async (spawn_blocking)",
+                fileName: "src/async_blocking.rs",
+                description: "Prevent synchronous, CPU-bound computations from starving the async runtime event loop.",
+                takeaways: [
+                    "<b>Before:</b> Running heavy CPU or blocking I/O directly inside async tasks blocks the async runtime worker thread, delaying all other pending futures.",
+                    "<b>After:</b> <code>tokio::task::spawn_blocking</code> offloads heavy compute to a dedicated blocking thread pool.",
+                    "Keeps async worker threads responsive for high-concurrency network tasks."
+                ],
+                lines: [
+                    { code: "// ❌ BEFORE: Blocking the async worker thread directly", note: "Blocks runtime thread; other async tasks cannot run on this core." },
+                    { code: "pub async fn process_data_before(data: Vec<u8>) -> Vec<u8> {", note: "Async endpoint function." },
+                    { code: "    // ⚠️ Heavy CPU compute stalls Tokio async executor!", note: "Long loops without yield block runtime." },
+                    { code: "    heavy_sha256_hash_computation(&data)", note: "Executes directly on async worker thread." },
+                    { code: "}", note: "" },
+                    { code: "", note: "" },
+                    { code: "// ✅ AFTER: Offloading heavy computation via spawn_blocking", note: "Delegates computation to dedicated blocking thread pool." },
+                    { code: "use tokio::task;", note: "Tokio task management API." },
+                    { code: "", note: "" },
+                    { code: "pub async fn process_data_after(data: Vec<u8>) -> Vec<u8> {", note: "Non-blocking async path." },
+                    { code: "    // ✨ Offloads compute to blocking pool, keeping async loop free!", note: "Frees async worker thread immediately." },
+                    { code: "    task::spawn_blocking(move || {", note: "Spawns closure on dedicated thread." },
+                    { code: "        heavy_sha256_hash_computation(&data)", note: "Executes safely off the async path." },
+                    { code: "    }).await.unwrap()", note: "Awaits result asynchronously." },
+                    { code: "}", note: "" }
+                ]
+            },
+            {
+                id: 22,
+                category: "Compiler Optimization",
+                title: "Lesson 22: Profile-Guided Optimization (PGO)",
+                fileName: "Cargo.toml",
+                description: "Use real-world execution profile data to let LLVM auto-tune code branch layouts and inlining.",
+                takeaways: [
+                    "<b>Before:</b> Standard <code>cargo build --release</code> optimizes cold and hot branches equally using general heuristics.",
+                    "<b>After:</b> <code>cargo-pgo</code> records runtime execution metrics, enabling LLVM to optimize the exact code paths your users execute most.",
+                    "Delivers 10%–30% performance gains across complex binaries without modifying source code."
+                ],
+                lines: [
+                    { code: "# ❌ BEFORE: Standard release build flags", note: "Uses static compiler heuristics." },
+                    { code: "# cargo build --release", note: "Standard build command." },
+                    { code: "", note: "" },
+                    { code: "# ✅ AFTER: 3-step PGO Compilation Workflow", note: "Instruments binary and optimizes using actual runtime telemetry." },
+                    { code: "# 1. Build instrumented binary:", note: "Step 1: Inject profiling counters." },
+                    { code: "# RUSTFLAGS=\"-Cprofile-generate=./pgo-data\" cargo build --release", note: "Compiles binary with profile generation enabled." },
+                    { code: "", note: "" },
+                    { code: "# 2. Run binary with realistic production benchmark workload:", note: "Step 2: Collect runtime profile data." },
+                    { code: "# ./target/release/my_app --run-benchmarks", note: "Generates .profraw telemetry files on disk." },
+                    { code: "", note: "" },
+                    { code: "# 3. Merge profile data and compile finalized hyper-optimized binary:", note: "Step 3: Feed profile into LLVM optimizer." },
+                    { code: "# llvm-profdata merge -o ./pgo-data/merged.profdata ./pgo-data/*.profraw", note: "Merges telemetry." },
+                    { code: "# RUSTFLAGS=\"-Cprofile-use=./pgo-data/merged.profdata\" cargo build --release", note: "✨ Generates optimized binary tuned for actual hardware usage!" }
+                ]
+            },
+            {
+                id: 23,
+                category: "Memory Allocator",
+                title: "Lesson 23: Global Memory Allocator Swapping (jemalloc/mimalloc)",
+                fileName: "src/main.rs",
+                description: "Replace the default OS heap allocator with a high-performance multi-threaded allocator.",
+                takeaways: [
+                    "<b>Before:</b> Standard system allocator (glibc malloc / Windows Heap) can lock thread mutexes during frequent allocations.",
+                    "<b>After:</b> <code>tikv-jemallocator</code> or <code>mimalloc</code> uses thread-local arenas to eliminate global heap contention.",
+                    "Dramatically improves memory throughput in highly concurrent multi-threaded services."
+                ],
+                lines: [
+                    { code: "// ❌ BEFORE: Using standard OS system heap allocator", note: "Uses default glibc/MSVC heap allocator." },
+                    { code: "fn main() {", note: "Default entry point." },
+                    { code: "    // Standard allocation behavior...", note: "Allocations acquire global system locks." },
+                    { code: "}", note: "" },
+                    { code: "", note: "" },
+                    { code: "// ✅ AFTER: Registering jemalloc as global allocator", note: "Replaces system allocator globally." },
+                    { code: "#[cfg(not(target_env = \"msvc\"))]", note: "Executes on non-MSVC target platforms." },
+                    { code: "use tikv_jemallocator::Jemalloc;", note: "Imports thread-arena optimized heap allocator." },
+                    { code: "", note: "" },
+                    { code: "#[cfg(not(target_env = \"msvc\"))]", note: "Applies attribute globally." },
+                    { code: "#[global_allocator]", note: "Instructs Rust compiler to replace dynamic allocator." },
+                    { code: "static GLOBAL: Jemalloc = Jemalloc; // ✨ Instant 10-20% allocation throughput boost!", note: "Uses thread-local allocation arenas without dynamic system locks." },
+                    { code: "", note: "" },
+                    { code: "fn main() {", note: "Optimized runtime application entry." },
+                    { code: "    // All heap operations now use ultra-fast jemalloc arenas", note: "Zero extra code needed in business logic." },
+                    { code: "}", note: "" }
+                ]
+            }
+        ];
+
+        let currentLessonIdx = 0;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderLessonTabs();
+            loadLesson(0);
+            lucide.createIcons();
+        });
+
+        function renderLessonTabs() {
+            const container = document.getElementById('lesson-tabs');
+            container.innerHTML = LESSONS.map((l, idx) => `
+                <button onclick="loadLesson(${idx})" 
+                        id="tab-${idx}"
+                        class="whitespace-nowrap sm:w-full text-left px-3.5 py-2.5 rounded-xl border text-xs font-semibold transition flex items-center justify-between gap-2 border-white/5 bg-white/5 hover:bg-white/10 text-gray-300">
+                    <div class="flex items-center space-x-2">
+                        <span class="w-5 h-5 rounded-md bg-rust-500/20 text-rust-500 flex items-center justify-center font-mono text-[10px]">${l.id}</span>
+                        <span class="truncate">${l.title.split(':')[1] || l.title}</span>
+                    </div>
+                    <i data-lucide="chevron-right" class="w-3.5 h-3.5 hidden lg:block opacity-40"></i>
+                </button>
+            `).join('');
+        }
+
+        function loadLesson(index) {
+            currentLessonIdx = index;
+            const lesson = LESSONS[index];
+
+            document.getElementById('lesson-progress-badge').innerText = `Lesson ${lesson.id} of ${LESSONS.length}`;
+            document.getElementById('current-category').innerText = lesson.category;
+            document.getElementById('current-title').innerText = lesson.title;
+            document.getElementById('current-description').innerText = lesson.description;
+            document.getElementById('file-name').innerText = lesson.fileName;
+
+            document.getElementById('prev-btn').disabled = index === 0;
+            document.getElementById('next-btn').disabled = index === LESSONS.length - 1;
+
+            LESSONS.forEach((_, i) => {
+                const tab = document.getElementById(`tab-${i}`);
+                if (i === index) {
+                    tab.className = "whitespace-nowrap sm:w-full text-left px-3.5 py-2.5 rounded-xl border text-xs font-semibold transition flex items-center justify-between gap-2 border-rust-500/50 bg-rust-500/20 text-white shadow-lg shadow-rust-500/10";
+                } else {
+                    tab.className = "whitespace-nowrap sm:w-full text-left px-3.5 py-2.5 rounded-xl border text-xs font-semibold transition flex items-center justify-between gap-2 border-white/5 bg-white/5 hover:bg-white/10 text-gray-300";
+                }
+            });
+
+            // Render Code Rows (Line Numbers Outside Code Block)
+            const codeContainer = document.getElementById('code-container');
+            codeContainer.innerHTML = lesson.lines.map((item, idx) => {
+                const lineNum = idx + 1;
+                const escaped = item.code
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;");
+
+                return `
+                    <div class="line-row" id="row-${idx}" onclick="selectLine(${idx})">
+                        <div class="line-number">${lineNum}</div>
+                        <div class="line-code"><pre class="language-rust"><code>${escaped || ' '}</code></pre></div>
+                    </div>
+                `;
+            }).join('');
+
+            // Highlight syntax
+            document.querySelectorAll('#code-container pre code').forEach((el) => {
+                Prism.highlightElement(el);
+            });
+
+            // Render Takeaways
+            document.getElementById('takeaway-list').innerHTML = lesson.takeaways.map(t => `
+                <li class="flex items-start space-x-2">
+                    <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5"></i>
+                    <span>${t}</span>
+                </li>
+            `).join('');
+
+            selectLine(0);
+            lucide.createIcons();
+        }
+
+        function selectLine(lineIdx) {
+            const lesson = LESSONS[currentLessonIdx];
+            const lineData = lesson.lines[lineIdx];
+
+            document.querySelectorAll('.line-row').forEach((el, idx) => {
+                if (idx === lineIdx) {
+                    el.classList.add('active-line');
+                } else {
+                    el.classList.remove('active-line');
+                }
+            });
+
+            const educatorBox = document.getElementById('educator-explanation');
+            if (lineData && lineData.note) {
+                educatorBox.innerHTML = `
+                    <div class="p-2.5 rounded-xl bg-white/5 border border-white/10 font-mono text-xs text-rust-400 mb-2">
+                        Line ${lineIdx + 1}: ${lineData.code || '(empty line)'}
+                    </div>
+                    <p>${lineData.note}</p>
+                `;
+            } else {
+                educatorBox.innerHTML = `
+                    <p class="text-gray-400 italic">Click on any line of Rust code above to see an in-depth breakdown from your educator!</p>
+                `;
+            }
+        }
+
+        function prevLesson() {
+            if (currentLessonIdx > 0) loadLesson(currentLessonIdx - 1);
+        }
+
+        function nextLesson() {
+            if (currentLessonIdx < LESSONS.length - 1) loadLesson(currentLessonIdx + 1);
+        }
+
+        function copyCurrentCode() {
+            const rawCode = LESSONS[currentLessonIdx].lines.map(l => l.code).join('\n');
+            navigator.clipboard.writeText(rawCode).then(() => {
+                const btnText = document.getElementById('copy-btn-text');
+                btnText.innerText = 'Copied!';
+                setTimeout(() => btnText.innerText = 'Copy Code', 2000);
+            });
+        }
+    </script>
+</body>
+</html>
