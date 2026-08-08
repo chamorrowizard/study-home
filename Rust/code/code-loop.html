@@ -509,6 +509,336 @@ fn another_function(){
     break;
   }
 }`
+      },
+      {
+        id: 8,
+        title: "Match Control Flow",
+        category: "Control Flow",
+        description: "Pattern matching using the match expression.",
+        code: `fn main() {
+  let number = 3;
+
+  match number {
+    1 => println!("One!"),
+    2 | 3 | 5 | 7 => println!("This is a prime number"),
+    13..=19 => println!("A teen number"),
+    _ => println!("Ain't special"),
+  }
+}`
+      },
+      {
+        id: 9,
+        title: "Option & Pattern Matching",
+        category: "Enums",
+        description: "Handling absent values safely using Option and if let syntax.",
+        code: `fn main() {
+  let some_number: Option<i32> = Some(5);
+  let absent_number: Option<i32> = None;
+
+  if let Some(val) = some_number {
+    println!("Found value: {val}");
+  } else {
+    println!("No value found");
+  }
+}`
+      },
+      {
+        id: 10,
+        title: "Vectors & Dynamic Lists",
+        category: "Data Types",
+        description: "Creating, modifying, and iterating over heap-allocated vectors.",
+        code: `fn main() {
+  let mut numbers: Vec<i32> = vec![10, 20, 30];
+  numbers.push(40);
+
+  for num in &numbers {
+    println!("Item: {num}");
+  }
+
+  println!("Length of vector: {}", numbers.len());
+}`
+      },
+      {
+        id: 11,
+        title: "Enums with Data",
+        category: "Enums",
+        description: "Defining custom enums that hold different types of data.",
+        code: `enum Message {
+  Quit,
+  Move { x: i32, y: i32 },
+  Write(String),
+}
+
+fn main() {
+  let msg = Message::Write(String::from("Rust rules!"));
+
+  if let Message::Write(text) = msg {
+    println!("Message contents: {text}");
+  }
+}`
+      },
+      {
+        id: 12,
+        title: "Traits & Shared Behavior",
+        category: "Traits",
+        description: "Defining and implementing a trait for a struct.",
+        code: `trait Summary {
+  fn summarize(&self) -> String;
+}
+
+struct Article {
+  headline: String,
+}
+
+impl Summary for Article {
+  fn summarize(&self) -> String {
+    format!("Headline: {}", self.headline)
+  }
+}
+
+fn main() {
+  let article = Article {
+    headline: String::from("Rust 1.0 Released"),
+  };
+  println!("{}", article.summarize());
+}`
+      },
+      {
+        id: 13,
+        title: "Result & Error Handling",
+        category: "Error Handling",
+        description: "Handling recoverable errors using Result and match.",
+        code: `fn divide(numerator: f64, denominator: f64) -> Result<f64, String> {
+  if denominator == 0.0 {
+    Err(String::from("Cannot divide by zero"))
+  } else {
+    Ok(numerator / denominator)
+  }
+}
+
+fn main() {
+  match divide(10.0, 2.0) {
+    Ok(result) => println!("Result: {result}"),
+    Err(err) => println!("Error: {err}"),
+  }
+}`
+      },
+      {
+        id: 14,
+        title: "The Question Mark Operator (?)",
+        category: "Error Handling",
+        description: "Propagating errors concisely instead of using explicit match statements.",
+        code: `fn parse_and_double(s: &str) -> Result<i32, std::num::ParseIntError> {
+  let number = s.parse::<i32>()?;
+  Ok(number * 2)
+}
+
+fn main() {
+  match parse_and_double("10") {
+    Ok(val) => println!("Doubled value: {val}"),
+    Err(err) => println!("Failed to parse: {err}"),
+  }
+}`
+      },
+      {
+        id: 15,
+        title: "Generics & Turbofish Syntax",
+        category: "Generics",
+        description: "Generic functions and using the turbofish ::<> operator to specify types.",
+        code: `fn print_item<T: std::fmt::Debug>(item: T) {
+  println!("Item: {:?}", item);
+}
+
+fn main() {
+  print_item::<i32>(42);
+  
+  let parsed = "100".parse::<u32>().expect("Should parse");
+  println!("Parsed value: {parsed}");
+}`
+      },
+      {
+        id: 16,
+        title: "Closures & Lambda Functions",
+        category: "Functions",
+        description: "Anonymous functions capturing environment variables.",
+        code: `fn main() {
+  let multiplier = 3;
+  let multiply = |x: i32| x * multiplier;
+
+  let result = multiply(5);
+  println!("Result: {result}");
+}`
+      },
+      {
+        id: 17,
+        title: "Iterator Adapters & Chaining",
+        category: "Iterators",
+        description: "Transforming collections using map, filter, and collect.",
+        code: `fn main() {
+  let numbers = vec![1, 2, 3, 4, 5];
+
+  let even_squares: Vec<i32> = numbers
+    .into_iter()
+    .filter(|&x| x % 2 == 0)
+    .map(|x| x * x)
+    .collect();
+
+  println!("Even squares: {:?}", even_squares);
+}`
+      },
+      {
+        id: 18,
+        title: "Explicit Lifetime Annotations",
+        category: "Lifetimes",
+        description: "Annotating references to ensure memory safety across scope boundaries.",
+        code: `fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {
+  if x.len() > y.len() {
+    x
+  } else {
+    y
+  }
+}
+
+fn main() {
+  let string1 = String::from("long string");
+  let string2 = "xyz";
+  let result = longest(string1.as_str(), string2);
+  println!("The longest string is {result}");
+}`
+      },
+      {
+        id: 19,
+        title: "HashMap Operations",
+        category: "Data Types",
+        description: "Key-value pairs using std::collections::HashMap and entry API.",
+        code: `use std::collections::HashMap;
+
+fn main() {
+  let mut scores = HashMap::new();
+  scores.insert(String::from("Blue"), 10);
+  scores.insert(String::from("Yellow"), 50);
+
+  scores.entry(String::from("Blue")).or_insert(0);
+
+  for (key, value) in &scores {
+    println!("{key}: {value}");
+  }
+}`
+      },
+      {
+        id: 20,
+        title: "Generic Structs & Impl Blocks",
+        category: "Structs",
+        description: "Defining a generic struct and implementing generic methods.",
+        code: `struct Point<T> {
+  x: T,
+  y: T,
+}
+
+impl<T> Point<T> {
+  fn x(&self) -> &T {
+    &self.x
+  }
+}
+
+fn main() {
+  let p = Point { x: 5, y: 10 };
+  println!("p.x = {}", p.x());
+}`
+      },
+      {
+        id: 21,
+        title: "Generic Trait Bounds with where Clause",
+        category: "Traits",
+        description: "Using where clauses to clean up complex generic trait bounds.",
+        code: `use std::fmt::{Debug, Display};
+
+fn compare_and_print<T, U>(t: &T, u: &U)
+where
+  T: Display + Clone,
+  U: Clone + Debug,
+{
+  println!("t is {}", t);
+  println!("u is {:?}", u);
+}
+
+fn main() {
+  compare_and_print(&"Hello", &vec![1, 2, 3]);
+}`
+      },
+      {
+        id: 22,
+        title: "impl Trait in Parameters & Return Types",
+        category: "Functions",
+        description: "Shorthand generic syntax using impl Trait.",
+        code: `fn print_summary(item: &impl std::fmt::Display) {
+  println!("Summary: {item}");
+}
+
+fn returns_closure() -> impl Fn(i32) -> i32 {
+  |x| x + 1
+}
+
+fn main() {
+  print_summary(&"Rust Generics");
+  let add_one = returns_closure();
+  println!("Result: {}", add_one(5));
+}`
+      },
+      {
+        id: 23,
+        title: "Smart Pointers (Box & Rc)",
+        category: "Data Types",
+        description: "Heap allocation with Box and multiple ownership with Rc.",
+        code: `use std::rc::Rc;
+
+fn main() {
+  let heap_number = Box::new(5);
+  println!("Heap value: {heap_number}");
+
+  let shared_data = Rc::new(String::from("Shared"));
+  let clone1 = Rc::clone(&shared_data);
+  let clone2 = Rc::clone(&shared_data);
+  println!("Reference count: {}", Rc::strong_count(&shared_data));
+}`
+      },
+      {
+        id: 24,
+        title: "Threads & Move Closures",
+        category: "Functions",
+        description: "Spawning threads and moving environment variables into spawned scope.",
+        code: `use std::thread;
+
+fn main() {
+  let v = vec![1, 2, 3];
+
+  let handle = thread::spawn(move || {
+    println!("Vector from thread: {:?}", v);
+  });
+
+  handle.join().unwrap();
+}`
+      },
+      {
+        id: 25,
+        title: "Type Conversion with From and Into",
+        category: "Traits",
+        description: "Implementing From trait to enable clean automatic type conversion.",
+        code: `#[derive(Debug)]
+struct Number {
+  value: i32,
+}
+
+impl From<i32> for Number {
+  fn from(item: i32) -> Self {
+    Number { value: item }
+  }
+}
+
+fn main() {
+  let num: Number = 30.into();
+  println!("Converted number: {:?}", num);
+}`
       }
     ];
 
