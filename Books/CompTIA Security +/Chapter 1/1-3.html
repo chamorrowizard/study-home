@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1.3 Change Management Processes // Syntax Master</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #0f172a;
+            --bg-surface: #1e293b;
+            --bg-code: #090d16;
+            --border-color: #334155;
+            --text-primary: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-cyan: #38bdf8;
+            --accent-green: #22c55e;
+            --accent-red: #ef4444;
+            --accent-purple: #c084fc;
+            --accent-amber: #f59e0b;
+            --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+            --font-mono: 'Fira Code', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            padding-bottom: 4rem;
+        }
+
+        /* Header & Sticky Progress Tracker */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background-color: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 1.5rem;
+        }
+
+        .header-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        @media (min-width: 640px) {
+            .header-container {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+        }
+
+        .title-area {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.25rem 0.6rem;
+            border-radius: 9999px;
+            background-color: rgba(56, 189, 248, 0.1);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+
+        .badge-purple {
+            background-color: rgba(192, 132, 252, 0.1);
+            color: var(--accent-purple);
+            border-color: rgba(192, 132, 252, 0.3);
+        }
+
+        .badge-amber {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: var(--accent-amber);
+            border-color: rgba(245, 158, 11, 0.3);
+        }
+
+        h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .tracker-area {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            min-width: 240px;
+        }
+
+        .progress-bar-bg {
+            flex: 1;
+            height: 8px;
+            background-color: var(--bg-surface);
+            border-radius: 9999px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-green));
+            transition: width 0.3s ease-in-out;
+        }
+
+        .progress-text {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        /* Layout Main */
+        main {
+            max-width: 1100px;
+            margin: 2rem auto 0;
+            padding: 0 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Cards */
+        .card {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.3);
+            transition: border-color 0.2s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(148, 163, 184, 0.4);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .concept-body {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .concept-body strong {
+            color: var(--text-primary);
+        }
+
+        /* Terminal Style Practice Box */
+        .terminal {
+            background-color: var(--bg-code);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            font-family: var(--font-mono);
+        }
+
+        .terminal-header {
+            background-color: rgba(255, 255, 255, 0.03);
+            padding: 0.5rem 0.75rem;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .mac-dots {
+            display: flex;
+            gap: 6px;
+            margin-right: 1rem;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .dot-red { background-color: #ff5f56; }
+        .dot-yellow { background-color: #ffbd2e; }
+        .dot-green { background-color: #27c93f; }
+
+        .file-path {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .terminal-content {
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .target-syntax {
+            color: var(--accent-cyan);
+            font-size: 0.9rem;
+            background-color: rgba(56, 189, 248, 0.05);
+            padding: 0.6rem 0.8rem;
+            border-radius: 4px;
+            border-left: 3px solid var(--accent-cyan);
+            user-select: none;
+            word-break: break-all;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .prompt-symbol {
+            position: absolute;
+            left: 0.8rem;
+            color: var(--accent-purple);
+            font-size: 0.9rem;
+            pointer-events: none;
+        }
+
+        .code-input {
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 0.6rem 0.8rem 0.6rem 2rem;
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .code-input:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+        }
+
+        /* Validation States */
+        .code-input.status-valid {
+            border-color: var(--accent-green) !important;
+            background-color: rgba(34, 197, 94, 0.05) !important;
+            box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2) !important;
+        }
+
+        .code-input.status-invalid {
+            border-color: var(--accent-red) !important;
+            background-color: rgba(239, 68, 68, 0.05) !important;
+            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2) !important;
+        }
+
+        .status-badge {
+            font-size: 0.75rem;
+            font-family: var(--font-mono);
+            align-self: flex-end;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .status-badge.visible {
+            opacity: 1;
+        }
+
+        .status-badge.valid { color: var(--accent-green); }
+        .status-badge.invalid { color: var(--accent-red); }
+
+        /* Key Concepts Grid */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        @media (min-width: 768px) {
+            .grid-2 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .info-box {
+            background-color: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.8rem;
+            font-size: 0.85rem;
+        }
+
+        .info-box h4 {
+            color: var(--accent-cyan);
+            margin-bottom: 0.3rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sticky Header & Dynamic Tracker -->
+    <header>
+        <div class="header-container">
+            <div class="title-area">
+                <span class="badge">CompTIA Security+</span>
+                <h1>1.3 Change Management Processes</h1>
+            </div>
+            <div class="tracker-area">
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="progressBar"></div>
+                </div>
+                <span class="progress-text" id="progressText">0 / 0 Completed</span>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Chapter Overview Card -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">📌 Chapter Overview</h2>
+                <span class="badge badge-purple">Operational Security</span>
+            </div>
+            <p class="concept-body">
+                Uncontrolled changes create security vulnerabilities and service outages. Formal change management ensures every system modification is vetted through business approvals, tested for technical dependencies, scheduled to minimize downtime, and backed by robust documentation.
+            </p>
+            <div class="grid-2">
+                <div class="info-box">
+                    <h4>Governance & Impact</h4>
+                    <p>CAB approvals, stakeholder buy-in, owner accountability, and risk impact analysis before execution.</p>
+                </div>
+                <div class="info-box">
+                    <h4>Technical Safeguards</h4>
+                    <p>Controlled allow/deny rules, maintenance windows, rollback plans, and versioned SOPs.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Module 1: Business Approval Processes & CAB -->
+        <section class="card">
+            <div class="card-header">
+                <h3 class="card-title">1. Business Approvals & Change Advisory Board (CAB)</h3>
+                <span class="badge">Objective 1.3.1</span>
+            </div>
+            <p class="concept-body">
+                <strong>Why & How:</strong> Changes must not occur in isolation. The <strong>Change Advisory Board (CAB)</strong> reviews proposed system modifications to evaluate security risk, business continuity impact, and resource requirements before granting formal authorization.
+            </p>
+            <div class="terminal">
+                <div class="terminal-header">
+                    <div class="mac-dots">
+                        <div class="dot dot-red"></div>
+                        <div class="dot dot-yellow"></div>
+                        <div class="dot dot-green"></div>
+                    </div>
+                    <span class="file-path">~/change_mgmt/cab_approval.sh</span>
+                </div>
+                <div class="terminal-content">
+                    <div class="target-syntax">cab-review --ticket RFC-9021 --reviewers security,ops,legal --approve</div>
+                    <div class="input-wrapper">
+                        <span class="prompt-symbol">$</span>
+                        <input type="text" class="code-input" data-target="cab-review --ticket RFC-9021 --reviewers security,ops,legal --approve" placeholder="Type the command syntax above..." spellcheck="false" autocomplete="off">
+                    </div>
+                    <div class="status-badge"><span></span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Module 2: Ownership, Stakeholders & Impact Analysis -->
+        <section class="card">
+            <div class="card-header">
+                <h3 class="card-title">2. Ownership, Stakeholders & Impact Analysis</h3>
+                <span class="badge">Objective 1.3.2</span>
+            </div>
+            <p class="concept-body">
+                <strong>Why & How:</strong> Every Request for Change (RFC) requires a designated <strong>System Owner</strong> who assumes accountability. An <strong>Impact Analysis</strong> identifies affected stakeholders, potential security risks, and business disruption before execution.
+            </p>
+            <div class="terminal">
+                <div class="terminal-header">
+                    <div class="mac-dots">
+                        <div class="dot dot-red"></div>
+                        <div class="dot dot-yellow"></div>
+                        <div class="dot dot-green"></div>
+                    </div>
+                    <span class="file-path">~/change_mgmt/impact_analysis.py</span>
+                </div>
+                <div class="terminal-content">
+                    <div class="target-syntax">analyze-impact --owner sysadmin_sec --scope production --risk-score calculated</div>
+                    <div class="input-wrapper">
+                        <span class="prompt-symbol">$</span>
+                        <input type="text" class="code-input" data-target="analyze-impact --owner sysadmin_sec --scope production --risk-score calculated" placeholder="Type the command syntax above..." spellcheck="false" autocomplete="off">
+                    </div>
+                    <div class="status-badge"><span></span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Module 3: Technical Implications (Allow Lists / Deny Lists) -->
+        <section class="card">
+            <div class="card-header">
+                <h3 class="card-title">3. Allow Lists & Deny Lists Controls</h3>
+                <span class="badge">Objective 1.3.3</span>
+            </div>
+            <p class="concept-body">
+                <strong>Why & How:</strong> Technical change enforcement relies on explicit policy controls. <strong>Allow Listing</strong> restricts execution/traffic strictly to approved entities (Zero Trust default), while <strong>Deny Listing</strong> blocks known malicious or unauthorized assets.
+            </p>
+            <div class="terminal">
+                <div class="terminal-header">
+                    <div class="mac-dots">
+                        <div class="dot dot-red"></div>
+                        <div class="dot dot-yellow"></div>
+                        <div class="dot dot-green"></div>
+                    </div>
+                    <span class="file-path">~/change_mgmt/access_policy.config</span>
+                </div>
+                <div class="terminal-content">
+                    <div class="target-syntax">policy-config --mode allow-list --approved-hash signed_app.sha256 --block-untrusted</div>
+                    <div class="input-wrapper">
+                        <span class="prompt-symbol">$</span>
+                        <input type="text" class="code-input" data-target="policy-config --mode allow-list --approved-hash signed_app.sha256 --block-untrusted" placeholder="Type the command syntax above..." spellcheck="false" autocomplete="off">
+                    </div>
+                    <div class="status-badge"><span></span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Module 4: Maintenance Windows, Downtime & Dependencies -->
+        <section class="card">
+            <div class="card-header">
+                <h3 class="card-title">4. Maintenance Windows & Dependency Mapping</h3>
+                <span class="badge badge-amber">Objective 1.3.4</span>
+            </div>
+            <p class="concept-body">
+                <strong>Why & How:</strong> High-risk modifications are restricted to pre-scheduled <strong>Maintenance Windows</strong> to minimize user impact during expected downtime. Teams must map technical <strong>Dependencies</strong> to avoid cascading infrastructure failures.
+            </p>
+            <div class="terminal">
+                <div class="terminal-header">
+                    <div class="mac-dots">
+                        <div class="dot dot-red"></div>
+                        <div class="dot dot-yellow"></div>
+                        <div class="dot dot-green"></div>
+                    </div>
+                    <span class="file-path">~/change_mgmt/schedule_window.yaml</span>
+                </div>
+                <div class="terminal-content">
+                    <div class="target-syntax">schedule-change --window sunday_0200_utc --map-deps database,auth_service --downtime 30m</div>
+                    <div class="input-wrapper">
+                        <span class="prompt-symbol">$</span>
+                        <input type="text" class="code-input" data-target="schedule-change --window sunday_0200_utc --map-deps database,auth_service --downtime 30m" placeholder="Type the command syntax above..." spellcheck="false" autocomplete="off">
+                    </div>
+                    <div class="status-badge"><span></span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Module 5: Documentation, Version Control & SOPs -->
+        <section class="card">
+            <div class="card-header">
+                <h3 class="card-title">5. Documentation, SOPs & Rollback Plans</h3>
+                <span class="badge">Objective 1.3.5</span>
+            </div>
+            <p class="concept-body">
+                <strong>Why & How:</strong> Execution requires step-by-step <strong>Standard Operating Procedures (SOPs)</strong> tracked via <strong>Version Control</strong> (e.g., Git). Every change plan MUST include an approved <strong>Backout/Rollback Plan</strong> to quickly revert system state if errors occur.
+            </p>
+            <div class="terminal">
+                <div class="terminal-header">
+                    <div class="mac-dots">
+                        <div class="dot dot-red"></div>
+                        <div class="dot dot-yellow"></div>
+                        <div class="dot dot-green"></div>
+                    </div>
+                    <span class="file-path">~/change_mgmt/version_sop.sh</span>
+                </div>
+                <div class="terminal-content">
+                    <div class="target-syntax">sop-deploy --version v2.4.1 --backout-script rollback_v2.4.0.sh --log-audit true</div>
+                    <div class="input-wrapper">
+                        <span class="prompt-symbol">$</span>
+                        <input type="text" class="code-input" data-target="sop-deploy --version v2.4.1 --backout-script rollback_v2.4.0.sh --log-audit true" placeholder="Type the command syntax above..." spellcheck="false" autocomplete="off">
+                    </div>
+                    <div class="status-badge"><span></span></div>
+                </div>
+            </div>
+        </section>
+        <!-- Module 6: Testing & Sandbox Validation -->
+<section class="card">
+    <div class="card-header">
+        <h3 class="card-title">6. Staging & Sandbox Validation</h3>
+        <span class="badge">Objective 1.3.6</span>
+    </div>
+    <p class="concept-body">
+        <strong>Why & How:</strong> Changes must never be deployed directly to production without testing. Changes are first deployed in an isolated <strong>Staging/Sandbox Environment</strong> to validate stability, run security regression testing, and verify that dependencies react as expected.
+    </p>
+    <div class="terminal">
+        <div class="terminal-header">
+            <div class="mac-dots">
+                <div class="dot dot-red"></div>
+                <div class="dot dot-yellow"></div>
+                <div class="dot dot-green"></div>
+            </div>
+            <span class="file-path">~/change_mgmt/staging_test.sh</span>
+        </div>
+        <div class="terminal-content">
+            <div class="target-syntax">validate-change --env staging --run-regression --verify-zero-downtime</div>
+            <div class="input-wrapper">
+                <span class="prompt-symbol">$</span>
+                <input type="text" class="code-input" data-target="validate-change --env staging --run-regression --verify-zero-downtime" placeholder="Type the command syntax above..." spellcheck="false" autocomplete="off">
+            </div>
+            <div class="status-badge"><span></span></div>
+        </div>
+    </div>
+</section>
+
+    </main>
+
+    <!-- Automated Event Framework JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Find all input elements that have a data-target attribute dynamically
+            const inputs = document.querySelectorAll('input[data-target]');
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            
+            const totalModules = inputs.length;
+
+            // Update UI Counters & Progress Bar dynamically based on completed inputs
+            function updateProgress() {
+                let completedCount = 0;
+
+                inputs.forEach(input => {
+                    const targetText = input.getAttribute('data-target');
+                    if (input.value.trim() === targetText.trim()) {
+                        completedCount++;
+                    }
+                });
+
+                const percentage = totalModules > 0 ? (completedCount / totalModules) * 100 : 0;
+                
+                progressBar.style.width = `${percentage}%`;
+                progressText.textContent = `${completedCount} / ${totalModules} Completed`;
+            }
+
+            // Single Automated Listener registration for every input box
+            inputs.forEach(input => {
+                const targetText = input.getAttribute('data-target');
+                const terminalContent = input.closest('.terminal-content');
+                const statusBadge = terminalContent.querySelector('.status-badge');
+
+                input.addEventListener('input', () => {
+                    const currentValue = input.value;
+
+                    if (currentValue === '') {
+                        // Reset State
+                        input.classList.remove('status-valid', 'status-invalid');
+                        statusBadge.classList.remove('visible', 'valid', 'invalid');
+                        statusBadge.textContent = '';
+                    } else if (currentValue === targetText) {
+                        // Fully Correct
+                        input.classList.remove('status-invalid');
+                        input.classList.add('status-valid');
+                        statusBadge.classList.remove('invalid');
+                        statusBadge.classList.add('visible', 'valid');
+                        statusBadge.innerHTML = '✓ Perfect Match';
+                    } else if (targetText.startsWith(currentValue)) {
+                        // Correct Typing In-Progress
+                        input.classList.remove('status-valid', 'status-invalid');
+                        statusBadge.classList.remove('visible', 'valid', 'invalid');
+                        statusBadge.textContent = '';
+                    } else {
+                        // Typo / Invalid Syntax
+                        input.classList.remove('status-valid');
+                        input.classList.add('status-invalid');
+                        statusBadge.classList.remove('valid');
+                        statusBadge.classList.add('visible', 'invalid');
+                        statusBadge.innerHTML = '✗ Syntax Typo';
+                    }
+
+                    // Recalculate progress dynamically
+                    updateProgress();
+                });
+            });
+
+            // Initialize progress counter display
+            updateProgress();
+        });
+    </script>
+</body>
+</html>
