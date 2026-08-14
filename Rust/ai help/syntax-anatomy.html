@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rust Syntax Anatomy Studio — Complete 25 Lessons</title>
+  <style>
+    :root {
+      --bg-dark: #0b0f19;
+      --bg-sidebar: #111827;
+      --bg-card: #1f2937;
+      --bg-code: #030712;
+      --text-main: #f9fafb;
+      --text-muted: #9ca3af;
+      --border-color: #374151;
+      --accent-color: #38bdf8;
+      
+      /* Rust Syntax Highlight Palette */
+      --syn-keyword: #f43f5e;   /* Red/Pink: fn, let, mut, struct, impl, match, trait, where */
+      --syn-type: #38bdf8;      /* Light Blue: String, u32, bool, Option, Result, Vec, Self */
+      --syn-field: #fbbf24;     /* Amber/Gold: field names, variables, parameters */
+      --syn-string: #34d399;    /* Emerald: "Strings", literals */
+      --syn-number: #a78bfa;    /* Purple: numbers, constants */
+      --syn-macro: #fb7185;     /* Coral: println!, panic!, vec! */
+      --syn-punct: #94a3af;     /* Slate: {, }, :, ;, ->, ?, ::, &, * */
+      --syn-lifetime: #f472b6;  /* Pink: 'a, 'static */
+      --syn-comment: #6b7280;   /* Gray: comments */
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Mobile Header */
+    .mobile-header {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background-color: var(--bg-sidebar);
+      border-bottom: 1px solid var(--border-color);
+      z-index: 40;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1rem;
+    }
+
+    .mobile-title {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--text-main);
+    }
+
+    .menu-btn {
+      background: none;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 0.4rem 0.75rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    /* Sidebar Navigation */
+    sidebar {
+      width: 340px;
+      background-color: var(--bg-sidebar);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      transition: transform 0.3s ease;
+      z-index: 50;
+    }
+
+    .sidebar-header {
+      padding: 1.25rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .badge {
+      display: inline-block;
+      background: rgba(56, 189, 248, 0.1);
+      color: var(--syn-type);
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.2rem 0.5rem;
+      border-radius: 9999px;
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      margin-bottom: 0.4rem;
+    }
+
+    .sidebar-title {
+      font-size: 1.2rem;
+      font-weight: 800;
+    }
+
+    .nav-list {
+      list-style: none;
+      overflow-y: auto;
+      padding: 0.5rem;
+      flex-grow: 1;
+    }
+
+    .nav-item {
+      padding: 0.6rem 0.8rem;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-bottom: 0.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background 0.15s ease;
+    }
+
+    .nav-item:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .nav-item.active {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+    }
+
+    .nav-item-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .nav-item-tag {
+      font-size: 0.6rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.05);
+      padding: 0.15rem 0.35rem;
+      border-radius: 4px;
+    }
+
+    /* Main Content Area */
+    main {
+      flex-grow: 1;
+      overflow-y: auto;
+      padding: 2rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    .content-container {
+      max-width: 950px;
+      width: 100%;
+    }
+
+    .lesson-header {
+      margin-bottom: 1.5rem;
+    }
+
+    .lesson-header h1 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      margin-bottom: 0.4rem;
+    }
+
+    .lesson-header p {
+      color: var(--text-muted);
+      font-size: 1rem;
+    }
+
+    /* Interactive Code Block */
+    .anatomy-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+
+    .code-container {
+      background-color: var(--bg-code);
+      border-radius: 8px;
+      padding: 1.25rem;
+      font-family: "Fira Code", Monaco, Consolas, monospace;
+      font-size: 0.9rem;
+      overflow-x: auto;
+      border: 1px solid var(--border-color);
+      margin-bottom: 1.5rem;
+      line-height: 1.7;
+      white-space: pre;
+    }
+
+    /* Nomenclature display box */
+    #nomenclature-display {
+      margin-top: 0.75rem;
+      padding: 0.6rem 0.9rem;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.03);
+      border-radius: 8px;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    /* Interactive Token State */
+    .code-container .token, .code-container span {
+      cursor: pointer;
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.12);
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .code-container span:hover {
+      background-color: rgba(56, 189, 248, 0.12);
+      border-radius: 3px;
+    }
+
+    .code-container span.active-token {
+      background-color: var(--syn-field);
+      color: #000000 !important;
+      font-weight: 700;
+      border-radius: 3px;
+    }
+
+    /* Token Highlighting */
+    .kw { color: var(--syn-keyword); font-weight: 600; }
+    .ty { color: var(--syn-type); font-weight: 600; }
+    .fd { color: var(--syn-field); }
+    .str { color: var(--syn-string); }
+    .num { color: var(--syn-number); }
+    .mac { color: var(--syn-macro); font-weight: 600; }
+    .punct { color: var(--syn-punct); }
+    .lt { color: var(--syn-lifetime); font-weight: 600; }
+    .cmt { color: var(--syn-comment); font-style: italic; }
+
+    /* Deep Anatomy Cards Grid */
+    .anatomy-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+
+    .breakdown-card {
+      background: rgba(11, 15, 25, 0.6);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 0.9rem;
+      border-left: 4px solid var(--accent-color);
+    }
+
+    .breakdown-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.4rem;
+    }
+
+    .breakdown-card .title {
+      font-family: "Fira Code", monospace;
+      font-weight: 700;
+      font-size: 0.85rem;
+      background: rgba(0,0,0,0.4);
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      color: #ffffff;
+    }
+
+    .breakdown-card .role {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent-color);
+      font-weight: 700;
+    }
+
+    .breakdown-card p {
+      font-size: 0.825rem;
+      color: #d1d5db;
+      line-height: 1.5;
+    }
+
+    /* Backdrop for mobile drawer */
+    .backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 45;
+    }
+
+    /* Mobile Responsive Breakpoints */
+    @media (max-width: 768px) {
+      .mobile-header {
+        display: flex;
+      }
+
+      sidebar {
+        position: fixed;
+        top: 60px;
+        bottom: 0;
+        left: 0;
+        transform: translateX(-100%);
+      }
+
+      sidebar.open {
+        transform: translateX(0);
+      }
+
+      .backdrop.open {
+        display: block;
+      }
+
+      main {
+        padding: 5rem 1rem 2rem 1rem;
+      }
+
+      .lesson-header h1 {
+        font-size: 1.4rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Mobile Top Bar -->
+  <div class="mobile-header">
+    <span class="mobile-title">Rust Syntax Anatomy Studio</span>
+    <button class="menu-btn" onclick="toggleSidebar()">☰ Topics</button>
+  </div>
+
+  <div class="backdrop" id="backdrop" onclick="toggleSidebar()"></div>
+
+  <!-- Sidebar Navigator -->
+  <sidebar id="sidebar">
+    <div class="sidebar-header">
+      <span class="badge">Complete 25 Snippets</span>
+      <h2 class="sidebar-title">Rust Syntax Master</h2>
+    </div>
+    <ul class="nav-list" id="navList">
+      <!-- Generated via JS -->
+    </ul>
+  </sidebar>
+
+  <!-- Main Display Area -->
+  <main>
+    <div class="content-container" id="contentContainer">
+      <!-- Generated via JS -->
+    </div>
+  </main>
+
+  <script>
+    // Complete Database of all 25 SyntaxMaster Rust Snippets with Anatomy Token Breakdowns
+    const lessons = [
+      {
+        id: "1",
+        title: "Structs & Mutability",
+        category: "STRUCTS",
+        description: "Defines a custom struct type, instantiates a mutable binding, updates a field, and reads struct fields.",
+        codeHtml: `<span class="kw">struct</span> <span class="ty">Product</span> <span class="punct">{</span>
+    <span class="fd">name</span><span class="punct">:</span> <span class="ty">String</span><span class="punct">,</span>
+    <span class="fd">price_in_cents</span><span class="punct">:</span> <span class="ty">u32</span><span class="punct">,</span>
+    <span class="fd">is_available</span><span class="punct">:</span> <span class="ty">bool</span><span class="punct">,</span>
+    <span class="fd">stock_count</span><span class="punct">:</span> <span class="ty">u32</span><span class="punct">,</span>
+<span class="punct">}</span>
+
+<span class="kw">fn</span> <span class="fd">main</span><span class="punct">()</span> <span class="punct">{</span>
+    <span class="kw">let</span> <span class="kw">mut</span> <span class="fd">my_product</span> <span class="punct">=</span> <span class="ty">Product</span> <span class="punct">{</span>
+        <span class="fd">name</span><span class="punct">:</span> <span class="ty">String</span><span class="punct">::</span><span class="fd">from</span><span class="punct">(</span><span class="str">"Wireless Mouse"</span><span class="punct">),</span>
+        <span class="fd">price_in_cents</span><span class="punct">:</span> <span class="num">2500</span><span class="punct">,</span>
+        <span class="fd">is_available</span><span class="punct">:</span> <span class="kw">true</span><span class="punct">,</span>
+        <span class="fd">stock_count</span><span class="punct">:</span> <span class="num">50</span><span class="punct">,</span>
+    <span class="punct">};</span>
+    <span class="fd">my_product</span><span class="punct">.</span><span class="fd">stock_count</span> <span class="punct">=</span> <span class="num">49</span><span class="punct">;</span>
+    <span class="mac">println!</span><span class="punct">(</span><span class="str">"Stock updated for {}: {}"</span><span class="punct">,</span> <span class="fd">my_product</span><span class="punct">.</span><span class="fd">name</span><span class="punct">,</span> <span class="fd">my_product</span><span class="punct">.</span><span class="fd">stock_count</span><span class="punct">);</span>
+<span class="punct">}</span>`,
+        breakdown: [
+          { symbol: "struct Product", role: "Struct Definition Signature", desc: "Declares a named struct container in PascalCase." },
+          { symbol: "name: String", role: "Struct Field & Type Annotation", desc: "Defines field identifier 'name' requiring owned String heap memory." },
+          { symbol: "let mut my_product", role: "Mutable Variable Binding", desc: "Binds instance to identifier 'my_product'. 'mut' enables field modifications." },
+          { symbol: "String::from(...)", role: "Associated Function Call", desc: "Uses '::' path operator on String type to allocate memory from string literal." },
+          { symbol: "my_product.stock_count", role: "Field Access Member Operator", desc: "Uses '.' dot access operator to target specific struct field." },
+          { symbol: "println!(...)", role: "Macro Invocation", desc: "'!' indicates compile-time macro code generation rather than standard function execution." }
+        ]
+      },
+      {
+        id: "2",
+        title: "Functions & Printing",
+        category: "BASICS",
+        description: "Function definitions, parameters, return type arrows, and implicit expression evaluation.",
+        codeHtml: `<span class="kw">fn</span> <span class="fd">add</span><span class="punct">(</span><span class="fd">a</span><span class="punct">:</span> <span class="ty">i32</span><span class="punct">,</span> <span class="fd">b</span><span class="punct">:</span> <span class="ty">i32</span><span class="punct">)</span> <span class="punct">-></span> <span class="ty">i32</span> <span class="punct">{</span>
+    <span class="fd">a</span> <span class="punct">+</span> <span class="fd">b</span>
+<span class="punct">}</span>
+
+<span class="kw">fn</span> <span class="fd">main</span><span class="punct">()</span> <span class="punct">{</span>
+    <span class="kw">let</span> <span class="fd">sum</span> <span class="punct">=</span> <span class="fd">add</span><span class="punct">(</span><span class="num">10</span><span class="punct">,</span> <span class="num">20</span><span class="punct">);</span>
+    <span class="mac">println!</span><span class="punct">(</span><span class="str">"Sum is: {}"</span><span class="punct">,</span> <span class="fd">sum</span><span class="punct">);</span>
+<span class="punct">}</span>`,
+        breakdown: [
+          { symbol: "fn add(...)", role: "Function Signature Header", desc: "Declares function name identifier 'add'." },
+          { symbol: "a: i32, b: i32", role: "Formal Parameters", desc: "Typed inputs passed into function scope." },
+          { symbol: "-> i32", role: "Return Type Arrow", desc: "Specifies return type signature (32-bit signed integer)." },
+          { symbol: "a + b", role: "Implicit Return Expression", desc: "No trailing semicolon means this line evaluates and returns value." },
+          { symbol: "add(10, 20)", role: "Function Call Arguments", desc: "Passes literal argument values 10 and 20 into function invocation." }
+        ]
+      },
+      {
+        id: "3",
+        title: "Arrays, Slices & Strings",
+        category: "DATA TYPES",
+        description: "Fixed-size stack arrays, dynamically sized borrows (slices), and string slices.",
+        codeHtml: `<span class="kw">fn</span> <span class="fd">main</span><span class="punct">()</span> <span class="punct">{</span>
+    <span class="kw">let</span> <span class="fd">numbers</span><span class="punct">:</span> <span class="punct">[</span><span class="ty">i32</span><span class="punct">;</span> <span class="num">5</span><span class="punct">] =</span> <span class="punct">[</span><span class="num">1</span><span class="punct">,</span> <span class="num">2</span><span class="punct">,</span> <span class="num">3</span><span class="punct">,</span> <span class="num">4</span><span class="punct">,</span> <span class="num">5</span><span class="punct">];</span>
+    <span class="kw">let</span> <span class="fd">slice</span><span class="punct">:</span> <span class="punct">&</span><span class="punct">[</span><span class="ty">i32</span><span class="punct">] =</span> <span class="punct">&</span><span class="fd">numbers</span><span class="punct">[</span><span class="num">1</span><span class="punct">..</span><span class="num">4</span><span class="punct">];</span>
+    <span class="kw">let</span> <span class="fd">text</span><span class="punct">:</span> <span class="punct">&</span><span class="ty">str</span> <span class="punct">=</span> <span class="str">"Hello Rust"</span><span class="punct">;</span>
+    <span class="mac">println!</span><span class="punct">(</span><span class="str">"Slice element: {}, Text: {}"</span><span class="punct">,</span> <span class="fd">slice</span><span class="punct">[</span><span class="num">0</span><span class="punct">],</span> <span class="fd">text</span><span class="punct">);</span>
+<span class="punct">}</span>`,
+        breakdown: [
+          { symbol: "[i32; 5]", role: "Fixed Array Type Signature", desc: "Defines array layout: [Type; Fixed Length]." },
+          { symbol: "&[i32]", role: "Slice Reference Type", desc: "A borrowed view into contiguous sequence elements." },
+          { symbol: "&numbers[1..4]", role: "Range Slicing Syntax", desc: "Uses '..' exclusive range operator to borrow index 1 up to 3." },
+          { symbol: "&str", role: "String Slice Type", desc: "Immutable borrowed UTF-8 string reference." }
+        ]
+      },
+      {
+        id: "4",
+        title: "While Loops",
+        category: "CONTROL FLOW",
+        description: "Conditional execution loops evaluated prior to each iteration.",
+        codeHtml: `<span class="kw">fn</span> <span class="fd">main</span><span class="punct">()</span> <span class="punct">{</span>
+    <span class="kw">let</span> <span class="kw">mut</span> <span class="fd">counter</span> <span class="punct">=</span> <span class="num">3</span><span class="punct">;</span>
+    <span class="kw">while</span> <span class="fd">counter</span> <span class="punct">></span> <span class="num">0</span> <span class="punct">{</span>
+        <span class="mac">println!</span><span class="punct">(</span><span class="str">"Count: {}"</span><span class="punct">,</span> <span class="fd">counter</span><span class="punct">);</span>
+        <span class="fd">counter</span> <span class="punct">-=</span> <span class="num">1</span><span class="punct">;</span>
+    <span class="punct">}</span>
+<span class="punct">}</span>`,
+        breakdown: [
+          { symbol: "while", role: "Conditional Loop Keyword", desc: "Executes block while boolean expression evaluates to true." },
+          { symbol: "counter > 0", role: "Condition Expression", desc: "Boolean condition without surrounding parentheses in idiomatic Rust." },
+          { symbol: "counter -= 1", role: "Compound Assignment Operator", desc: "Shorthand for decremental subtraction and re-assignment." }
+        ]
+      },
+      {
+        id: "5",
+        title: "For Loops & Reversed Ranges",
+        category: "CONTROL FLOW",
+        description: "Iterating through range iterators with chain adaptors.",
+        codeHtml: `<span class="kw">fn</span> <span class="fd">main</span><span class="punct">()</span> <span class="punct">{</span>
+    <span class="kw">for</span> <span class="fd">i</span> <span class="kw">in</span> <span class="punct">(</span><span class="num">1</span><span class="punct">..=</span><span class="num">5</span><span class="punct">).</span><span class="fd">rev</span><span class="punct">()</span> <span class="punct">{</span>
+        <span class="mac">println!</span><span class="punct">(</span><span class="str">"i = {}"</span><span class="punct">,</span> <span class="fd">i</span><span class="punct">);</span>
+    <span class="punct">}</span>
+<span class="punct">}</span>`,
+        breakdown: [
+          { symbol: "for i in", role: "Iterator Loop Expression", desc: "Binds item to pattern identifier 'i' for every step." },
+          { symbol: "1..=5", role: "Inclusive Range Syntax", desc: "'..=' creates range spanning from 1 through 5 inclusively." },
+          { symbol: ".rev()", role: "Iterator Adapter Method", desc: "Reverses loop iteration direction." }
+        ]
+      },
+      {
+        id: "6",
+        title: "Simple Liftoff Range",
+        category: "CONTROL FLOW",
+        description: "Half-open range loop iteration combined with final execution output.",
+        codeHtml: `<span class="kw">fn</span> <span class="fd">main</span><span class="punct">()</span> <span class="punct">{</span>
+    <span class="kw">for</span> <span class="fd">number</span> <span class="kw">in</span> <span class="num">1</span><span class="punct">..</span><span class="num">4</span> <span class="punct">{</span>
+        <span class="mac">println!</span><span class="punct">(</span><span class="str">"{}!"</span><span class="punct">,</span> <span class="fd">number</span><span class="punct">);</span>
+    <span class="punct">}</span>
+    <span class="mac">println!</span><span class="punct">(</span><span class="str">"LIFTOFF!!!"</span><span class="punct">);</span>
+<span class="punct">}</span>`,
+        breakdown: [
+          { symbol: "1..4", role: "Half-Open Range Syntax", desc: "Includes starting value 1 up to (but excluding) end value 4." },
+          { symbol: "number", role: "Loop Iteration Variable", desc: "Temporary binding in scope within loop block." }
+        ]
+      },
+      {
+        id: "7",
+        title: "Infinite Loop & Break",
+        category: "CONTROL FLOW",
+        description: "Unconditional loop statements returning values via break expressions.",
+        codeHtml: `<span class="kw">fn</span> <span class="fd">main</span><span class="punct">()</span> <span class="punct">{</span>
+    <span class="kw">let</span> <span class="kw">mut</span> <span class="fd">count</span> <span class="punct">=</span> <span class="num">0</span><span class="punct">;</span>
+    <span class="kw">let</span> <span class="fd">result</span> <span class="punct">=</span> <span class="kw">loop</span> <span class="punct">{</span>
+        <span class="fd">count</span> <span class="punct">+=</span> <span class="num">1</span><span class="punct">;</span>
+        <span class="kw">if</span> <span class="fd">count</span> <span class="punct">==</span> <span class="num">10</span> <span class="punct">{</span>
+            <span class="kw">break</span> <span class="fd">count</span> <span class="punct">*</span> <span class="num">2</span><span class="punct">;</span>
+        <span class="punct">}</span>
+    <span class="punct">};</span>
+    <span class="mac">println!</span><span class="punct">(</span><span class="str">"Result: {}"</span><span class="punct">,</span> <span class="fd">result</span><span class="punct">);</span>
+<span class="punct">}</span>`,
+        breakdown: [
+          { symbol: "loop", role: "Infinite Loop Keyword", desc: "Loops endlessly until interrupted by explicit break keyword." },
+          { symbol: "break count * 2", role: "Break Value Expression", desc: "Exits loop and passes expression result back to variable binding." }
+        ]
+      },
+      {
+        id: "8",
+        title: "Match Control Flow",
+        category: "CONTROL FLOW",
+        description: "Pattern matching control structure with literal values and wildcard default arm.",
+        codeHtml: `<span class="kw">fn</span> <span class="fd">main</span><span class="punct">()</span> <span class="punct">{</span>
+    <span class="kw">let</span> <span class="fd">number</span> <span class="punct">=</span> <span class="num">3</span><span class="punct">;</span>
+    <span class="kw">match</span> <span class="fd">number</span> <span class="punct">{</span>
+        <span class="num">1</span> <span class="punct">=></span> <span class="mac">println!</span><span class="punct">(</span><span class="str">"One"</span><span class="punct">),</span>
+        <span class="num">2</span> <span class="punct">|</span> <span class="num">3</span> <span class="punct">=></span> <span class="mac">println!</span><span class="punct">(</span><span class="str">"Two or Three"</span><span class="punct">),</span>
+        <span class="fd">_</span> <span class="punct">=></span> <span class="mac">println!</span><span class="punct">(</span><span class="str">"Something else"</span><span class="punct">),</span>
+    <span class="punct">}</span>
+<span class="punct">}</span>`,
+        breakdown: [
+          { symbol: "match number", role: "Match Target Expression", desc: "Control flow evaluated against pattern arms." },
+          { symbol: "2 | 3", role: "Multiple Pattern OR Operator", desc: "Matches either value 2 OR 3." },
+          { symbol: "_ =>", role: "Wildcard Catch-All Arm", desc: "Underscore '_' matches any unspecified remaining value." }
+        ]
+      },
+      {
+        id: "9",
+        title: "Option & Pattern Matching",
+        category: "ENUMS",
+        description: "Handling optionals safely with Option generic enum (Some/None).",
+        codeHtml: `<span class="kw">fn</span> <span class="fd">find_item</span><span class="punct">(</span><span class="fd">id</span><span class="punct">:</span> <span class="ty">u32</span><span class="punct">)</span> <span class="punct">-></span> <span class="ty">Option</span><span class="punct">&lt;</span><span class="ty">String</span><span class="punct">&gt;</span> <span class="punct">{</span>
+    <span class="kw">if</span> <span class="fd">id</span> <span class="punct">==</span> <span class="num">1</span> <span class="punct">{</span>
+        <span class="ty">Some</span><span class="punct">(</span><span class="ty">String</span><span class="punct">::</span><span class="fd">from</span><span class="punct">(</span><span class="str">"Found Item"</span><span class="punct">))</span>
+    <span class="punct">}</span> <span class="kw">else</span> <span class="punct">{</span>
+        <span class="ty">None</span>
+    <span class="punct">}</span>
+<span class="punct">}</span>
+
+<span class="kw">fn</span> <span class="fd">main</span><span class="punct">()</span> <span class="punct">{</span>
+    <span class="kw">match</span> <span class="fd">find_item</span><span class="punct">(</span><span class="num">1</span><span class="punct">)</span> <span class="punct">{</span>
+        <span class="ty">Some</span><span class="punct">(</span><span class="fd">name</span><span class="punct">)</span> <span class="punct">=></span> <span class="mac">println!</span><span class="punct">(</span><span class="str">"Item: {}"</span><span class="punct">,</span> <span class="fd">name</span><span class="punct">),</span>
+        <span class="ty">None</span> <span class="punct">=></span> <span class="mac">println!</span><span class="punct">(</span><span class="str">"Not found"</span><span class="punct">),</span>
+    <span class="punct">}</span>
+<span class="punct">}</span>`,
+        breakdown: [
+          { symbol: "Option<String>", role: "Generic Enum Type Signature", desc: "Type wrapper representing value presence or absence." },
+          { symbol: "Some(val)", role: "Enum Variant Constructor", desc: "Wraps value inside valid Option variant." },
+          { symbol: "Some(name) =>", role: "Pattern Binding Arm", desc: "Destructures inner value and binds it to variable name." }
+        ]
+      },
+      {
+        id: "10",
+        title: "Vectors & Dynamic Lists",
+        category: "DATA TYPES",
+        description: "Heap-allocated expandable array vector instantiation and modification.",
+        codeHtml: `<span class="kw">fn</span> <span class="fd">main</span><span class="punct">()</span> <span class="punct">{</span>
+    <span class="kw">let</span> <span class="kw">mut</span> <span class="fd">list</span><span class="punct">:</span> <span class="ty">Vec</span><span class="punct">&lt;</span><span class="ty">i32</span><span class="punct">&gt; =</span> <span class="mac">vec!</span><span class="punct">[</span><span class="num">10</span><span class="punct">,</span> <span class="num">20</span><span class="punct">];</span>
+    <span class="fd">list</span><span class="punct">.</span><span class="fd">push</span><span class="punct">(</span><span class="num">30</span><span class="punct">);</span>
+    <span class="mac">println!</span><span class="punct">(</span><span class="str">"Vector: {:?}"</span><span class="punct">,</span> <span class="fd">list</span><span class="punct">);</span>
+<span class="punct">}</span>`,
+        breakdown: [
+          { symbol: "Vec<i32>", role: "Vector Generic Type Specifier", desc: "A growable array stored on heap." },
+          { symbol: "vec![10, 20]", role: "Vector Initialization Macro", desc: "Macro shorthand for initializing vector with elements." },
+          { symbol: "{:?}", role: "Debug Format Specifier", desc: "Format placeholder utilizing Debug trait formatting." }
+        ]
+      },
+      {
+        id: "11",
+        title: "Enums with Data",
+        category: "ENUMS",
+        description: "Custom sum types holding tuple values inside variants.",
+        codeHtml: `<span class="kw">enum</span> <span class="ty">Message</span> <span class="punct">{</span>
+    <span class="ty">Quit</span><span class="punct">,</span>
+    <span class="ty">Move</span> <span class="punct">{</span> <span class="fd">x</span><span class="punct">:</span> <span class="ty">i32</span><span class="punct">,</span> <span class="fd">y</span><span class="punct">:</span> <span class="ty">i32</span> <span class="punct">},</span>
+    <span class="ty">Write</span><span class="punct">(</span><span class="ty">String</span><span class="punct">),</span>
+<span class="punct">}</span>
+
+<span class="kw">fn</span> <span class="fd">main</span><span class="punct">()</span> <span class="punct">{</span>
+    <span class="kw">let</span> <span class="fd">msg</span> <span class="punct">=</span> <span class="ty">Message</span><span class="punct">::</span><span class="ty">Write</span><span class="punct">(</span><span class="ty">String</span><span class="punct">::</span><span class="fd">from</span><span class="punct">(</span><span class="str">"Hello"</span><span class="punct">));</span>
+    <span class="kw">if</span> <span class="kw">let</span> <span class="ty">Message</span><span class="punct">::</span><span class="ty">Write</span><span class="punct">(</span><span class="fd">text</span><span class="punct">) =</span> <span class="fd">msg</span> <span class="punct">{</span>
+        <span class="mac">println!</span><span class="punct">(</span><span class="str">"Message: {}"</span><span class="punct">,</span> <span class="fd">text</span><span class="punct">);</span>
+    <span class="punct">}</span>
+<span class="punct">}</span>`,
+        breakdown: [
+          { symbol: "enum Message", role: "Enum Type Definition", desc: "Defines custom enum data type." },
+          { symbol: "Write(String)", role: "Tuple Variant Payload", desc: "Variant that holds inner String payload." },
+          { symbol: "if let ... =", role: "If-Let Conditional Pattern Matching", desc: "Shorthand pattern match statement checking single variant." }
+        ]
+      },
+      {
+        id: "12",
+        title: "Traits & Shared Behavior",
+        category: "TRAITS",
+        description: "Defining shared behavior contracts and implementing traits on types.",
+        codeHtml: `<span class="kw">trait</span> <span class="ty">Summary</span> <span class="punct">{</span>
+    <span class="kw">fn</span> <span class="fd">summarize</span><span class="punct">(&</span><span class="kw">self</span><span class="punct">)</span> <span class="punct">-></span> <span class="ty">String</span><span class="punct">;</span>
+<span class="punct">}</span>
+
+<span class="kw">struct</span> <span class="ty">Article</span> <span class="punct">{</span>
+    <span class="fd">title</span><span class="punct">:</span> <span class="ty">String</span><span class="punct">,</span>
+<span class="punct">}</span>
+
+<span class="kw">impl</span> <span class="ty">Summary</span> <span class="kw">for</span> <span class="ty">Article</span> <span class="punct">{</span>
+    <span class="kw">fn</span> <span class="fd">summarize</span><span class="punct">(&</span><span class="kw">self</span><span class="punct">)</span> <span class="punct">-></span> <span class="ty">String</span> <span class="punct">{</span>
+        <span class="mac">format!</span><span class="punct">(</span><span class="str">"Title: {}"</span><span class="punct">,</span> <span class="kw">self</span><span class="punct">.</span><span class="fd">title</span><span class="punct">)</span>
+    <span class="punct">}</span>
+<span class="punct">}</span>`,
+        breakdown: [
+          { symbol: "trait Summary", role: "Trait Interface Definition", desc: "Declares interface protocol behavior." },
+          { symbol: "&self", role: "Borrowed Instance Reference", desc: "Borrows structural instance context." },
+          { symbol: "impl Summary for Article", role: "Trait Implementation Block", desc: "Attaches trait method code to Article struct." }
+        ]
+      },
+      {
+        id: "13",
+        title: "Result & Error Handling",
+        category: "ERROR HANDLING",
+        description: "Recoverable error returns with Result enum (Ok/Err).",
+        codeHtml: `<span class="kw">fn</span> <span class="fd">divide</span><span class="punct">(</span><span class="fd">a</span><span class="punct">:</span> <span class="ty">f64</span><span class="punct">,</span> <span class="fd">b</span><span class="punct">:</span> <span class="ty">f64</span><span class="punct">)</span> <span class="punct">-></span> <span class="ty">Result</span><span class="punct">&lt;</span><span class="ty">f64</span><span class="punct">,</span> <span class="ty">String</span><span class="punct">&gt;</span> <span class="punct">{</span>
+    <span class="kw">if</span> <span class="fd">b</span> <span class="punct">==</span> <span class="num">0.0</span> <span class="punct">{</span>
+        <span class="ty">Err</span><span class="punct">(</span><span class="ty">String</span><span class="punct">::</span><span class="fd">from</span><span class="punct">(</span><span class="str">"Division by zero!"</span><span class="punct">))</span>
+    <span class="punct">}</span> <span class="kw">else</span> <span class="punct">{</span>
+        <span class="ty">Ok</span><span class="punct">(</span><span class="fd">a</span> <span class="punct">/</span> <span class="fd">b</span><span class="punct">)</span>
+    <span class="punct">}</span>
+<span class="punct">}</span>`,
+        breakdown: [
+          { symbol: "Result<f64, String>", role: "Result Return Signature", desc: "Return signature: Ok(f64) or Err(String)." },
+          { symbol: "Err(...)", role: "Error Variant Constructor", desc: "Returns failure path payload." },
+          { symbol: "Ok(...)", role: "Success Variant Constructor", desc: "Returns successful calculation payload." }
+        ]
+      },
+      {
+        id: "14",
+        title: "The Question Mark Operator (?)",
+        category: "ERROR HANDLING",
+        description: "Error propagation shorthand returning early on Err variants.",
+        codeHtml: `<span class="kw">fn</span> <span class="fd">parse_and_double</span><span class="punct">(</span><span class="fd">s</span><span class="punct">:</span> <span class="punct">&</span><span class="ty">str</span><span class="punct">)</span> <span class="punct">-></span> <span class="ty">Result</span><span class="punct">&lt;</span><span class="ty">i32</span><span class="punct">,</span> <span class="ty">std</span><span class="punct">::</span><span class="ty">num</span><span class="punct">::</span><span class="ty">ParseIntError</span><span class="punct">&gt;</span> <span class="punct">{</span>
+    <span class="kw">let</span> <span class="fd">n</span> <span class="punct">=</span> <span class="fd">s</span><span class="punct">.</span><span class="fd">parse</span><span class="punct">::&lt;</span><span class="ty">i32</span><span class="punct">&gt;()?</span><span class="punct">;</span>
+    <span class="ty">Ok</span><span class="punct">(</span><span class="fd">n</span> <span class="punct">*</span> <span class="num">2</span><span class="punct">)</span>
+<span class="punct">}</span>`,
+        breakdown: [
+          { symbol: "?", role: "Error Propagation Operator", desc: "Unwraps Ok variant or early returns Err variant automatically." },
+          { symbol: "parse::<i32>()", role: "Turbofish Generic Call", desc: "Specifies generic type parameter to parse method." }
+        ]
+      },
+      {
+        id: "15",
+        title: "Generics & Turbofish Syntax",
+        category: "GENERICS",
+        description: "Type parameters explicitly passed to functions using turbofish ::<> syntax.",
+        codeHtml: `<span class="kw">fn</span> <span class="fd">main</span><span class="punct">()</span> <span class="punct">{</span>
+    <span class="kw">let</span> <span class="fd">numbers</span> <span class="punct">=</span> <span class="ty">Vec</span><span class="punct">::&lt;</span><span class="ty">i32</span><span class="punct">&gt;::</span><span class="fd">new</span><span class="punct">();</span>
+    <span class="kw">let</span> <span class="fd">parsed</span> <span class="punct">=</span> <span class="str">"42"</span><span class="punct">.</span><span class="fd">parse</span><span class="punct">::&lt;</span><span class="ty">i32</span><span class="punct">&gt;().</span><span class="fd">unwrap</span><span class="punct">();</span>
+    <span class="mac">println!</span><span class="punct">(</span><span class="str">"Parsed: {}"</span><span class="punct">,</span> <span class="fd">parsed</span><span class="punct">);</span>
+<span class="punct">}</span>`,
+        breakdown: [
+          { symbol: "::<i32>", role: "Turbofish Operator Syntax", desc: "Explicitly supplies generic type argument into method call." },
+          { symbol: "unwrap()", role: "Result Extraction Method", desc: "Extracts inner Ok value or triggers immediate panic on error." }
+        ]
+      },
+      {
+        id: "16",
+        title: "Closures & Lambda Functions",
+        category: "FUNCTIONS",
+        description: "Anonymous function expressions enclosed in pipe characters.",
+        codeHtml: `<span class="kw">fn</span> <span class="fd">main</span><span class="punct">()</span> <span class="punct">{</span>
+    <span class="kw">let</span> <span class="fd">add_one</span> <span class="punct">=</span> <span class="punct">|</span><span class="fd">x</span><span class="punct">:</span> <span class="ty">i32</span><span class="punct">|</span> <span class="punct">-></span> <span class="ty">i32</span> <span class="punct">{</span> <span class="fd">x</span> <span class="punct">+</span> <span class="num">1</span> <span class="punct">};</span>
+    <span class="kw">let</span> <span class="fd">val</span> <span class="punct">=</span> <span class="fd">add_one</span><span class="punct">(</span><span class="num">5</span><span class="punct">);</span>
+    <span class="mac">println!</span><span class="punct">(</span><span class="str">"Val: {}"</span><span class="punct">,</span> <span class="fd">val</span><span class="punct">);</span>
+<span class="punct">}</span>`,
+        breakdown: [
+          { symbol: "|x: i32|", role: "Closure Argument Parameter Pipes", desc: "Defines anonymous closure inputs enclosed inside '| |' vertical bars." },
+          { symbol: "add_one(5)", role: "Closure Invocation", desc: "Calls stored closure variable like standard function." }
+        ]
+      },
+      {
+        id: "17",
+        title: "Iterator Adapters & Chaining",
+        category: "ITERATORS",
+        description: "Functional programming pipeline using maps, filters, and collectors.",
+        codeHtml: `<span class="kw">fn</span> <span class="fd">main</span><span class="punct">()</span> <span class="punct">{</span>
+    <span class="kw">let</span> <span class="fd">vec</span> <span class="punct">=</span> <span class="mac">vec!</span><span class="punct">[</span><span class="num">1</span><span class="punct">,</span> <span class="num">2</span><span class="punct">,</span> <span class="num">3</span><span class="punct">];</span>
+    <span class="kw">let</span> <span class="fd">doubled</span><span class="punct">:</span> <span class="ty">Vec</span><span class="punct">&lt;</span><span class="ty">i32</span><span class="punct">&gt; =</span> <span class="fd">vec</span><span class="punct">.</span><span class="fd">iter</span><span class="punct">().</span><span class="fd">map</span><span class="punct">(|</span><span class="fd">x</span><span class="punct">|</span> <span class="fd">x</span> <span class="punct">*</span> <span class="num">2</span><span class="punct">).</span><span class="fd">collect</span><span class="punct">();</span>
+    <span class="mac">println!</span><span class="punct">(</span><span class="str">"Doubled: {:?}"</span><span class="punct">,</span> <span class="fd">doubled</span><span class="punct">);</span>
+<span class="punct">}</span>`,
+        breakdown: [
+          { symbol: ".iter()", role: "Iterator Producer Method", desc: "Creates borrowed iterator over collection sequence." },
+          { symbol: ".map(|x| x * 2)", role: "Iterator Adapter", desc: "Transforms each element via closure transformation." },
+          { symbol: ".collect()", role: "Consumer Method", desc: "Evaluates lazy iterator sequence into concrete container type." }
+        ]
+      },
+      {
+        id: "18",
+        title: "Explicit Lifetime Annotations",
+        category: "LIFETIMES",
+        description: "Informing the borrow checker about reference validity relationships using lifetime parameters.",
+        codeHtml: `<span class="kw">fn</span> <span class="fd">longest</span><span class="punct">&lt;</span><span class="lt">'a</span><span class="punct">&gt;(</span><span class="fd">x</span><span class="punct">:</span> <span class="punct">&</span><span class="lt">'a</span> <span class="ty">str</span><span class="punct">,</span> <span class="fd">y</span><span class="punct">:</span> <span class="punct">&</span><span class="lt">'a</span> <span class="ty">str</span><span class="punct">)</span> <span class="punct">-></span> <span class="punct">&</span><span class="lt">'a</span> <span class="ty">str</span> <span class="punct">{</span>
+    <span class="kw">if</span> <span class="fd">x</span><span class="punct">.</span><span class="fd">len</span><span class="punct">() ></span> <span class="fd">y</span><span class="punct">.</span><span class="fd">len</span><span class="punct">() {</span> <span class="fd">x</span> <span class="punct">}</span> <span class="kw">else</span> <span class="punct">{</span> <span class="fd">y</span> <span class="punct">}</span>
+<span class="punct">}</span>`,
+        breakdown: [
+          { symbol: "<'a>", role: "Generic Lifetime Declaration", desc: "Declares lifetime parameter starting with single quote mark." },
+          { symbol: "&'a str", role: "Lifetime Annotated Borrow Reference", desc: "Specifies string slice borrows must live at least as long as lifetime 'a." }
+        ]
+      },
+      {
+        id: "19",
+        title: "HashMap Operations",
+        category: "DATA TYPES",
+        description: "Key-value dictionary lookup collections.",
+        codeHtml: `<span class="kw">use</span> <span class="ty">std</span><span class="punct">::</span><span class="ty">collections</span><span class="punct">::</span><span class="ty">HashMap</span><span class="punct">;</span>
+
+<span class="kw">fn</span> <span class="fd">main</span><span class="punct">()</span> <span class="punct">{</span>
+    <span class="kw">let</span> <span class="kw">mut</span> <span class="fd">scores</span> <span class="punct">=</span> <span class="ty">HashMap</span><span class="punct">::</span><span class="fd">new</span><span class="punct">();</span>
+    <span class="fd">scores</span><span class="punct">.</span><span class="fd">insert</span><span class="punct">(</span><span class="ty">String</span><span class="punct">::</span><span class="fd">from</span><span class="punct">(</span><span class="str">"Blue"</span><span class="punct">),</span> <span class="num">10</span><span class="punct">);</span>
+    <span class="mac">println!</span><span class="punct">(</span><span class="str">"Scores: {:?}"</span><span class="punct">,</span> <span class="fd">scores</span><span class="punct">);</span>
+<span class="punct">}</span>`,
+        breakdown: [
+          { symbol: "use std::collections::HashMap", role: "Module Import Statement", desc: "Brings HashMap standard library type into current scope." },
+          { symbol: "scores.insert(k, v)", role: "Map Insertion Method", desc: "Stores key-value pair inside map structure." }
+        ]
+      },
+      {
+        id: "20",
+        title: "Generic Structs & Impl Blocks",
+        category: "STRUCTS",
+        description: "Structuring custom data containers with generic parameter constraints.",
+        codeHtml: `<span class="kw">struct</span> <span class="ty">Point</span><span class="punct">&lt;</span><span class="ty">T</span><span class="punct">&gt; {</span>
+    <span class="fd">x</span><span class="punct">:</span> <span class="ty">T</span><span class="punct">,</span>
+    <span class="fd">y</span><span class="punct">:</span> <span class="ty">T</span><span class="punct">,</span>
+<span class="punct">}</span>
+
+<span class="kw">impl</span><span class="punct">&lt;</span><span class="ty">T</span><span class="punct">&gt;</span> <span class="ty">Point</span><span class="punct">&lt;</span><span class="ty">T</span><span class="punct">&gt; {</span>
+    <span class="kw">fn</span> <span class="fd">x</span><span class="punct">(&</span><span class="kw">self</span><span class="punct">) -> &</span><span class="ty">T</span> <span class="punct">{</span>
+        <span class="punct">&</span><span class="kw">self</span><span class="punct">.</span><span class="fd">x</span>
+    <span class="punct">}</span>
+<span class="punct">}</span>`,
+        breakdown: [
+          { symbol: "struct Point<T>", role: "Generic Struct Definition", desc: "Struct declaration generic over abstract type T." },
+          { symbol: "impl<T> Point<T>", role: "Generic Implementation Header", desc: "Impl block declaring generic type T available inside implementation scope." }
+        ]
+      },
+      {
+        id: "21",
+        title: "Generic Trait Bounds with where Clause",
+        category: "TRAITS",
+        description: "Constraining complex generic requirements using clean where clauses.",
+        codeHtml: `<span class="kw">fn</span> <span class="fd">print_info</span><span class="punct">&lt;</span><span class="ty">T</span><span class="punct">,</span> <span class="ty">U</span><span class="punct">&gt;(</span><span class="fd">t</span><span class="punct">: &</span><span class="ty">T</span><span class="punct">,</span> <span class="fd">u</span><span class="punct">: &</span><span class="ty">U</span><span class="punct">)</span>
+<span class="kw">where</span>
+    <span class="ty">T</span><span class="punct">:</span> <span class="ty">std</span><span class="punct">::</span><span class="ty">fmt</span><span class="punct">::</span><span class="ty">Display</span><span class="punct">,</span>
+    <span class="ty">U</span><span class="punct">:</span> <span class="ty">std</span><span class="punct">::</span><span class="ty">fmt</span><span class="punct">::</span><span class="ty">Debug</span><span class="punct">,</span>
+<span class="punct">{</span>
+    <span class="mac">println!</span><span class="punct">(</span><span class="str">"t: {}, u: {:?}"</span><span class="punct">,</span> <span class="fd">t</span><span class="punct">,</span> <span class="fd">u</span><span class="punct">);</span>
+<span class="punct">}</span>`,
+        breakdown: [
+          { symbol: "where", role: "Where Clause Keyword", desc: "Separates function parameters from complex trait bound restrictions." },
+          { symbol: "T: std::fmt::Display", role: "Trait Bound Constraint", desc: "Enforces type T must implement Display trait protocol." }
+        ]
+      },
+      {
+        id: "22",
+        title: "impl Trait in Parameters & Return Types",
+        category: "FUNCTIONS",
+        description: "Static dispatch syntactic sugar simplifying function trait bounds.",
+        codeHtml: `<span class="kw">fn</span> <span class="fd">print_item</span><span class="punct">(</span><span class="fd">item</span><span class="punct">:</span> <span class="kw">impl</span> <span class="ty">std</span><span class="punct">::</span><span class="ty">fmt</span><span class="punct">::</span><span class="ty">Display</span><span class="punct">) {</span>
+    <span class="mac">println!</span><span class="punct">(</span><span class="str">"Item: {}"</span><span class="punct">,</span> <span class="fd">item</span><span class="punct">);</span>
+<span class="punct">}</span>`,
+        breakdown: [
+          { symbol: "impl Trait", role: "Existential Parameter Type", desc: "Syntactic shorthand accepting any concrete type implementing Display." }
+        ]
+      },
+      {
+        id: "23",
+        title: "Smart Pointers (Box & Rc)",
+        category: "DATA TYPES",
+        description: "Explicit heap allocation box allocation pointer types.",
+        codeHtml: `<span class="kw">use</span> <span class="ty">std</span><span class="punct">::</span><span class="ty">rc</span><span class="punct">::</span><span class="ty">Rc</span><span class="punct">;</span>
+
+<span class="kw">fn</span> <span class="fd">main</span><span class="punct">()</span> <span class="punct">{</span>
+    <span class="kw">let</span> <span class="fd">boxed_val</span> <span class="punct">=</span> <span class="ty">Box</span><span class="punct">::</span><span class="fd">new</span><span class="punct">(</span><span class="num">5</span><span class="punct">);</span>
+    <span class="kw">let</span> <span class="fd">shared_val</span> <span class="punct">=</span> <span class="ty">Rc</span><span class="punct">::</span><span class="fd">new</span><span class="punct">(</span><span class="num">10</span><span class="punct">);</span>
+    <span class="mac">println!</span><span class="punct">(</span><span class="str">"Box: {}, Rc: {}"</span><span class="punct">,</span> <span class="fd">boxed_val</span><span class="punct">,</span> <span class="fd">shared_val</span><span class="punct">);</span>
+<span class="punct">}</span>`,
+        breakdown: [
+          { symbol: "Box::new(5)", role: "Heap Allocation Smart Pointer", desc: "Allocates value directly on heap memory return pointer." },
+          { symbol: "Rc::new(10)", role: "Reference Counted Smart Pointer", desc: "Enables multiple read-only ownership handles in single thread context." }
+        ]
+      },
+      {
+        id: "24",
+        title: "Threads & Move Closures",
+        category: "FUNCTIONS",
+        description: "Concurrent thread spawning transferring environment ownership using move closures.",
+        codeHtml: `<span class="kw">use</span> <span class="ty">std</span><span class="punct">::</span><span class="ty">thread</span><span class="punct">;</span>
+
+<span class="kw">fn</span> <span class="fd">main</span><span class="punct">()</span> <span class="punct">{</span>
+    <span class="kw">let</span> <span class="fd">v</span> <span class="punct">=</span> <span class="mac">vec!</span><span class="punct">[</span><span class="num">1</span><span class="punct">,</span> <span class="num">2</span><span class="punct">,</span> <span class="num">3</span><span class="punct">];</span>
+    <span class="kw">let</span> <span class="fd">handle</span> <span class="punct">=</span> <span class="ty">thread</span><span class="punct">::</span><span class="fd">spawn</span><span class="punct">(</span><span class="kw">move</span> <span class="punct">|| {</span>
+        <span class="mac">println!</span><span class="punct">(</span><span class="str">"Vector from thread: {:?}"</span><span class="punct">,</span> <span class="fd">v</span><span class="punct">);</span>
+    <span class="punct">});</span>
+    <span class="fd">handle</span><span class="punct">.</span><span class="fd">join</span><span class="punct">().</span><span class="fd">unwrap</span><span class="punct">();</span>
+<span class="punct">}</span>`,
+        breakdown: [
+          { symbol: "thread::spawn(...)", role: "Thread Spawn Standard Call", desc: "Spawns new execution thread running concurrent closure." },
+          { symbol: "move ||", role: "Ownership Transfer Move Keyword", desc: "Forces closure to take full ownership of captured local variable v." },
+          { symbol: "handle.join()", role: "Thread Join Handle Method", desc: "Blocks main thread until spawned thread finishes execution." }
+        ]
+      },
+      {
+        id: "25",
+        title: "Type Conversion with From and Into",
+        category: "TRAITS",
+        description: "Safe, value-preserving conversion protocol between types.",
+        codeHtml: `<span class="kw">fn</span> <span class="fd">main</span><span class="punct">()</span> <span class="punct">{</span>
+    <span class="kw">let</span> <span class="fd">num_str</span> <span class="punct">=</span> <span class="str">"123"</span><span class="punct">;</span>
+    <span class="kw">let</span> <span class="fd">string_obj</span><span class="punct">:</span> <span class="ty">String</span> <span class="punct">=</span> <span class="ty">String</span><span class="punct">::</span><span class="fd">from</span><span class="punct">(</span><span class="fd">num_str</span><span class="punct">);</span>
+    <span class="kw">let</span> <span class="fd">into_str</span><span class="punct">:</span> <span class="ty">String</span> <span class="punct">=</span> <span class="fd">num_str</span><span class="punct">.</span><span class="fd">into</span><span class="punct">();</span>
+    <span class="mac">println!</span><span class="punct">(</span><span class="str">"{}, {}"</span><span class="punct">,</span> <span class="fd">string_obj</span><span class="punct">,</span> <span class="fd">into_str</span><span class="punct">);</span>
+<span class="punct">}</span>`,
+        breakdown: [
+          { symbol: "String::from(num_str)", role: "Explicit From Conversion Call", desc: "Calls From trait associated constructor method." },
+          { symbol: ".into()", role: "Implicit Target-Inferred Conversion", desc: "Reciprocal conversion method inferring target type from variable annotation." }
+        ]
+      }
+    ];
+
+    let currentLesson = lessons[0];
+
+    function renderNav() {
+      const navList = document.getElementById('navList');
+      navList.innerHTML = lessons.map(lesson => `
+        <li class="nav-item ${lesson.id === currentLesson.id ? 'active' : ''}" onclick="selectLesson('${lesson.id}')">
+          <span class="nav-item-title">${lesson.id}. ${lesson.title}</span>
+          <span class="nav-item-tag">${lesson.category}</span>
+        </li>
+      `).join('');
+    }
+
+    function renderContent() {
+      const container = document.getElementById('contentContainer');
+      container.innerHTML = `
+        <div class="lesson-header">
+          <span class="badge">${currentLesson.category} • LESSON ${currentLesson.id} OF 25</span>
+          <h1>${currentLesson.title}</h1>
+          <p>${currentLesson.description}</p>
+        </div>
+
+        <div class="anatomy-card">
+          <div class="code-container"><code>${currentLesson.codeHtml}</code></div>
+          <div id="nomenclature-display">Click on any highlighted code token to see its nomenclature.</div>
+
+          <h3 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 1rem; color: var(--accent-color);">
+            Language & Compiler Token Anatomy
+          </h3>
+
+          <div class="anatomy-grid">
+            ${currentLesson.breakdown.map(item => `
+              <div class="breakdown-card">
+                <div class="breakdown-header">
+                  <span class="title">${item.symbol}</span>
+                  <span class="role">${item.role}</span>
+                </div>
+                <p>${item.desc}</p>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function selectLesson(id) {
+      currentLesson = lessons.find(l => l.id === id);
+      renderNav();
+      renderContent();
+      if (window.innerWidth <= 768) {
+        toggleSidebar();
+      }
+    }
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+      document.getElementById('backdrop').classList.toggle('open');
+    }
+
+    // Initialize App
+    renderNav();
+    renderContent();
+    
+    // Precise class-to-role mapping
+    const classToRoleMap = {
+      kw: 'Keyword / Control Syntax',
+      ty: 'Type Specifier / Trait',
+      fd: 'Variable / Field Identifier',
+      str: 'String Literal Argument',
+      num: 'Numeric Literal / Constant',
+      mac: 'Macro Invocation',
+      punct: 'Punctuation / Operator Signature',
+      lt: 'Lifetime Annotation Parameter',
+      cmt: 'Documentation / Comment'
+    };
+
+    // Enhanced Click Handler for Token Nomenclature + Active State
+    document.addEventListener('click', (event) => {
+      const codeBlock = event.target.closest('.code-container');
+      if (!codeBlock) return;
+
+      const targetToken = event.target.closest('span');
+      if (!targetToken) return;
+
+      // Clear previous highlights inside this code block
+      codeBlock.querySelectorAll('span').forEach(el => el.classList.remove('active-token'));
+      targetToken.classList.add('active-token');
+
+      const codeText = (targetToken.textContent || '').trim();
+
+      // 1. Check explicit data attribute overrides
+      let nomenclature = targetToken.dataset.nomenclature || targetToken.dataset.type || null;
+
+      // 2. Search current lesson breakdown for matching exact context signature
+      if (!nomenclature && currentLesson && currentLesson.breakdown) {
+        const matched = currentLesson.breakdown.find(b => {
+          try { return b.symbol && b.symbol.includes(codeText); } catch (e) { return false; }
+        });
+        if (matched) nomenclature = matched.role;
+      }
+
+      // 3. Fallback to class role map
+      if (!nomenclature) {
+        for (const cls of Array.from(targetToken.classList || [])) {
+          if (classToRoleMap[cls]) { nomenclature = classToRoleMap[cls]; break; }
+        }
+      }
+
+      if (!nomenclature) nomenclature = targetToken.className || 'Syntax Token';
+
+      showNomenclature(codeText, nomenclature);
+    });
+
+    /** Updates the UI display with the clicked item's details. */
+    function showNomenclature(codeText, nomenclature) {
+      const displayBox = document.querySelector('#nomenclature-display');
+
+      if (displayBox) {
+        displayBox.innerHTML = `<strong>Selected:</strong> <code>${escapeHtml(codeText)}</code> — <em>${escapeHtml(nomenclature)}</em>`;
+      } else {
+        console.log(`Nomenclature for "${codeText}":`, nomenclature);
+      }
+    }
+
+    // Minimal HTML-escape helper
+    function escapeHtml(str) {
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+  </script>
+</body>
+</html>
