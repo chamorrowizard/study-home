@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rust Chapter 7: Packages, Crates, and Modules Interactive Guide</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        rust: {
+                            500: '#ce412b',
+                            600: '#b73622',
+                            400: '#e05a47'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Prism.js Tomorrow Theme CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* Glassmorphism Styles */
+        .glass-panel {
+            background: rgba(18, 24, 38, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .glass-card {
+            background: rgba(26, 34, 52, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(10, 13, 18, 0.5);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        /* Code Line Selection FX */
+        .code-row {
+            transition: background-color 0.15s ease, border-color 0.15s ease;
+        }
+        .code-row.active {
+            background-color: rgba(206, 65, 43, 0.15) !important;
+        }
+        .code-row.active .line-num {
+            color: #e05a47 !important;
+            border-right-color: #ce412b !important;
+            font-weight: 600;
+        }
+
+        /* Prism Override for Seamless Custom Gutter */
+        pre[class*="language-"] {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: transparent !important;
+            border-radius: 0 !important;
+            font-family: 'Fira Code', monospace !important;
+            font-size: 0.875rem !important;
+            line-height: 1.6 !important;
+        }
+        code[class*="language-"] {
+            font-family: 'Fira Code', monospace !important;
+            font-size: 0.875rem !important;
+            line-height: 1.6 !important;
+            background: transparent !important;
+            text-shadow: none !important;
+        }
+
+        /* Radial background ambient glow */
+        .bg-glow {
+            background-image: 
+                radial-gradient(circle at 15% 20%, rgba(206, 65, 43, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 85% 75%, rgba(16, 185, 129, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(245, 158, 11, 0.04) 0%, transparent 60%);
+        }
+    </style>
+</head>
+<body class="bg-[#0a0d12] text-slate-200 font-sans min-h-screen bg-glow flex flex-col justify-between selection:bg-rust-500/30 selection:text-rust-400">
+
+    <!-- TOP HEADER / BRANDING BAR -->
+    <header class="border-b border-white/10 glass-panel sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="p-2 bg-rust-500/10 border border-rust-500/30 rounded-lg text-rust-400">
+                    <i data-lucide="box" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="text-base font-semibold text-white tracking-wide">Rust Mastery Interactive</h1>
+                    <p class="text-xs text-slate-400 font-mono">Chapter 7: Packages, Crates, & Modules</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span>
+                    Interactive Sandbox
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN TWO-COLUMN APP CONTAINER -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 grow w-full">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+            <!-- LEFT SIDEBAR (4 Cols): Navigation & Educator Panel -->
+            <div class="lg:col-span-4 flex flex-col gap-6">
+                
+                <!-- Lesson Switcher Card -->
+                <div class="glass-panel rounded-xl p-4 shadow-xl">
+                    <h2 class="text-xs uppercase font-semibold text-slate-400 tracking-wider mb-3 flex items-center">
+                        <i data-lucide="book-open" class="w-4 h-4 mr-2 text-rust-400"></i> Module Curriculum
+                    </h2>
+                    <nav class="space-y-1.5" id="lessonList">
+                        <!-- Populated by JavaScript -->
+                    </nav>
+                </div>
+
+                <!-- Educator / Line Explanation Panel -->
+                <div class="glass-panel rounded-xl p-5 shadow-xl flex-grow flex flex-col border-rust-500/20 relative overflow-hidden">
+                    <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-rust-500/5 rounded-full blur-2xl pointer-events-none"></div>
+                    
+                    <div class="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
+                        <div class="flex items-center space-x-2">
+                            <div class="p-1.5 bg-amber-500/10 border border-amber-500/30 rounded-md text-amber-400">
+                                <i data-lucide="graduation-cap" class="w-4 h-4"></i>
+                            </div>
+                            <h3 class="text-sm font-semibold text-white">Educator Panel</h3>
+                        </div>
+                        <span id="lineIndicator" class="text-xs font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-white/5">
+                            Line --
+                        </span>
+                    </div>
+
+                    <div id="explanationContent" class="text-sm text-slate-300 leading-relaxed flex-grow flex flex-col justify-center">
+                        <!-- Populated by JS on Line Click -->
+                    </div>
+                    
+                    <div class="mt-4 pt-3 border-t border-white/5 flex items-center text-xs text-slate-500">
+                        <i data-lucide="mouse-pointer-click" class="w-3.5 h-3.5 mr-1.5 text-rust-400"></i>
+                        Click any line of code to reveal detailed breakdown.
+                    </div>
+                </div>
+            </div>
+
+            <!-- MAIN AREA (8 Cols): Content Header, Code Editor, Takeaways -->
+            <div class="lg:col-span-8 flex flex-col gap-6">
+                
+                <!-- Lesson Header Panel -->
+                <div class="glass-panel rounded-xl p-6 shadow-xl relative overflow-hidden">
+                    <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+                        <div class="flex items-center space-x-2">
+                            <span id="lessonCategory" class="px-2.5 py-1 rounded-md text-xs font-medium bg-rust-500/10 text-rust-400 border border-rust-500/20">
+                                Category
+                            </span>
+                            <span id="progressPill" class="px-2.5 py-1 rounded-md text-xs font-mono text-slate-400 bg-slate-800 border border-white/5">
+                                Lesson 1 of 4
+                            </span>
+                        </div>
+                    </div>
+                    <h2 id="lessonTitle" class="text-2xl font-bold text-white tracking-tight mb-2">
+                        Lesson Title
+                    </h2>
+                    <p id="lessonDescription" class="text-sm text-slate-300 leading-relaxed">
+                        Lesson summary description...
+                    </p>
+                </div>
+
+                <!-- Code Editor Window -->
+                <div class="glass-panel rounded-xl shadow-2xl overflow-hidden border border-white/10 flex flex-col">
+                    <!-- Mac-style Code Editor Header -->
+                    <div class="bg-[#0e131f] px-4 py-3 border-b border-white/10 flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-3 h-3 rounded-full bg-rose-500/80 inline-block"></span>
+                            <span class="w-3 h-3 rounded-full bg-amber-500/80 inline-block"></span>
+                            <span class="w-3 h-3 rounded-full bg-emerald-500/80 inline-block"></span>
+                            <span id="editorFileName" class="ml-3 font-mono text-xs text-slate-400 flex items-center">
+                                <i data-lucide="file-code" class="w-3.5 h-3.5 mr-1.5 text-slate-500"></i>
+                                src/main.rs
+                            </span>
+                        </div>
+                        <button id="copyBtn" onclick="copyCode()" class="flex items-center space-x-1.5 text-xs text-slate-400 hover:text-white px-2.5 py-1 rounded bg-slate-800/60 hover:bg-slate-700/60 border border-white/5 transition">
+                            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                            <span id="copyText">Copy Code</span>
+                        </button>
+                    </div>
+
+                    <!-- Editor Workspace: Dedicated Gutter + Code Area -->
+                    <div class="bg-[#080b11] overflow-x-auto max-h-[460px] custom-scroll">
+                        <div id="codeEditorBody" class="inline-block min-w-full align-top font-mono text-sm py-2">
+                            <!-- Populated dynamically via JavaScript line-by-line -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Key Takeaways Panel -->
+                <div class="glass-card rounded-xl p-5 shadow-lg border border-white/5">
+                    <h3 class="text-sm font-semibold text-white mb-3 flex items-center">
+                        <i data-lucide="lightbulb" class="w-4 h-4 mr-2 text-amber-400"></i> Key Takeaways
+                    </h3>
+                    <ul id="takeawaysList" class="space-y-2 text-xs sm:text-sm text-slate-300">
+                        <!-- Populated dynamically -->
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-white/10 glass-panel py-4 mt-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs text-slate-500 flex flex-col sm:flex-row justify-between items-center gap-2">
+            <div>
+                Based on <a href="https://doc.rust-lang.org/stable/book/ch07-00-managing-growing-projects-with-packages-crates-and-modules.html" target="_blank" rel="noopener" class="text-rust-400 hover:underline">The Rust Programming Language (Chapter 7)</a>
+            </div>
+            <div>
+                Interactive Rust Module System Explorer
+            </div>
+        </div>
+    </footer>
+
+    <!-- Prism JS Components for Rust Syntax Highlighting -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-rust.min.js"></script>
+
+    <!-- App JavaScript -->
+    <script>
+        // Data Store for Chapter 7 Lessons
+        const LESSONS = [
+            {
+                id: "7.1",
+                category: "7.1 Packages & Crates",
+                title: "Packages and Binary/Library Crates",
+                fileName: "Cargo.toml & src/lib.rs",
+                description: "Understand the hierarchy: A crate is the smallest unit of code compilation. A package is one or more crates that provide a set of functionality, specified by Cargo.toml.",
+                takeaways: [
+                    "A crate can be a binary crate (compiles to executable) or a library crate.",
+                    "Cargo.toml defines a package containing rules for building your crates.",
+                    "Cargo conventions: src/main.rs is the binary root; src/lib.rs is the library root."
+                ],
+                lines: [
+                    {
+                        code: "// Cargo.toml concept & default layout",
+                        note: "Chapter 7 starts with Packages and Crates. Cargo expects `src/main.rs` or `src/lib.rs` as root entry points."
+                    },
+                    {
+                        code: "pub struct Restaurant {",
+                        note: "Defining a public struct inside our library crate root (`src/lib.rs`). This forms the entry point for external modules."
+                    },
+                    {
+                        code: "    pub name: String,",
+                        note: "Making the struct public (`pub`) allows other crates to reference it, but individual fields must also be marked `pub` explicitly!"
+                    },
+                    {
+                        code: "}",
+                        note: "Closing the struct definition."
+                    },
+                    {
+                        code: "",
+                        note: "Empty space separating library layout declarations."
+                    },
+                    {
+                        code: "pub fn seat_customer() {",
+                        note: "A public library function accessible at the root crate level."
+                    },
+                    {
+                        code: "    println!(\"Welcome to the restaurant!\");",
+                        note: "Standard execution statement outputting text."
+                    },
+                    {
+                        code: "}",
+                        note: "End of seating function declaration."
+                    }
+                ]
+            },
+            {
+                id: "7.2",
+                category: "7.2 Modules & Privacy",
+                title: "Defining Modules & Privacy Scope",
+                fileName: "src/lib.rs",
+                description: "Modules let us group related code together and control privacy. By default, everything in Rust (functions, methods, structs, enums) is private to parent modules.",
+                takeaways: [
+                    "Modules are defined using the `mod` keyword and can be nested.",
+                    "Items in a parent module cannot use private items inside child modules.",
+                    "Items in child modules can use items in their ancestor modules."
+                ],
+                lines: [
+                    {
+                        code: "mod front_of_house {",
+                        note: "`mod front_of_house` defines a new module inline. It creates a privacy boundary."
+                    },
+                    {
+                        code: "    pub mod hosting {",
+                        note: "`pub mod` makes the child module accessible to the parent's scope. Without `pub`, parent code cannot see inside `hosting`."
+                    },
+                    {
+                        code: "        pub fn add_to_waitlist() {}",
+                        note: "Both the module (`hosting`) AND the function (`add_to_waitlist`) must be marked `pub` to be callable from outside."
+                    },
+                    {
+                        code: "        fn seat_at_table() {}",
+                        note: "Private function! Even though `hosting` module is public, `seat_at_table` can only be called from within `hosting`."
+                    },
+                    {
+                        code: "    }",
+                        note: "Closing the `hosting` sub-module definition."
+                    },
+                    {
+                        code: "}",
+                        note: "Closing the root `front_of_house` module."
+                    }
+                ]
+            },
+            {
+                id: "7.3",
+                category: "7.3 Referring Paths",
+                title: "Absolute vs Relative Paths & super Keyword",
+                fileName: "src/lib.rs",
+                description: "Paths refer to items in the module tree. Absolute paths start from a crate root (using `crate`), while relative paths start from the current module (using `self` or `super`).",
+                takeaways: [
+                    "Absolute paths start from `crate` (or an external crate name).",
+                    "Relative paths start from current scope or use `super` to move up one parent level.",
+                    "`super` is like starting a filesystem path with `..`."
+                ],
+                lines: [
+                    {
+                        code: "fn deliver_order() {}",
+                        note: "A helper function located directly inside the crate root."
+                    },
+                    {
+                        code: "",
+                        note: "Blank space between root items and modules."
+                    },
+                    {
+                        code: "mod back_of_house {",
+                        note: "Defining internal workings module."
+                    },
+                    {
+                        code: "    fn fix_incorrect_order() {",
+                        note: "Function inside child module needing to refer to items higher up in the module hierarchy."
+                    },
+                    {
+                        code: "        cook_order();",
+                        note: "Calling a sibling item in the same module (`back_of_house`) directly by name."
+                    },
+                    {
+                        code: "        super::deliver_order();",
+                        note: "`super::` steps out to the parent module scope (crate root here) to find `deliver_order`!"
+                    },
+                    {
+                        code: "    }",
+                        note: "End of internal logic function."
+                    },
+                    {
+                        code: "    fn cook_order() {}",
+                        note: "Sibling function within `back_of_house`."
+                    },
+                    {
+                        code: "}",
+                        note: "End of module `back_of_house`."
+                    },
+                    {
+                        code: "",
+                        note: "Blank line."
+                    },
+                    {
+                        code: "pub fn eat_at_restaurant() {",
+                        note: "Public caller function demonstrating path usage."
+                    },
+                    {
+                        code: "    // Absolute path",
+                        note: "Starts from `crate` (the root of the crate module tree)."
+                    },
+                    {
+                        code: "    crate::front_of_house::hosting::add_to_waitlist();",
+                        note: "Absolute path navigation from the absolute crate root."
+                    },
+                    {
+                        code: "}",
+                        note: "End of caller function."
+                    }
+                ]
+            },
+            {
+                id: "7.4",
+                category: "7.4 Bringing Paths in Scope",
+                title: "The 'use' Keyword, Idiomatic Imports & Nested Paths",
+                fileName: "src/lib.rs",
+                description: "Writing full paths repeatedly can feel unwieldy. The `use` keyword creates a shortcut to bring paths into local scope once.",
+                takeaways: [
+                    "`use` brings paths into scope short-hand, similar to creating a symbolic link.",
+                    "Idiomatic style: For functions, bring parent module into scope. For structs/enums/traits, specify full path.",
+                    "Combine paths with `{}` or re-export items using `pub use`."
+                ],
+                lines: [
+                    {
+                        code: "use crate::front_of_house::hosting;",
+                        note: "`use` brings `hosting` module into local scope. For functions, it's idiomatic to bring the parent module in rather than the function directly."
+                    },
+                    {
+                        code: "use std::collections::{HashMap, BTreeMap};",
+                        note: "Nested paths: Combine multiple imports sharing the same prefix on one line using curly braces `{}`."
+                    },
+                    {
+                        code: "use std::io::{self, Write};",
+                        note: "Imports `std::io` AND `std::io::Write` together cleanly using `self` inside braces."
+                    },
+                    {
+                        code: "pub use crate::front_of_house::hosting as Waitlist;",
+                        note: "`pub use` re-exports the item for external consumers! `as` renames it locally."
+                    },
+                    {
+                        code: "",
+                        note: "Separating imports from execution logic."
+                    },
+                    {
+                        code: "pub fn eat_at_restaurant() {",
+                        note: "Demonstrating simplified call syntax post-import."
+                    },
+                    {
+                        code: "    hosting::add_to_waitlist();",
+                        note: "Now we can call `hosting::add_to_waitlist()` directly without prefixing `crate::front_of_house::`!"
+                    },
+                    {
+                        code: "}",
+                        note: "Closing function block."
+                    }
+                ]
+            },
+            {
+    id: "7.5",
+    category: "7.5 Multi-File Modules",
+    title: "Separating Modules into Different Files",
+    fileName: "src/lib.rs & src/front_of_house.rs",
+    description: "As modules grow, move their definitions into separate files. Replacing a module's block body `{}` with a semicolon `;` tells Rust to look for a file named after the module.",
+    takeaways: [
+        "Declaring `mod front_of_house;` tells Rust to load code from `src/front_of_house.rs` (or `src/front_of_house/mod.rs`).",
+        "Sub-modules declared inside `front_of_house.rs` are loaded from `src/front_of_house/hosting.rs`.",
+        "The module tree hierarchy remains exactly the same—only file organization changes."
+    ],
+    lines: [
+        {
+            code: "// File: src/lib.rs",
+            note: "In the root file (`src/lib.rs`), declare the module with a semicolon instead of a `{}` block."
+        },
+        {
+            code: "mod front_of_house;",
+            note: "This tells Cargo: 'Look for code in `src/front_of_house.rs` or `src/front_of_house/mod.rs`'."
+        },
+        {
+            code: "",
+            note: "Separating root declarations from imports."
+        },
+        {
+            code: "pub use crate::front_of_house::hosting;",
+            note: "Re-exporting items works identically regardless of whether modules are in one file or split across files."
+        },
+        {
+            code: "",
+            note: "Blank line separating code files."
+        },
+        {
+            code: "// File: src/front_of_house.rs",
+            note: "Inside `src/front_of_house.rs`, you declare sub-modules."
+        },
+        {
+            code: "pub mod hosting;",
+            note: "This tells Rust to load the child module from `src/front_of_house/hosting.rs`!"
+        },
+        {
+            code: "",
+            note: "Blank line separating code files."
+        },
+        {
+            code: "// File: src/front_of_house/hosting.rs",
+            note: "Sub-module file containing the actual implementation."
+        },
+        {
+            code: "pub fn add_to_waitlist() {}",
+            note: "Finally, the actual implementation lives here in `hosting.rs`."
+        }
+    ]
+}
+        ];
+
+        // App State
+        let currentLessonIndex = 0;
+        let activeLineIndex = 0;
+
+        // Initialize App
+        document.addEventListener("DOMContentLoaded", () => {
+            renderLessonList();
+            loadLesson(0);
+            lucide.createIcons();
+        });
+
+        // Render Lesson Switcher Navigation
+        function renderLessonList() {
+            const listEl = document.getElementById("lessonList");
+            listEl.innerHTML = LESSONS.map((lesson, idx) => `
+                <button onclick="switchLesson(${idx})" class="w-full text-left p-2.5 rounded-lg border transition-all duration-150 flex items-center justify-between group ${
+                    idx === currentLessonIndex 
+                        ? 'bg-rust-500/15 border-rust-500/40 text-white shadow-sm' 
+                        : 'bg-transparent border-transparent text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
+                }">
+                    <div class="flex items-center space-x-2.5 truncate">
+                        <span class="font-mono text-xs px-2 py-0.5 rounded ${
+                            idx === currentLessonIndex ? 'bg-rust-500 text-white font-semibold' : 'bg-slate-800 text-slate-400'
+                        }">
+                            ${lesson.id}
+                        </span>
+                        <span class="text-xs sm:text-sm font-medium truncate">${lesson.title}</span>
+                    </div>
+                    <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500 group-hover:text-slate-300 transition-transform ${idx === currentLessonIndex ? 'text-rust-400 translate-x-0.5' : ''}"></i>
+                </button>
+            `).join("");
+            lucide.createIcons();
+        }
+
+        // Switch Active Lesson
+        function switchLesson(index) {
+            if (index < 0 || index >= LESSONS.length) return;
+            currentLessonIndex = index;
+            renderLessonList();
+            loadLesson(index);
+        }
+
+        // Load Lesson Content
+        function loadLesson(index) {
+            const lesson = LESSONS[index];
+            
+            // Header Info
+            document.getElementById("lessonCategory").innerText = lesson.category;
+            document.getElementById("progressPill").innerText = `Lesson ${index + 1} of ${LESSONS.length}`;
+            document.getElementById("lessonTitle").innerText = lesson.title;
+            document.getElementById("lessonDescription").innerText = lesson.description;
+            document.getElementById("editorFileName").innerText = lesson.fileName;
+
+            // Takeaways
+            const takeawaysEl = document.getElementById("takeawaysList");
+            takeawaysEl.innerHTML = lesson.takeaways.map(item => `
+                <li class="flex items-start space-x-2">
+                    <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5"></i>
+                    <span>${item}</span>
+                </li>
+            `).join("");
+
+            // Render Interactive Editor Lines
+            renderEditorLines(lesson);
+
+            // Select line 0 by default
+            selectLine(0);
+            
+            lucide.createIcons();
+        }
+
+        // Render Code Lines with Separate Custom Gutter Column
+        function renderEditorLines(lesson) {
+            const editorBody = document.getElementById("codeEditorBody");
+            
+            editorBody.innerHTML = lesson.lines.map((lineObj, idx) => {
+                // Highlight raw Rust string using Prism
+                const rawCode = lineObj.code || " ";
+                const highlighted = Prism.highlight(rawCode, Prism.languages.rust, 'rust');
+                
+                return `
+                    <div id="codeRow-${idx}" onclick="selectLine(${idx})" class="code-row flex items-stretch w-full cursor-pointer hover:bg-slate-800/40 border-l-2 border-transparent hover:border-rust-500/50">
+                        <div class="line-num select-none w-12 shrink-0 py-0.5 pr-3 text-right text-xs font-mono text-[#4b5563] bg-[#080b11] border-r border-white/5">
+                            ${idx + 1}
+                        </div>
+                        <div class="code-content py-0.5 px-4 font-mono text-xs sm:text-sm text-slate-200 overflow-x-visible whitespace-pre">
+                            ${highlighted}
+                        </div>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        // Select Specific Code Line & Update Educator Panel
+        function selectLine(index) {
+            const lesson = LESSONS[currentLessonIndex];
+            if (!lesson || !lesson.lines[index]) return;
+
+            // Update Active UI Row Highlight
+            const prevRow = document.getElementById(`codeRow-${activeLineIndex}`);
+            if (prevRow) prevRow.classList.remove("active");
+
+            activeLineIndex = index;
+            const newRow = document.getElementById(`codeRow-${index}`);
+            if (newRow) newRow.classList.add("active");
+
+            // Update Educator Panel
+            document.getElementById("lineIndicator").innerText = `Line ${index + 1}`;
+            
+            const explanationEl = document.getElementById("explanationContent");
+            const lineData = lesson.lines[index];
+
+            const codeSnippet = lineData.code.trim() 
+                ? lineData.code 
+                : "(Empty line)";
+
+            explanationEl.innerHTML = `
+                <div class="space-y-3 animate-fadeIn">
+                    <div class="p-2.5 rounded bg-slate-900/80 border border-white/5 font-mono text-xs text-rust-400 overflow-x-auto">
+                        ${escapeHtml(codeSnippet)}
+                    </div>
+                    <p class="text-slate-300 text-xs sm:text-sm leading-relaxed">
+                        ${lineData.note}
+                    </p>
+                </div>
+            `;
+        }
+
+        // Copy Code Function
+        function copyCode() {
+            const lesson = LESSONS[currentLessonIndex];
+            const fullCode = lesson.lines.map(l => l.code).join("\n");
+            
+            navigator.clipboard.writeText(fullCode).then(() => {
+                const textSpan = document.getElementById("copyText");
+                textSpan.innerText = "Copied!";
+                setTimeout(() => {
+                    textSpan.innerText = "Copy Code";
+                }, 2000);
+            });
+        }
+
+        // Utility Helper to Prevent HTML Injection in Explanation Code View
+        function escapeHtml(text) {
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
