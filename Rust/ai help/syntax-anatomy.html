@@ -228,8 +228,8 @@
     }
 
     .code-container span.active-token {
-      background-color: var(--syn-field);
-      color: #000000 !important;
+      background-color: var(--accent-color);
+      color: var(--bg-dark) !important;
       font-weight: 700;
       border-radius: 3px;
     }
@@ -904,6 +904,8 @@
 
       const targetToken = event.target.closest('span');
       if (!targetToken) return;
+      // Ensure we don't trigger active state on pure whitespace tokens
+      if (!targetToken.textContent || !targetToken.textContent.trim()) return;
 
       // Clear previous highlights inside this code block
       codeBlock.querySelectorAll('span').forEach(el => el.classList.remove('active-token'));
