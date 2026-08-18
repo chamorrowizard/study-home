@@ -1,674 +1,1144 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rust Chapter 7: Packages, Crates, and Modules Interactive Guide</title>
-    
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        rust: {
-                            500: '#ce412b',
-                            600: '#b73622',
-                            400: '#e05a47'
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        mono: ['Fira Code', 'monospace']
-                    }
-                }
-            }
-        }
-    </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rust Ch. 7 Interactive Practice: Packages, Crates & Modules</title>
+  
+  <!-- Fonts: Inter & Fira Code -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-slate: #0f172a;
+      --card-bg: #1e293b;
+      --border-color: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-blue: #38bdf8;
+      --accent-green: #22c55e;
+      --accent-red: #ef4444;
+      --code-bg: #090d16;
+    }
 
-    <!-- Prism.js Tomorrow Theme CDN -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
-    
-    <!-- Lucide Icons CDN -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-    <style>
-        /* Glassmorphism Styles */
-        .glass-panel {
-            background: rgba(18, 24, 38, 0.75);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-        
-        .glass-card {
-            background: rgba(26, 34, 52, 0.6);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
+    body {
+      background-color: var(--bg-slate);
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+      line-height: 1.6;
+      padding-top: 90px;
+      padding-bottom: 3rem;
+    }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: rgba(10, 13, 18, 0.5);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.25);
-        }
+    /* Sticky Header */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background-color: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border-color);
+      z-index: 100;
+      padding: 0.75rem 1.5rem;
+    }
 
-        /* Code Line Selection FX */
-        .code-row {
-            transition: background-color 0.15s ease, border-color 0.15s ease;
-        }
-        .code-row.active {
-            background-color: rgba(206, 65, 43, 0.15) !important;
-        }
-        .code-row.active .line-num {
-            color: #e05a47 !important;
-            border-right-color: #ce412b !important;
-            font-weight: 600;
-        }
+    .header-content {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+    }
 
-        /* Prism Override for Seamless Custom Gutter */
-        pre[class*="language-"] {
-            margin: 0 !important;
-            padding: 0 !important;
-            background: transparent !important;
-            border-radius: 0 !important;
-            font-family: 'Fira Code', monospace !important;
-            font-size: 0.875rem !important;
-            line-height: 1.6 !important;
-        }
-        code[class*="language-"] {
-            font-family: 'Fira Code', monospace !important;
-            font-size: 0.875rem !important;
-            line-height: 1.6 !important;
-            background: transparent !important;
-            text-shadow: none !important;
-        }
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
 
-        /* Radial background ambient glow */
-        .bg-glow {
-            background-image: 
-                radial-gradient(circle at 15% 20%, rgba(206, 65, 43, 0.08) 0%, transparent 40%),
-                radial-gradient(circle at 85% 75%, rgba(16, 185, 129, 0.05) 0%, transparent 40%),
-                radial-gradient(circle at 50% 50%, rgba(245, 158, 11, 0.04) 0%, transparent 60%);
-        }
-    </style>
+    .header-title h1 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .badge {
+      background-color: rgba(56, 189, 248, 0.15);
+      color: var(--accent-blue);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .progress-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      min-width: 240px;
+    }
+
+    .progress-text {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .progress-bar-container {
+      flex-grow: 1;
+      height: 8px;
+      background-color: var(--border-color);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background-color: var(--accent-blue);
+      transition: width 0.3s ease, background-color 0.3s ease;
+    }
+
+    /* Layout Containers */
+    main {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Chapter Overview */
+    .overview-card {
+      border-left: 4px solid var(--accent-blue);
+    }
+
+    .overview-card h2 {
+      font-size: 1.3rem;
+      margin-bottom: 0.5rem;
+      color: var(--accent-blue);
+    }
+
+    .overview-card p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    /* Module Cards */
+    .module-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .module-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .module-description {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-bottom: 1.25rem;
+    }
+
+    /* Terminal Practice Box */
+    .terminal-box {
+      background-color: var(--code-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .terminal-header {
+      background-color: rgba(255, 255, 255, 0.03);
+      padding: 0.5rem 0.75rem;
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .window-dots {
+      display: flex;
+      gap: 6px;
+      margin-right: 1rem;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .dot-red { background-color: #ff5f56; }
+    .dot-yellow { background-color: #ffbd2e; }
+    .dot-green { background-color: #27c93f; }
+
+    .terminal-title {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .terminal-body {
+      padding: 1rem;
+    }
+
+    .target-prompt {
+      margin-bottom: 0.75rem;
+    }
+
+    .prompt-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 0.25rem;
+    }
+
+    code, input.code-input {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.9rem;
+    }
+
+    .target-code {
+      display: block;
+      background-color: rgba(255, 255, 255, 0.05);
+      padding: 0.5rem 0.75rem;
+      border-radius: 4px;
+      color: var(--accent-blue);
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* Input Field & Feedback States */
+    .input-wrapper {
+      position: relative;
+    }
+
+    input.code-input {
+      width: 100%;
+      background-color: #030712;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 0.6rem 0.75rem;
+      border-radius: 4px;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    input.code-input:focus {
+      border-color: var(--accent-blue);
+    }
+
+    /* Validation States */
+    input.code-input.is-invalid {
+      border-color: var(--accent-red);
+      box-shadow: 0 0 0 1px var(--accent-red);
+    }
+
+    input.code-input.is-valid {
+      border-color: var(--accent-green);
+      box-shadow: 0 0 0 1px var(--accent-green);
+      background-color: rgba(34, 197, 94, 0.05);
+    }
+
+    .feedback-status {
+      font-size: 0.75rem;
+      margin-top: 0.4rem;
+      min-height: 1.1rem;
+      font-family: 'Fira Code', monospace;
+    }
+
+    .feedback-status.error { color: var(--accent-red); }
+    .feedback-status.success { color: var(--accent-green); }
+
+    /* Responsive Adjustments */
+    @media (max-width: 640px) {
+      body { padding-top: 110px; }
+      .header-content { flex-direction: column; align-items: flex-start; }
+      .progress-wrapper { width: 100%; }
+    }
+  </style>
 </head>
-<body class="bg-[#0a0d12] text-slate-200 font-sans min-h-screen bg-glow flex flex-col justify-between selection:bg-rust-500/30 selection:text-rust-400">
+<body>
 
-    <!-- TOP HEADER / BRANDING BAR -->
-    <header class="border-b border-white/10 glass-panel sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <div class="p-2 bg-rust-500/10 border border-rust-500/30 rounded-lg text-rust-400">
-                    <i data-lucide="box" class="w-6 h-6"></i>
-                </div>
-                <div>
-                    <h1 class="text-base font-semibold text-white tracking-wide">Rust Mastery Interactive</h1>
-                    <p class="text-xs text-slate-400 font-mono">Chapter 7: Packages, Crates, & Modules</p>
-                </div>
-            </div>
-            <div class="flex items-center space-x-4">
-                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span>
-                    Interactive Sandbox
-                </span>
-            </div>
+  <!-- Sticky Header -->
+  <header>
+    <div class="header-content">
+      <div class="header-title">
+        <h1>Rust Module System</h1>
+        <span class="badge">Ch 7.1–7.5</span>
+      </div>
+      <div class="progress-wrapper">
+        <span id="progress-text" class="progress-text">0 / 0 Completed</span>
+        <div class="progress-bar-container">
+          <div id="progress-bar" class="progress-bar-fill"></div>
         </div>
-    </header>
+      </div>
+    </div>
+  </header>
 
-    <!-- MAIN TWO-COLUMN APP CONTAINER -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 grow w-full">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+  <main>
+    <!-- Overview Card -->
+    <section class="card overview-card">
+      <h2>Chapter 7 Overview: Managing Growing Projects</h2>
+      <p>
+        Rust provides a comprehensive module system to manage code scope, privacy, and organization across projects. Master Packages, Crates, Modules, Paths, and file separation to build scalable, encapsulated software.
+      </p>
+    </section>
 
-            <!-- LEFT SIDEBAR (4 Cols): Navigation & Educator Panel -->
-            <div class="lg:col-span-4 flex flex-col gap-6">
-                
-                <!-- Lesson Switcher Card -->
-                <div class="glass-panel rounded-xl p-4 shadow-xl">
-                    <h2 class="text-xs uppercase font-semibold text-slate-400 tracking-wider mb-3 flex items-center">
-                        <i data-lucide="book-open" class="w-4 h-4 mr-2 text-rust-400"></i> Module Curriculum
-                    </h2>
-                    <nav class="space-y-1.5" id="lessonList">
-                        <!-- Populated by JavaScript -->
-                    </nav>
-                </div>
-
-                <!-- Educator / Line Explanation Panel -->
-                <div class="glass-panel rounded-xl p-5 shadow-xl flex-grow flex flex-col border-rust-500/20 relative overflow-hidden">
-                    <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-rust-500/5 rounded-full blur-2xl pointer-events-none"></div>
-                    
-                    <div class="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
-                        <div class="flex items-center space-x-2">
-                            <div class="p-1.5 bg-amber-500/10 border border-amber-500/30 rounded-md text-amber-400">
-                                <i data-lucide="graduation-cap" class="w-4 h-4"></i>
-                            </div>
-                            <h3 class="text-sm font-semibold text-white">Educator Panel</h3>
-                        </div>
-                        <span id="lineIndicator" class="text-xs font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-white/5">
-                            Line --
-                        </span>
-                    </div>
-
-                    <div id="explanationContent" class="text-sm text-slate-300 leading-relaxed flex-grow flex flex-col justify-center">
-                        <!-- Populated by JS on Line Click -->
-                    </div>
-                    
-                    <div class="mt-4 pt-3 border-t border-white/5 flex items-center text-xs text-slate-500">
-                        <i data-lucide="mouse-pointer-click" class="w-3.5 h-3.5 mr-1.5 text-rust-400"></i>
-                        Click any line of code to reveal detailed breakdown.
-                    </div>
-                </div>
-            </div>
-
-            <!-- MAIN AREA (8 Cols): Content Header, Code Editor, Takeaways -->
-            <div class="lg:col-span-8 flex flex-col gap-6">
-                
-                <!-- Lesson Header Panel -->
-                <div class="glass-panel rounded-xl p-6 shadow-xl relative overflow-hidden">
-                    <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
-                        <div class="flex items-center space-x-2">
-                            <span id="lessonCategory" class="px-2.5 py-1 rounded-md text-xs font-medium bg-rust-500/10 text-rust-400 border border-rust-500/20">
-                                Category
-                            </span>
-                            <span id="progressPill" class="px-2.5 py-1 rounded-md text-xs font-mono text-slate-400 bg-slate-800 border border-white/5">
-                                Lesson 1 of 4
-                            </span>
-                        </div>
-                    </div>
-                    <h2 id="lessonTitle" class="text-2xl font-bold text-white tracking-tight mb-2">
-                        Lesson Title
-                    </h2>
-                    <p id="lessonDescription" class="text-sm text-slate-300 leading-relaxed">
-                        Lesson summary description...
-                    </p>
-                </div>
-
-                <!-- Code Editor Window -->
-                <div class="glass-panel rounded-xl shadow-2xl overflow-hidden border border-white/10 flex flex-col">
-                    <!-- Mac-style Code Editor Header -->
-                    <div class="bg-[#0e131f] px-4 py-3 border-b border-white/10 flex items-center justify-between">
-                        <div class="flex items-center space-x-2">
-                            <span class="w-3 h-3 rounded-full bg-rose-500/80 inline-block"></span>
-                            <span class="w-3 h-3 rounded-full bg-amber-500/80 inline-block"></span>
-                            <span class="w-3 h-3 rounded-full bg-emerald-500/80 inline-block"></span>
-                            <span id="editorFileName" class="ml-3 font-mono text-xs text-slate-400 flex items-center">
-                                <i data-lucide="file-code" class="w-3.5 h-3.5 mr-1.5 text-slate-500"></i>
-                                src/main.rs
-                            </span>
-                        </div>
-                        <button id="copyBtn" onclick="copyCode()" class="flex items-center space-x-1.5 text-xs text-slate-400 hover:text-white px-2.5 py-1 rounded bg-slate-800/60 hover:bg-slate-700/60 border border-white/5 transition">
-                            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
-                            <span id="copyText">Copy Code</span>
-                        </button>
-                    </div>
-
-                    <!-- Editor Workspace: Dedicated Gutter + Code Area -->
-                    <div class="bg-[#080b11] overflow-x-auto max-h-[460px] custom-scroll">
-                        <div id="codeEditorBody" class="inline-block min-w-full align-top font-mono text-sm py-2">
-                            <!-- Populated dynamically via JavaScript line-by-line -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Key Takeaways Panel -->
-                <div class="glass-card rounded-xl p-5 shadow-lg border border-white/5">
-                    <h3 class="text-sm font-semibold text-white mb-3 flex items-center">
-                        <i data-lucide="lightbulb" class="w-4 h-4 mr-2 text-amber-400"></i> Key Takeaways
-                    </h3>
-                    <ul id="takeawaysList" class="space-y-2 text-xs sm:text-sm text-slate-300">
-                        <!-- Populated dynamically -->
-                    </ul>
-                </div>
-
-            </div>
+    <!-- Module 1: Packages and Crates -->
+    <article class="card">
+      <div class="module-header">
+        <h3 class="module-title">7.1 Packages and Crates</h3>
+        <span class="badge">Cargo & Compilation</span>
+      </div>
+      <p class="module-description">
+        A <strong>crate</strong> is the smallest unit of code the Rust compiler considers at a time (producing a binary or library). A <strong>package</strong> contains a <code>Cargo.toml</code> file that describes how to build one or more crates. Write a Cargo command to initialize a new binary package.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+          <span class="terminal-title">bash — terminal</span>
         </div>
-    </main>
-
-    <!-- FOOTER -->
-    <footer class="border-t border-white/10 glass-panel py-4 mt-8">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs text-slate-500 flex flex-col sm:flex-row justify-between items-center gap-2">
-            <div>
-                Based on <a href="https://doc.rust-lang.org/stable/book/ch07-00-managing-growing-projects-with-packages-crates-and-modules.html" target="_blank" rel="noopener" class="text-rust-400 hover:underline">The Rust Programming Language (Chapter 7)</a>
-            </div>
-            <div>
-                Interactive Rust Module System Explorer
-            </div>
+        <div class="terminal-body">
+          <div class="target-prompt">
+            <div class="prompt-label">Target Prompt</div>
+            <code class="target-code">cargo new my_project</code>
+          </div>
+          <div class="input-wrapper">
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="cargo new my_project" 
+              placeholder="Type command here..." 
+              spellcheck="false"
+              autocomplete="off"
+            />
+            <div class="feedback-status"></div>
+          </div>
         </div>
-    </footer>
+      </div>
+    </article>
 
-    <!-- Prism JS Components for Rust Syntax Highlighting -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-rust.min.js"></script>
+    <!-- Module 2: Defining Modules -->
+    <article class="card">
+      <div class="module-header">
+        <h3 class="module-title">7.2 Defining Modules for Scope & Privacy</h3>
+        <span class="badge">Modules</span>
+      </div>
+      <p class="module-description">
+        Modules organize code within a crate for readability and ease of reuse. Everything in Rust is private by default. Define an inline <code>front_of_house</code> module containing a public sub-module <code>hosting</code>.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+          <span class="terminal-title">src/lib.rs</span>
+        </div>
+        <div class="terminal-body">
+          <div class="target-prompt">
+            <div class="prompt-label">Target Prompt</div>
+            <code class="target-code">mod front_of_house { pub mod hosting {} }</code>
+          </div>
+          <div class="input-wrapper">
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="mod front_of_house { pub mod hosting {} }" 
+              placeholder="Type code here..." 
+              spellcheck="false"
+              autocomplete="off"
+            />
+            <div class="feedback-status"></div>
+          </div>
+        </div>
+      </div>
+    </article>
 
-    <!-- App JavaScript -->
-    <script>
-        // Data Store for Chapter 7 Lessons
-        const LESSONS = [
-            {
-                id: "7.1",
-                category: "7.1 Packages & Crates",
-                title: "Packages and Binary/Library Crates",
-                fileName: "Cargo.toml & src/lib.rs",
-                description: "Understand the hierarchy: A crate is the smallest unit of code compilation. A package is one or more crates that provide a set of functionality, specified by Cargo.toml.",
-                takeaways: [
-                    "A crate can be a binary crate (compiles to executable) or a library crate.",
-                    "Cargo.toml defines a package containing rules for building your crates.",
-                    "Cargo conventions: src/main.rs is the binary root; src/lib.rs is the library root."
-                ],
-                lines: [
-                    {
-                        code: "// Cargo.toml concept & default layout",
-                        note: "Chapter 7 starts with Packages and Crates. Cargo expects `src/main.rs` or `src/lib.rs` as root entry points."
-                    },
-                    {
-                        code: "pub struct Restaurant {",
-                        note: "Defining a public struct inside our library crate root (`src/lib.rs`). This forms the entry point for external modules."
-                    },
-                    {
-                        code: "    pub name: String,",
-                        note: "Making the struct public (`pub`) allows other crates to reference it, but individual fields must also be marked `pub` explicitly!"
-                    },
-                    {
-                        code: "}",
-                        note: "Closing the struct definition."
-                    },
-                    {
-                        code: "",
-                        note: "Empty space separating library layout declarations."
-                    },
-                    {
-                        code: "pub fn seat_customer() {",
-                        note: "A public library function accessible at the root crate level."
-                    },
-                    {
-                        code: "    println!(\"Welcome to the restaurant!\");",
-                        note: "Standard execution statement outputting text."
-                    },
-                    {
-                        code: "}",
-                        note: "End of seating function declaration."
-                    }
-                ]
-            },
-            {
-                id: "7.2",
-                category: "7.2 Modules & Privacy",
-                title: "Defining Modules & Privacy Scope",
-                fileName: "src/lib.rs",
-                description: "Modules let us group related code together and control privacy. By default, everything in Rust (functions, methods, structs, enums) is private to parent modules.",
-                takeaways: [
-                    "Modules are defined using the `mod` keyword and can be nested.",
-                    "Items in a parent module cannot use private items inside child modules.",
-                    "Items in child modules can use items in their ancestor modules."
-                ],
-                lines: [
-                    {
-                        code: "mod front_of_house {",
-                        note: "`mod front_of_house` defines a new module inline. It creates a privacy boundary."
-                    },
-                    {
-                        code: "    pub mod hosting {",
-                        note: "`pub mod` makes the child module accessible to the parent's scope. Without `pub`, parent code cannot see inside `hosting`."
-                    },
-                    {
-                        code: "        pub fn add_to_waitlist() {}",
-                        note: "Both the module (`hosting`) AND the function (`add_to_waitlist`) must be marked `pub` to be callable from outside."
-                    },
-                    {
-                        code: "        fn seat_at_table() {}",
-                        note: "Private function! Even though `hosting` module is public, `seat_at_table` can only be called from within `hosting`."
-                    },
-                    {
-                        code: "    }",
-                        note: "Closing the `hosting` sub-module definition."
-                    },
-                    {
-                        code: "}",
-                        note: "Closing the root `front_of_house` module."
-                    }
-                ]
-            },
-            {
-                id: "7.3",
-                category: "7.3 Referring Paths",
-                title: "Absolute vs Relative Paths & super Keyword",
-                fileName: "src/lib.rs",
-                description: "Paths refer to items in the module tree. Absolute paths start from a crate root (using `crate`), while relative paths start from the current module (using `self` or `super`).",
-                takeaways: [
-                    "Absolute paths start from `crate` (or an external crate name).",
-                    "Relative paths start from current scope or use `super` to move up one parent level.",
-                    "`super` is like starting a filesystem path with `..`."
-                ],
-                lines: [
-                    {
-                        code: "fn deliver_order() {}",
-                        note: "A helper function located directly inside the crate root."
-                    },
-                    {
-                        code: "",
-                        note: "Blank space between root items and modules."
-                    },
-                    {
-                        code: "mod back_of_house {",
-                        note: "Defining internal workings module."
-                    },
-                    {
-                        code: "    fn fix_incorrect_order() {",
-                        note: "Function inside child module needing to refer to items higher up in the module hierarchy."
-                    },
-                    {
-                        code: "        cook_order();",
-                        note: "Calling a sibling item in the same module (`back_of_house`) directly by name."
-                    },
-                    {
-                        code: "        super::deliver_order();",
-                        note: "`super::` steps out to the parent module scope (crate root here) to find `deliver_order`!"
-                    },
-                    {
-                        code: "    }",
-                        note: "End of internal logic function."
-                    },
-                    {
-                        code: "    fn cook_order() {}",
-                        note: "Sibling function within `back_of_house`."
-                    },
-                    {
-                        code: "}",
-                        note: "End of module `back_of_house`."
-                    },
-                    {
-                        code: "",
-                        note: "Blank line."
-                    },
-                    {
-                        code: "pub fn eat_at_restaurant() {",
-                        note: "Public caller function demonstrating path usage."
-                    },
-                    {
-                        code: "    // Absolute path",
-                        note: "Starts from `crate` (the root of the crate module tree)."
-                    },
-                    {
-                        code: "    crate::front_of_house::hosting::add_to_waitlist();",
-                        note: "Absolute path navigation from the absolute crate root."
-                    },
-                    {
-                        code: "}",
-                        note: "End of caller function."
-                    }
-                ]
-            },
-            {
-                id: "7.4",
-                category: "7.4 Bringing Paths in Scope",
-                title: "The 'use' Keyword, Idiomatic Imports & Nested Paths",
-                fileName: "src/lib.rs",
-                description: "Writing full paths repeatedly can feel unwieldy. The `use` keyword creates a shortcut to bring paths into local scope once.",
-                takeaways: [
-                    "`use` brings paths into scope short-hand, similar to creating a symbolic link.",
-                    "Idiomatic style: For functions, bring parent module into scope. For structs/enums/traits, specify full path.",
-                    "Combine paths with `{}` or re-export items using `pub use`."
-                ],
-                lines: [
-                    {
-                        code: "use crate::front_of_house::hosting;",
-                        note: "`use` brings `hosting` module into local scope. For functions, it's idiomatic to bring the parent module in rather than the function directly."
-                    },
-                    {
-                        code: "use std::collections::{HashMap, BTreeMap};",
-                        note: "Nested paths: Combine multiple imports sharing the same prefix on one line using curly braces `{}`."
-                    },
-                    {
-                        code: "use std::io::{self, Write};",
-                        note: "Imports `std::io` AND `std::io::Write` together cleanly using `self` inside braces."
-                    },
-                    {
-                        code: "pub use crate::front_of_house::hosting as Waitlist;",
-                        note: "`pub use` re-exports the item for external consumers! `as` renames it locally."
-                    },
-                    {
-                        code: "",
-                        note: "Separating imports from execution logic."
-                    },
-                    {
-                        code: "pub fn eat_at_restaurant() {",
-                        note: "Demonstrating simplified call syntax post-import."
-                    },
-                    {
-                        code: "    hosting::add_to_waitlist();",
-                        note: "Now we can call `hosting::add_to_waitlist()` directly without prefixing `crate::front_of_house::`!"
-                    },
-                    {
-                        code: "}",
-                        note: "Closing function block."
-                    }
-                ]
-            },
-            {
-    id: "7.5",
-    category: "7.5 Multi-File Modules",
-    title: "Separating Modules into Different Files",
-    fileName: "src/lib.rs & src/front_of_house.rs",
-    description: "As modules grow, move their definitions into separate files. Replacing a module's block body `{}` with a semicolon `;` tells Rust to look for a file named after the module.",
-    takeaways: [
-        "Declaring `mod front_of_house;` tells Rust to load code from `src/front_of_house.rs` (or `src/front_of_house/mod.rs`).",
-        "Sub-modules declared inside `front_of_house.rs` are loaded from `src/front_of_house/hosting.rs`.",
-        "The module tree hierarchy remains exactly the same—only file organization changes."
-    ],
-    lines: [
-        {
-            code: "// File: src/lib.rs",
-            note: "In the root file (`src/lib.rs`), declare the module with a semicolon instead of a `{}` block."
-        },
-        {
-            code: "mod front_of_house;",
-            note: "This tells Cargo: 'Look for code in `src/front_of_house.rs` or `src/front_of_house/mod.rs`'."
-        },
-        {
-            code: "",
-            note: "Separating root declarations from imports."
-        },
-        {
-            code: "pub use crate::front_of_house::hosting;",
-            note: "Re-exporting items works identically regardless of whether modules are in one file or split across files."
-        },
-        {
-            code: "",
-            note: "Blank line separating code files."
-        },
-        {
-            code: "// File: src/front_of_house.rs",
-            note: "Inside `src/front_of_house.rs`, you declare sub-modules."
-        },
-        {
-            code: "pub mod hosting;",
-            note: "This tells Rust to load the child module from `src/front_of_house/hosting.rs`!"
-        },
-        {
-            code: "",
-            note: "Blank line separating code files."
-        },
-        {
-            code: "// File: src/front_of_house/hosting.rs",
-            note: "Sub-module file containing the actual implementation."
-        },
-        {
-            code: "pub fn add_to_waitlist() {}",
-            note: "Finally, the actual implementation lives here in `hosting.rs`."
+    <!-- Module 3: Absolute & Relative Paths -->
+    <article class="card">
+      <div class="module-header">
+        <h3 class="module-title">7.3 Referencing Items with Paths</h3>
+        <span class="badge">Paths</span>
+      </div>
+      <p class="module-description">
+        Paths navigate the module tree. An <strong>absolute path</strong> starts from the crate root using <code>crate</code>. A <strong>relative path</strong> starts from the current module using <code>self</code> or <code>super</code>. Call the public function <code>add_to_waitlist()</code> inside <code>hosting</code> using an absolute path.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+          <span class="terminal-title">src/lib.rs</span>
+        </div>
+        <div class="terminal-body">
+          <div class="target-prompt">
+            <div class="prompt-label">Target Prompt</div>
+            <code class="target-code">crate::front_of_house::hosting::add_to_waitlist();</code>
+          </div>
+          <div class="input-wrapper">
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="crate::front_of_house::hosting::add_to_waitlist();" 
+              placeholder="Type path call here..." 
+              spellcheck="false"
+              autocomplete="off"
+            />
+            <div class="feedback-status"></div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Module 4: The use Keyword & Re-exporting -->
+    <article class="card">
+      <div class="module-header">
+        <h3 class="module-title">7.4 Bringing Paths into Scope & Re-exporting</h3>
+        <span class="badge">use & pub use</span>
+      </div>
+      <p class="module-description">
+        The <code>use</code> keyword creates shortcuts to items in scope. Adding <code>pub use</code> re-exports the item, allowing external code to access it as if it were defined directly in that scope. Re-export <code>hosting</code> publicly.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+          <span class="terminal-title">src/lib.rs</span>
+        </div>
+        <div class="terminal-body">
+          <div class="target-prompt">
+            <div class="prompt-label">Target Prompt</div>
+            <code class="target-code">pub use crate::front_of_house::hosting;</code>
+          </div>
+          <div class="input-wrapper">
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="pub use crate::front_of_house::hosting;" 
+              placeholder="Type re-export statement..." 
+              spellcheck="false"
+              autocomplete="off"
+            />
+            <div class="feedback-status"></div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Module 5: Separating Modules into Files -->
+    <article class="card">
+      <div class="module-header">
+        <h3 class="module-title">7.5 Separating Modules into Different Files</h3>
+        <span class="badge">File System</span>
+      </div>
+      <p class="module-description">
+        As modules grow, move their definitions into separate files. Declaring <code>mod front_of_house;</code> in <code>src/lib.rs</code> tells Rust to load the module contents from <code>src/front_of_house.rs</code> or <code>src/front_of_house/mod.rs</code>. Declare the external module.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+          <span class="terminal-title">src/lib.rs</span>
+        </div>
+        <div class="terminal-body">
+          <div class="target-prompt">
+            <div class="prompt-label">Target Prompt</div>
+            <code class="target-code">mod front_of_house;</code>
+          </div>
+          <div class="input-wrapper">
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="mod front_of_house;" 
+              placeholder="Type module declaration..." 
+              spellcheck="false"
+              autocomplete="off"
+            />
+            <div class="feedback-status"></div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Module 6: Restricted Visibility with pub(crate) -->
+    <article class="card">
+      <div class="module-header">
+        <h3 class="module-title">7.6 Crate-Wide Visibility with pub(crate)</h3>
+        <span class="badge">Visibility</span>
+      </div>
+      <p class="module-description">
+        Sometimes an item needs to be accessible across different modules inside your library, but kept hidden from external consumers. Using <code>pub(crate)</code> restricts visibility strictly to the current crate boundaries.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+          <span class="terminal-title">src/db/connection.rs</span>
+        </div>
+        <div class="terminal-body">
+          <div class="target-prompt">
+            <div class="prompt-label">Target Prompt</div>
+            <code class="target-code">pub(crate) fn connect_internal() {}</code>
+          </div>
+          <div class="input-wrapper">
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="pub(crate) fn connect_internal() {}" 
+              placeholder="Type internal crate function..." 
+              spellcheck="false"
+              autocomplete="off"
+            />
+            <div class="feedback-status"></div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Module 7: Parent Visibility with pub(super) -->
+    <article class="card">
+      <div class="module-header">
+        <h3 class="module-title">7.7 Parent Module Access with pub(super)</h3>
+        <span class="badge">Visibility</span>
+      </div>
+      <p class="module-description">
+        To make a helper function visible only to its immediate parent module (and sibling sub-modules), use <code>pub(super)</code>. This limits exposure while maintaining clean internal encapsulation.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+          <span class="terminal-title">src/auth/crypto/keys.rs</span>
+        </div>
+        <div class="terminal-body">
+          <div class="target-prompt">
+            <div class="prompt-label">Target Prompt</div>
+            <code class="target-code">pub(super) fn validate_key() {}</code>
+          </div>
+          <div class="input-wrapper">
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="pub(super) fn validate_key() {}" 
+              placeholder="Type parent-visible function..." 
+              spellcheck="false"
+              autocomplete="off"
+            />
+            <div class="feedback-status"></div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Module 8: Struct Field Encapsulation -->
+    <article class="card">
+      <div class="module-header">
+        <h3 class="module-title">7.8 Struct Field Visibility & Constructor Patterns</h3>
+        <span class="badge">Encapsulation</span>
+      </div>
+      <p class="module-description">
+        Making a struct <code>pub</code> does <strong>not</strong> make its fields public. Private fields force external code to use public constructor methods like <code>new()</code>, upholding invariant rules. Declare a struct with a public field and a private field.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+          <span class="terminal-title">src/models/user.rs</span>
+        </div>
+        <div class="terminal-body">
+          <div class="target-prompt">
+            <div class="prompt-label">Target Prompt</div>
+            <code class="target-code">pub struct User { pub name: String, hashed_pass: String }</code>
+          </div>
+          <div class="input-wrapper">
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="pub struct User { pub name: String, hashed_pass: String }" 
+              placeholder="Type struct with mixed visibility..." 
+              spellcheck="false"
+              autocomplete="off"
+            />
+            <div class="feedback-status"></div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Module 9: Nested & Self Imports -->
+    <article class="card">
+      <div class="module-header">
+        <h3 class="module-title">7.9 Nested Import Paths & Self References</h3>
+        <span class="badge">Imports</span>
+      </div>
+      <p class="module-description">
+        To keep import sections readable and satisfy <code>clippy</code>, group items from the same crate using nested paths. Combine importing a module itself alongside its child sub-items using the <code>self</code> keyword.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+          <span class="terminal-title">src/main.rs</span>
+        </div>
+        <div class="terminal-body">
+          <div class="target-prompt">
+            <div class="prompt-label">Target Prompt</div>
+            <code class="target-code">use std::io::{self, Read, Write};</code>
+          </div>
+          <div class="input-wrapper">
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="use std::io::{self, Read, Write};" 
+              placeholder="Type nested import statement..." 
+              spellcheck="false"
+              autocomplete="off"
+            />
+            <div class="feedback-status"></div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Module 10: The Prelude Pattern -->
+    <article class="card">
+      <div class="module-header">
+        <h3 class="module-title">7.10 Ergonomic Library Design: The Prelude Pattern</h3>
+        <span class="badge">Architecture</span>
+      </div>
+      <p class="module-description">
+        Large Rust libraries (like `tokio` or `serde`) re-export core traits and types inside a <code>prelude</code> module. Consumers can import everything they need for standard library usage with a single wildcard import.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+          <span class="terminal-title">src/lib.rs</span>
+        </div>
+        <div class="terminal-body">
+          <div class="target-prompt">
+            <div class="prompt-label">Target Prompt</div>
+            <code class="target-code">pub use crate::prelude::*;</code>
+          </div>
+          <div class="input-wrapper">
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="pub use crate::prelude::*;" 
+              placeholder="Type prelude glob re-export..." 
+              spellcheck="false"
+              autocomplete="off"
+            />
+            <div class="feedback-status"></div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Module 11: Multi-Crate Cargo Workspaces -->
+    <article class="card">
+      <div class="module-header">
+        <h3 class="module-title">7.11 Multi-Crate Architecture with Cargo Workspaces</h3>
+        <span class="badge">Cargo Workspaces</span>
+      </div>
+      <p class="module-description">
+        Large projects split code into multiple co-dependent crates managed under a single root <code>Cargo.toml</code>. Define a workspace containing <code>api</code> and <code>core</code> crates.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+          <span class="terminal-title">Cargo.toml</span>
+        </div>
+        <div class="terminal-body">
+          <div class="target-prompt">
+            <div class="prompt-label">Target Prompt</div>
+            <code class="target-code">[workspace] members = ["crates/api", "crates/core"]</code>
+          </div>
+          <div class="input-wrapper">
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="[workspace] members = [&quot;crates/api&quot;, &quot;crates/core&quot;]" 
+              placeholder="Type workspace definition..." 
+              spellcheck="false"
+              autocomplete="off"
+            />
+            <div class="feedback-status"></div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Module 12: Disambiguating Imports with as -->
+    <article class="card">
+      <div class="module-header">
+        <h3 class="module-title">7.12 Resolving Naming Conflicts with the as Keyword</h3>
+        <span class="badge">Aliasing</span>
+      </div>
+      <p class="module-description">
+        When importing types with identical names from different modules (e.g., <code>std::fmt::Result</code> and <code>std::io::Result</code>), use the <code>as</code> keyword to alias one locally and prevent collisions.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+          <span class="terminal-title">src/main.rs</span>
+        </div>
+        <div class="terminal-body">
+          <div class="target-prompt">
+            <div class="prompt-label">Target Prompt</div>
+            <code class="target-code">use std::fmt::Result as FmtResult;</code>
+          </div>
+          <div class="input-wrapper">
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="use std::fmt::Result as FmtResult;" 
+              placeholder="Type import alias with as..." 
+              spellcheck="false"
+              autocomplete="off"
+            />
+            <div class="feedback-status"></div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Module 13: Modern File Path Layout -->
+    <article class="card">
+      <div class="module-header">
+        <h3 class="module-title">7.13 Modern Directory Layout (2018+ Edition Rules)</h3>
+        <span class="badge">Idiomatic Layout</span>
+      </div>
+      <p class="module-description">
+        In modern Rust, avoid cluttering directories with <code>mod.rs</code> files. Instead, create <code>src/auth.rs</code> alongside a matching folder <code>src/auth/</code> for sub-modules. Declare sub-module <code>tokens</code> inside <code>src/auth.rs</code>.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+          <span class="terminal-title">src/auth.rs</span>
+        </div>
+        <div class="terminal-body">
+          <div class="target-prompt">
+            <div class="prompt-label">Target Prompt</div>
+            <code class="target-code">pub mod tokens;</code>
+          </div>
+          <div class="input-wrapper">
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="pub mod tokens;" 
+              placeholder="Type nested sub-module declaration..." 
+              spellcheck="false"
+              autocomplete="off"
+            />
+            <div class="feedback-status"></div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Module 14: Restricting Module Scopes to Parents -->
+    <article class="card">
+      <div class="module-header">
+        <h3 class="module-title">7.14 Specific Ancestor Visibility with pub(in path)</h3>
+        <span class="badge">Advanced Privacy</span>
+      </div>
+      <p class="module-description">
+        For granular access control in complex module trees, <code>pub(in crate::path)</code> restricts visibility strictly to a designated ancestor module and its children.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+          <span class="terminal-title">src/network/protocol/secret.rs</span>
+        </div>
+        <div class="terminal-body">
+          <div class="target-prompt">
+            <div class="prompt-label">Target Prompt</div>
+            <code class="target-code">pub(in crate::network) fn handshake() {}</code>
+          </div>
+          <div class="input-wrapper">
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="pub(in crate::network) fn handshake() {}" 
+              placeholder="Type ancestor-restricted function..." 
+              spellcheck="false"
+              autocomplete="off"
+            />
+            <div class="feedback-status"></div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Module 15: External Crate Imports -->
+    <article class="card">
+      <div class="module-header">
+        <h3 class="module-title">7.15 Third-Party Dependencies & The Glob Operator</h3>
+        <span class="badge">External Crates</span>
+      </div>
+      <p class="module-description">
+        External crates declared in <code>Cargo.toml</code> are automatically available in your root scope. Import third-party items using absolute crate roots or glob wildcard patterns (commonly used in tests).
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+          <span class="terminal-title">tests/integration_test.rs</span>
+        </div>
+        <div class="terminal-body">
+          <div class="target-prompt">
+            <div class="prompt-label">Target Prompt</div>
+            <code class="target-code">use my_crate::*;</code>
+          </div>
+          <div class="input-wrapper">
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="use my_crate::*;" 
+              placeholder="Type glob import statement..." 
+              spellcheck="false"
+              autocomplete="off"
+            />
+            <div class="feedback-status"></div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Module 16: Macro Scoping & Exports -->
+    <article class="card">
+      <div class="module-header">
+        <h3 class="module-title">7.16 Macro Scoping & #[macro_export]</h3>
+        <span class="badge">Macros</span>
+      </div>
+      <p class="module-description">
+        Declarative macros (<code>macro_rules!</code>) do not follow standard module visibility rules. To export a macro to the root of the crate (making it accessible externally), decorate it with the <code>#[macro_export]</code> attribute.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+          <span class="terminal-title">src/macros.rs</span>
+        </div>
+        <div class="terminal-body">
+          <div class="target-prompt">
+            <div class="prompt-label">Target Prompt</div>
+            <code class="target-code">#[macro_export] macro_rules! my_log { () => {}; }</code>
+          </div>
+          <div class="input-wrapper">
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="#[macro_export] macro_rules! my_log { () => {}; }" 
+              placeholder="Type macro export definition..." 
+              spellcheck="false"
+              autocomplete="off"
+            />
+            <div class="feedback-status"></div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Module 17: Conditional Compilation by Module -->
+    <article class="card">
+      <div class="module-header">
+        <h3 class="module-title">7.17 Conditional Module Compilation with #[cfg]</h3>
+        <span class="badge">Compilation</span>
+      </div>
+      <p class="module-description">
+        You can conditionally compile entire modules based on target OS, architecture, or Cargo features. Use <code>#[cfg(test)]</code> to compile inline unit test modules only when running <code>cargo test</code>.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+          <span class="terminal-title">src/lib.rs</span>
+        </div>
+        <div class="terminal-body">
+          <div class="target-prompt">
+            <div class="prompt-label">Target Prompt</div>
+            <code class="target-code">#[cfg(test)] mod tests { use super::*; }</code>
+          </div>
+          <div class="input-wrapper">
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="#[cfg(test)] mod tests { use super::*; }" 
+              placeholder="Type conditional test module..." 
+              spellcheck="false"
+              autocomplete="off"
+            />
+            <div class="feedback-status"></div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Module 18: Custom Module File Paths -->
+    <article class="card">
+      <div class="module-header">
+        <h3 class="module-title">7.18 Custom File Paths with #[path]</h3>
+        <span class="badge">Attributes</span>
+      </div>
+      <p class="module-description">
+        By default, Rust looks for module files matching the module name. The <code>#[path]</code> attribute lets you override the default file location and point a module to an arbitrary path.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+          <span class="terminal-title">src/lib.rs</span>
+        </div>
+        <div class="terminal-body">
+          <div class="target-prompt">
+            <div class="prompt-label">Target Prompt</div>
+            <code class="target-code">#[path = "custom/win_os.rs"] mod os;</code>
+          </div>
+          <div class="input-wrapper">
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="#[path = &quot;custom/win_os.rs&quot;] mod os;" 
+              placeholder="Type custom path attribute..." 
+              spellcheck="false"
+              autocomplete="off"
+            />
+            <div class="feedback-status"></div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Module 19: Inline Item-Level Re-exporting -->
+    <article class="card">
+      <div class="module-header">
+        <h3 class="module-title">7.19 Granular Item Re-exporting for Cleaner APIs</h3>
+        <span class="badge">API Design</span>
+      </div>
+      <p class="module-description">
+        Instead of re-exporting entire sub-modules, you can re-export specific individual items (like structs or traits) to flatten public API hierarchies and hide complex internal folder structures.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+          <span class="terminal-title">src/lib.rs</span>
+        </div>
+        <div class="terminal-body">
+          <div class="target-prompt">
+            <div class="prompt-label">Target Prompt</div>
+            <code class="target-code">pub use crate::internal::engine::Engine;</code>
+          </div>
+          <div class="input-wrapper">
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="pub use crate::internal::engine::Engine;" 
+              placeholder="Type item-level re-export..." 
+              spellcheck="false"
+              autocomplete="off"
+            />
+            <div class="feedback-status"></div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Module 20: Crate-Root Referencing in Tests -->
+    <article class="card">
+      <div class="module-header">
+        <h3 class="module-title">7.20 Referencing Library Crates in Integration Tests</h3>
+        <span class="badge">Integration Tests</span>
+      </div>
+      <p class="module-description">
+        Integration tests in the <code>tests/</code> directory operate as completely separate external crates. They cannot access private items and must import the library using the package name declared in <code>Cargo.toml</code>.
+      </p>
+      <div class="terminal-box">
+        <div class="terminal-header">
+          <div class="window-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+          <span class="terminal-title">tests/api_test.rs</span>
+        </div>
+        <div class="terminal-body">
+          <div class="target-prompt">
+            <div class="prompt-label">Target Prompt</div>
+            <code class="target-code">use my_project::connect_internal;</code>
+          </div>
+          <div class="input-wrapper">
+            <input 
+              type="text" 
+              class="code-input" 
+              data-target="use my_project::connect_internal;" 
+              placeholder="Type external integration import..." 
+              spellcheck="false"
+              autocomplete="off"
+            />
+            <div class="feedback-status"></div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const inputs = Array.from(document.querySelectorAll('input[data-target]'));
+      const progressBar = document.getElementById('progress-bar');
+      const progressText = document.getElementById('progress-text');
+      const totalModules = inputs.length;
+
+      function updateProgress() {
+        const completedCount = inputs.filter(input => input.dataset.completed === 'true').length;
+        const percentage = totalModules > 0 ? (completedCount / totalModules) * 100 : 0;
+
+        // Update UI Progress Bar & Counter
+        progressBar.style.width = `${percentage}%`;
+        progressText.textContent = `${completedCount} / ${totalModules} Completed`;
+
+        if (completedCount === totalModules && totalModules > 0) {
+          progressBar.style.backgroundColor = 'var(--accent-green)';
+        } else {
+          progressBar.style.backgroundColor = 'var(--accent-blue)';
         }
-    ]
-}
-        ];
+      }
 
-        // App State
-        let currentLessonIndex = 0;
-        let activeLineIndex = 0;
+      function validateInput(input) {
+        const targetValue = input.getAttribute('data-target');
+        const currentValue = input.value;
+        const feedbackEl = input.parentElement.querySelector('.feedback-status');
 
-        // Initialize App
-        document.addEventListener("DOMContentLoaded", () => {
-            renderLessonList();
-            loadLesson(0);
-            lucide.createIcons();
-        });
-
-        // Render Lesson Switcher Navigation
-        function renderLessonList() {
-            const listEl = document.getElementById("lessonList");
-            listEl.innerHTML = LESSONS.map((lesson, idx) => `
-                <button onclick="switchLesson(${idx})" class="w-full text-left p-2.5 rounded-lg border transition-all duration-150 flex items-center justify-between group ${
-                    idx === currentLessonIndex 
-                        ? 'bg-rust-500/15 border-rust-500/40 text-white shadow-sm' 
-                        : 'bg-transparent border-transparent text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
-                }">
-                    <div class="flex items-center space-x-2.5 truncate">
-                        <span class="font-mono text-xs px-2 py-0.5 rounded ${
-                            idx === currentLessonIndex ? 'bg-rust-500 text-white font-semibold' : 'bg-slate-800 text-slate-400'
-                        }">
-                            ${lesson.id}
-                        </span>
-                        <span class="text-xs sm:text-sm font-medium truncate">${lesson.title}</span>
-                    </div>
-                    <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500 group-hover:text-slate-300 transition-transform ${idx === currentLessonIndex ? 'text-rust-400 translate-x-0.5' : ''}"></i>
-                </button>
-            `).join("");
-            lucide.createIcons();
+        if (currentValue === '') {
+          input.classList.remove('is-valid', 'is-invalid');
+          feedbackEl.textContent = '';
+          feedbackEl.className = 'feedback-status';
+          input.dataset.completed = 'false';
+        } else if (currentValue === targetValue) {
+          input.classList.remove('is-invalid');
+          input.classList.add('is-valid');
+          feedbackEl.textContent = '✓ Correct syntax!';
+          feedbackEl.className = 'feedback-status success';
+          input.dataset.completed = 'true';
+        } else {
+          input.classList.remove('is-valid');
+          input.classList.add('is-invalid');
+          
+          if (targetValue.startsWith(currentValue)) {
+            feedbackEl.textContent = '… typing';
+            feedbackEl.className = 'feedback-status';
+          } else {
+            feedbackEl.textContent = '✕ Syntax mismatch';
+            feedbackEl.className = 'feedback-status error';
+          }
+          input.dataset.completed = 'false';
         }
 
-        // Switch Active Lesson
-        function switchLesson(index) {
-            if (index < 0 || index >= LESSONS.length) return;
-            currentLessonIndex = index;
-            renderLessonList();
-            loadLesson(index);
+        updateProgress();
+      }
+
+      // Single automated event handling framework using Event Delegation
+      document.body.addEventListener('input', (event) => {
+        if (event.target.matches('input[data-target]')) {
+          validateInput(event.target);
         }
+      });
 
-        // Load Lesson Content
-        function loadLesson(index) {
-            const lesson = LESSONS[index];
-            
-            // Header Info
-            document.getElementById("lessonCategory").innerText = lesson.category;
-            document.getElementById("progressPill").innerText = `Lesson ${index + 1} of ${LESSONS.length}`;
-            document.getElementById("lessonTitle").innerText = lesson.title;
-            document.getElementById("lessonDescription").innerText = lesson.description;
-            document.getElementById("editorFileName").innerText = lesson.fileName;
-
-            // Takeaways
-            const takeawaysEl = document.getElementById("takeawaysList");
-            takeawaysEl.innerHTML = lesson.takeaways.map(item => `
-                <li class="flex items-start space-x-2">
-                    <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5"></i>
-                    <span>${item}</span>
-                </li>
-            `).join("");
-
-            // Render Interactive Editor Lines
-            renderEditorLines(lesson);
-
-            // Select line 0 by default
-            selectLine(0);
-            
-            lucide.createIcons();
-        }
-
-        // Render Code Lines with Separate Custom Gutter Column
-        function renderEditorLines(lesson) {
-            const editorBody = document.getElementById("codeEditorBody");
-            
-            editorBody.innerHTML = lesson.lines.map((lineObj, idx) => {
-                // Highlight raw Rust string using Prism
-                const rawCode = lineObj.code || " ";
-                const highlighted = Prism.highlight(rawCode, Prism.languages.rust, 'rust');
-                
-                return `
-                    <div id="codeRow-${idx}" onclick="selectLine(${idx})" class="code-row flex items-stretch w-full cursor-pointer hover:bg-slate-800/40 border-l-2 border-transparent hover:border-rust-500/50">
-                        <div class="line-num select-none w-12 shrink-0 py-0.5 pr-3 text-right text-xs font-mono text-[#4b5563] bg-[#080b11] border-r border-white/5">
-                            ${idx + 1}
-                        </div>
-                        <div class="code-content py-0.5 px-4 font-mono text-xs sm:text-sm text-slate-200 overflow-x-visible whitespace-pre">
-                            ${highlighted}
-                        </div>
-                    </div>
-                `;
-            }).join("");
-        }
-
-        // Select Specific Code Line & Update Educator Panel
-        function selectLine(index) {
-            const lesson = LESSONS[currentLessonIndex];
-            if (!lesson || !lesson.lines[index]) return;
-
-            // Update Active UI Row Highlight
-            const prevRow = document.getElementById(`codeRow-${activeLineIndex}`);
-            if (prevRow) prevRow.classList.remove("active");
-
-            activeLineIndex = index;
-            const newRow = document.getElementById(`codeRow-${index}`);
-            if (newRow) newRow.classList.add("active");
-
-            // Update Educator Panel
-            document.getElementById("lineIndicator").innerText = `Line ${index + 1}`;
-            
-            const explanationEl = document.getElementById("explanationContent");
-            const lineData = lesson.lines[index];
-
-            const codeSnippet = lineData.code.trim() 
-                ? lineData.code 
-                : "(Empty line)";
-
-            explanationEl.innerHTML = `
-                <div class="space-y-3 animate-fadeIn">
-                    <div class="p-2.5 rounded bg-slate-900/80 border border-white/5 font-mono text-xs text-rust-400 overflow-x-auto">
-                        ${escapeHtml(codeSnippet)}
-                    </div>
-                    <p class="text-slate-300 text-xs sm:text-sm leading-relaxed">
-                        ${lineData.note}
-                    </p>
-                </div>
-            `;
-        }
-
-        // Copy Code Function
-        function copyCode() {
-            const lesson = LESSONS[currentLessonIndex];
-            const fullCode = lesson.lines.map(l => l.code).join("\n");
-            
-            navigator.clipboard.writeText(fullCode).then(() => {
-                const textSpan = document.getElementById("copyText");
-                textSpan.innerText = "Copied!";
-                setTimeout(() => {
-                    textSpan.innerText = "Copy Code";
-                }, 2000);
-            });
-        }
-
-        // Utility Helper to Prevent HTML Injection in Explanation Code View
-        function escapeHtml(text) {
-            return text
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
-        }
-    </script>
+      // Initialize initial state
+      updateProgress();
+    });
+  </script>
 </body>
 </html>
