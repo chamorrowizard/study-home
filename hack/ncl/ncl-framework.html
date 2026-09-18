@@ -333,6 +333,40 @@
     }
 
     /* ==========================================================================
+       7b. CHECKLIST & SCRATCHPAD
+       ========================================================================== */
+    .checklist-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+    .checklist-item input[type="checkbox"] {
+      accent-color: var(--accent-cyan);
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+    .scratchpad-textarea {
+      width: 100%;
+      height: 120px;
+      background-color: #05070a;
+      border: 1px solid var(--bg-surface-border);
+      border-radius: 6px;
+      color: var(--accent-cyan);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      padding: 10px;
+      resize: vertical;
+      outline: none;
+    }
+    .scratchpad-textarea:focus {
+      border-color: var(--accent-cyan);
+    }
+
+    /* ==========================================================================
        8. RESPONSIVE MEDIA QUERIES
        ========================================================================== */
     @media (max-width: 900px) {
@@ -405,6 +439,12 @@
         <a href="#stage5" class="nav-link">
           <span class="stage-badge">05</span>
           <span>Live Execution & Rules</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="#reference" class="nav-link">
+          <span class="stage-badge">REF</span>
+          <span>Technical Command Matrix</span>
         </a>
       </li>
     </ul>
@@ -631,6 +671,136 @@ tshark -r capture.pcap -Y "http.request.method == POST" -T fields -e http.file_d
           </div>
 
         </div>
+
+        <div class="card" style="margin-top: 20px;">
+          <h3 class="card-title">Pre-Submission Verification Checklist</h3>
+          <div class="card-content">
+            <div class="checklist-item">
+              <input type="checkbox" id="chk1">
+              <label for="chk1">Trimmed trailing spaces and newlines (`\r\n` / `\n`)</label>
+            </div>
+            <div class="checklist-item">
+              <input type="checkbox" id="chk2">
+              <label for="chk2">Verified case-sensitivity matching prompt specifications</label>
+            </div>
+            <div class="checklist-item">
+              <input type="checkbox" id="chk3">
+              <label for="chk3">Checked for optional prefix/suffix wrappers (e.g., `NCL{...}`)</label>
+            </div>
+            <div class="checklist-item">
+              <input type="checkbox" id="chk4">
+              <label for="chk4">Attempt count &lt; 2 (Pause &amp; review if 2 attempts failed)</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top: 20px;">
+          <h3 class="card-title">Quick Scratchpad (Auto-Saves Locally)</h3>
+          <div class="card-content">
+            <textarea id="liveScratchpad" class="scratchpad-textarea" placeholder="Paste raw hashes, decoded strings, or commands here..."></textarea>
+          </div>
+        </div>
+      </section>
+
+      <!-- REFERENCE -->
+      <section id="reference" class="section-block">
+        <div class="section-header">
+          <h2 class="section-title">
+            <span>REF_01</span> NCL Technical Command Matrix
+          </h2>
+        </div>
+        <div class="card-grid">
+
+          <div class="card">
+            <h3 class="card-title">Network Analysis (`tshark`)</h3>
+            <div class="card-content">
+              <div class="terminal-block">
+                <div class="terminal-header">
+                  <span>EXPORT HTTP OBJECTS</span>
+                </div>
+                <div class="terminal-body">tshark -r capture.pcap --export-objects "http,./extracted"</div>
+              </div>
+              <div class="terminal-block" style="margin-top: 10px;">
+                <div class="terminal-header">
+                  <span>DNS QUERY EXTRACTION</span>
+                </div>
+                <div class="terminal-body">tshark -r capture.pcap -Y "dns.flags.response == 0" -T fields -e dns.qry.name</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="card-title">Password Cracking (`hashcat`)</h3>
+            <div class="card-content">
+              <div class="terminal-block">
+                <div class="terminal-header">
+                  <span>HASHCAT WORDLIST ATTACK</span>
+                </div>
+                <div class="terminal-body"><span class="comment"># MD5 (-m 0), NTLM (-m 1000), SHA256 (-m 1400)</span>
+hashcat -m 0 -a 0 hashes.txt /usr/share/wordlists/rockyou.txt</div>
+              </div>
+              <div class="terminal-block" style="margin-top: 10px;">
+                <div class="terminal-header">
+                  <span>STEGCRACKER</span>
+                </div>
+                <div class="terminal-body">stegcracker image.jpg /usr/share/wordlists/rockyou.txt</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="card-title">Pattern Extraction (`grep`)</h3>
+            <div class="card-content">
+              <div class="terminal-block">
+                <div class="terminal-header">
+                  <span>EXTRACT MATCHING FLAGS</span>
+                </div>
+                <div class="terminal-body"><span class="comment"># Search for standard NCL flag formats recursively</span>
+grep -rioE "NCL\{[^}]+\}" ./dumps/</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="card-title">Web Fuzzing (`ffuf`)</h3>
+            <div class="card-content">
+              <div class="terminal-block">
+                <div class="terminal-header">
+                  <span>DIRECTORY DISCOVERY</span>
+                </div>
+                <div class="terminal-body"><span class="comment"># Fast directory brute-forcing bypassing Burp rate-limits</span>
+ffuf -u http://&lt;IP&gt;/FUZZ -w /usr/share/wordlists/dirb/common.txt -mc 200,301</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="card-title">LSB Steganography (`zsteg`)</h3>
+            <div class="card-content">
+              <div class="terminal-block">
+                <div class="terminal-header">
+                  <span>PNG / BMP LSB EXTRACTION</span>
+                </div>
+                <div class="terminal-body"><span class="comment"># Detect hidden data in PNG/BMP least-significant bits</span>
+zsteg -a image.png</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="card-title">RSA Weak Key Attack (`RsaCtfTool`)</h3>
+            <div class="card-content">
+              <div class="terminal-block">
+                <div class="terminal-header">
+                  <span>AUTO-SOLVE RSA</span>
+                </div>
+                <div class="terminal-body"><span class="comment"># Auto-attack weak RSA keys or small exponents</span>
+python3 RsaCtfTool.py --publickey key.pub --uncipherfile cipher.bin</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
       </section>
 
     </main>
@@ -657,6 +827,15 @@ tshark -r capture.pcap -Y "http.request.method == POST" -T fields -e http.file_d
         }
       });
     });
+
+    // Live Scratchpad: persist notes to localStorage across reloads
+    const scratchpad = document.getElementById('liveScratchpad');
+    if (scratchpad) {
+      scratchpad.value = localStorage.getItem('ncl_scratchpad_notes') || '';
+      scratchpad.addEventListener('input', () => {
+        localStorage.setItem('ncl_scratchpad_notes', scratchpad.value);
+      });
+    }
 
     // 2. Active Scroll Spy (Highlight menu link based on current section)
     const sections = document.querySelectorAll('.section-block');
