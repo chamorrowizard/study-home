@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NCL Mastery & Progression Framework</title>
+  
+  <!-- Fonts: Inter for UI typography, Fira Code for technical terminal data -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ==========================================================================
+       1. CSS VARIABLES & THEME CONFIGURATION
+       Slate dark theme layout (#0f172a / #0a0d12) with neon accents.
+       ========================================================================== */
+    :root {
+      --bg-main: #0a0d12;
+      --bg-surface: #0f172a;
+      --bg-surface-border: #1e293b;
+      --bg-card: #141e33;
+      --bg-card-hover: #1e2d4a;
+      
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      
+      --accent-cyan: #38bdf8;
+      --accent-green: #22c55e;
+      --accent-amber: #f59e0b;
+      --accent-red: #ef4444;
+      
+      --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'Fira Code', monospace;
+
+      --sidebar-width: 320px;
+      --topbar-height: 64px;
+    }
+
+    /* ==========================================================================
+       2. BASE & RESET STYLES
+       ========================================================================== */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-primary);
+      font-family: var(--font-ui);
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ==========================================================================
+       3. SIDEBAR NAVIGATION
+       ========================================================================== */
+    .sidebar {
+      width: var(--sidebar-width);
+      background-color: var(--bg-surface);
+      border-right: 1px solid var(--bg-surface-border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 100;
+      transition: transform 0.3s ease;
+    }
+
+    .brand {
+      height: var(--topbar-height);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 20px;
+      border-bottom: 1px solid var(--bg-surface-border);
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--accent-cyan);
+    }
+
+    .brand-icon {
+      width: 12px;
+      height: 12px;
+      background-color: var(--accent-green);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--accent-green);
+    }
+
+    .nav-list {
+      list-style: none;
+      padding: 20px 12px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .nav-item {
+      margin-bottom: 6px;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .nav-link:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+      color: var(--text-primary);
+    }
+
+    .nav-link.active {
+      background-color: rgba(56, 189, 248, 0.1);
+      color: var(--accent-cyan);
+      border-left: 3px solid var(--accent-cyan);
+    }
+
+    .stage-badge {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      background-color: rgba(255, 255, 255, 0.08);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--text-muted);
+    }
+
+    .nav-link.active .stage-badge {
+      color: var(--accent-cyan);
+      background-color: rgba(56, 189, 248, 0.2);
+    }
+
+    /* ==========================================================================
+       4. MAIN LAYOUT & HEADER
+       ========================================================================== */
+    .main-wrapper {
+      margin-left: var(--sidebar-width);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .topbar {
+      height: var(--topbar-height);
+      background-color: var(--bg-surface);
+      border-bottom: 1px solid var(--bg-surface-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      position: sticky;
+      top: 0;
+      z-index: 90;
+    }
+
+    .menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--text-primary);
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+    }
+
+    .status-tag {
+      color: var(--text-muted);
+    }
+
+    .status-value {
+      color: var(--accent-green);
+    }
+
+    /* ==========================================================================
+       5. CONTENT SECTIONS & CARDS
+       ========================================================================== */
+    .content-area {
+      padding: 32px;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .section-block {
+      margin-bottom: 48px;
+      scroll-margin-top: calc(var(--topbar-height) + 32px);
+    }
+
+    .section-header {
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--bg-surface-border);
+      padding-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section-title span {
+      font-family: var(--font-mono);
+      color: var(--accent-cyan);
+      font-size: 1rem;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--bg-surface-border);
+      border-radius: 10px;
+      padding: 24px;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .card:hover {
+      background-color: var(--bg-card-hover);
+      border-color: rgba(56, 189, 248, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-content {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    .card-content ul {
+      list-style-type: none;
+      padding-left: 0;
+    }
+
+    .card-content li {
+      position: relative;
+      padding-left: 20px;
+      margin-bottom: 8px;
+    }
+
+    .card-content li::before {
+      content: ">";
+      position: absolute;
+      left: 0;
+      color: var(--accent-cyan);
+      font-family: var(--font-mono);
+      font-weight: 700;
+    }
+
+    /* ==========================================================================
+       6. TERMINAL & CODE BLOCKS
+       ========================================================================== */
+    .terminal-block {
+      background-color: #05070a;
+      border: 1px solid var(--bg-surface-border);
+      border-radius: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      margin-top: 16px;
+      overflow: hidden;
+    }
+
+    .terminal-header {
+      background-color: rgba(255, 255, 255, 0.03);
+      padding: 8px 16px;
+      border-bottom: 1px solid var(--bg-surface-border);
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .terminal-body {
+      padding: 16px;
+      color: var(--accent-cyan);
+      overflow-x: auto;
+      white-space: pre-wrap;
+    }
+
+    .terminal-body .comment {
+      color: var(--text-muted);
+    }
+
+    /* ==========================================================================
+       7. EDITING / EXTENSION PLACEHOLDER STYLES
+       ========================================================================== */
+    .card-editable-slot {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px dashed var(--bg-surface-border);
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* ==========================================================================
+       8. RESPONSIVE MEDIA QUERIES
+       ========================================================================== */
+    @media (max-width: 900px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .main-wrapper {
+        margin-left: 0;
+      }
+
+      .menu-toggle {
+        display: block;
+      }
+
+      .topbar {
+        padding: 0 16px;
+      }
+
+      .content-area {
+        padding: 20px 16px;
+      }
+
+      .card-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==========================================================================
+       SIDEBAR NAVIGATION
+       ========================================================================== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-icon"></div>
+      <span>NCL_MASTERY_v1.0</span>
+    </div>
+    <ul class="nav-list">
+      <li class="nav-item">
+        <a href="#stage1" class="nav-link active">
+          <span class="stage-badge">01</span>
+          <span>Toolkit & Environment</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="#stage2" class="nav-link">
+          <span class="stage-badge">02</span>
+          <span>Automation & Cheat Sheet</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="#stage3" class="nav-link">
+          <span class="stage-badge">03</span>
+          <span>Log & Traffic Processing</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="#stage4" class="nav-link">
+          <span class="stage-badge">04</span>
+          <span>Pre-Challenge Strategy</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="#stage5" class="nav-link">
+          <span class="stage-badge">05</span>
+          <span>Live Execution & Rules</span>
+        </a>
+      </li>
+    </ul>
+  </aside>
+
+  <!-- ==========================================================================
+       MAIN CONTENT CONTAINER
+       ========================================================================== -->
+  <div class="main-wrapper">
+    
+    <!-- TOP NAVBAR -->
+    <header class="topbar">
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle Navigation">☰</button>
+      <div class="status-indicator">
+        <span class="status-tag">SYSTEM STATUS:</span>
+        <span class="status-value">READY // COMPETITION OPTIMIZED</span>
+      </div>
+    </header>
+
+    <!-- WORKSPACE / STAGES CONTENT -->
+    <main class="content-area">
+
+      <!-- STAGE 1 -->
+      <section id="stage1" class="section-block">
+        <div class="section-header">
+          <h2 class="section-title">
+            <span>STAGE_01</span> Environment & Toolkit Setup
+          </h2>
+        </div>
+        <div class="card-grid">
+          
+          <div class="card">
+            <h3 class="card-title">Core Tooling Matrix</h3>
+            <div class="card-content">
+              <ul>
+                <li><strong>Crypto / Stego:</strong> CyberChef (local deployment), Hashcat, John the Ripper, Steghide, Exiftool.</li>
+                <li><strong>Traffic & Logs:</strong> Wireshark, TShark, GNU utilities (`grep`, `awk`, `sed`, `cut`, `sort`).</li>
+                <li><strong>Web Exploitation:</strong> Burp Suite Community/Pro, Developer Tools.</li>
+              </ul>
+            </div>
+            <!-- EXTENSION SLOT: Add custom API keys, download links, or setup steps here -->
+            <div class="card-editable-slot">
+              <!-- ADD DETAIL HERE LATER: Custom tools, setup scripts, or installation paths -->
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="card-title">Directory Architecture</h3>
+            <div class="card-content">
+              <p>Structure workspace local folders before competition launch to avoid friction:</p>
+              <div class="terminal-block">
+                <div class="terminal-header">
+                  <span>DIRECTORY LAYOUT</span>
+                </div>
+                <div class="terminal-body">/ncl/
+├── logs/        <span class="comment"># Raw PCAPs & exports</span>
+├── crypto/      <span class="comment"># Keys, payloads, wordlists</span>
+├── scripts/     <span class="comment"># Automation snippets</span>
+└── notes.md     <span class="comment"># Live scratchpad</span></div>
+              </div>
+            </div>
+            <div class="card-editable-slot">
+              <!-- ADD DETAIL HERE LATER: Bash setup alias or automation script -->
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- STAGE 2 -->
+      <section id="stage2" class="section-block">
+        <div class="section-header">
+          <h2 class="section-title">
+            <span>STAGE_02</span> Automation & Cheat Sheet Base
+          </h2>
+        </div>
+        <div class="card-grid">
+
+          <div class="card">
+            <h3 class="card-title">Parsing One-Liners</h3>
+            <div class="card-content">
+              <p>Prepare terminal snippets for high-speed data extraction:</p>
+              <div class="terminal-block">
+                <div class="terminal-header">
+                  <span>BASH PIPELINE</span>
+                </div>
+                <div class="terminal-body"><span class="comment"># Extract unique IP addresses sorted by frequency</span>
+cat access.log | grep "404" | awk '{print $1}' | sort | uniq -c | sort -nr</div>
+              </div>
+            </div>
+            <div class="card-editable-slot">
+              <!-- ADD DETAIL HERE LATER: Custom regex recipes for Base64 layers or key extractions -->
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="card-title">CyberChef Multi-Stage Recipes</h3>
+            <div class="card-content">
+              <ul>
+                <li>Pre-save recipes for layered transformations (e.g., URL Decode &rarr; Base64 Decode &rarr; XOR).</li>
+                <li>Ensure offline access via local build or cached local deployment.</li>
+              </ul>
+            </div>
+            <div class="card-editable-slot">
+              <!-- ADD DETAIL HERE LATER: Paste JSON export of CyberChef recipes -->
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- STAGE 3 -->
+      <section id="stage3" class="section-block">
+        <div class="section-header">
+          <h2 class="section-title">
+            <span>STAGE_03</span> Log & Network Analysis Mastery
+          </h2>
+        </div>
+        <div class="card-grid">
+
+          <div class="card">
+            <h3 class="card-title">CLI Data Processing</h3>
+            <div class="card-content">
+              <ul>
+                <li>Bypass GUI tools (Wireshark) when handling massive datasets to prevent window lag.</li>
+                <li>Isolate specific status codes or error strings using CLI pipelines directly in terminal.</li>
+              </ul>
+            </div>
+            <div class="card-editable-slot">
+              <!-- ADD DETAIL HERE LATER: Specific tshark flag filters for packet extractions -->
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="card-title">Protocol Extractions via TShark</h3>
+            <div class="card-content">
+              <div class="terminal-block">
+                <div class="terminal-header">
+                  <span>TSHARK PIPELINE</span>
+                </div>
+                <div class="terminal-body"><span class="comment"># Extract HTTP POST parameters directly from PCAP</span>
+tshark -r capture.pcap -Y "http.request.method == POST" -T fields -e http.file_data</div>
+              </div>
+            </div>
+            <div class="card-editable-slot">
+              <!-- ADD DETAIL HERE LATER: DNS extraction, credentials recovery pipelines -->
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- STAGE 4 -->
+      <section id="stage4" class="section-block">
+        <div class="section-header">
+          <h2 class="section-title">
+            <span>STAGE_04</span> Pre-Challenge Assessment & Strategy
+          </h2>
+        </div>
+        <div class="card-grid">
+
+          <div class="card">
+            <h3 class="card-title">Module Architectural Scanning</h3>
+            <div class="card-content">
+              <ul>
+                <li>Read all prompts within a target module prior to starting work.</li>
+                <li>Downstream questions often give hints or reveal required output formats for earlier stages.</li>
+              </ul>
+            </div>
+            <div class="card-editable-slot">
+              <!-- ADD DETAIL HERE LATER: Triage rules for high-value vs low-value prompts -->
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="card-title">High-ROI Target Prioritization</h3>
+            <div class="card-content">
+              <ul>
+                <li>Start with categories aligned with your core competencies to lock in quick leaderboard points.</li>
+                <li>Build early momentum while preserving remaining time for complex multi-part modules.</li>
+              </ul>
+            </div>
+            <div class="card-editable-slot">
+              <!-- ADD DETAIL HERE LATER: Category allocation times (e.g. 30m limit on Crypto) -->
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- STAGE 5 -->
+      <section id="stage5" class="section-block">
+        <div class="section-header">
+          <h2 class="section-title">
+            <span>STAGE_05</span> Live Execution & Rate Controls
+          </h2>
+        </div>
+        <div class="card-grid">
+
+          <div class="card">
+            <h3 class="card-title">Attempt Management Protocol</h3>
+            <div class="card-content">
+              <ul>
+                <li>Track attempt counts strictly. Pause immediately after 2 failed attempts on any single flag.</li>
+                <li>Re-evaluate input formatting, casing, or hidden transformations prior to submitting a 3rd attempt.</li>
+              </ul>
+            </div>
+            <div class="card-editable-slot">
+              <!-- ADD DETAIL HERE LATER: Custom lockout checklists -->
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="card-title">Input Sanitization & Logging</h3>
+            <div class="card-content">
+              <ul>
+                <li>Strip invisible spaces, carriage returns (`\r\n`), or quotation marks added by terminal selection.</li>
+                <li>Keep a markdown scratchpad logging every intermediate hash, payload, and command output for backtracking.</li>
+              </ul>
+            </div>
+            <div class="card-editable-slot">
+              <!-- ADD DETAIL HERE LATER: Markdown scratchpad template structure -->
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ==========================================================================
+       JAVASCRIPT
+       Handles responsive navigation toggles & smooth scroll highlighting.
+       ========================================================================== -->
+  <script>
+    // 1. Mobile Menu Toggle
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.getElementById('sidebar');
+
+    menuToggle.addEventListener('click', () => {
+      sidebar.classList.toggle('open');
+    });
+
+    // Close sidebar on link click (mobile viewport)
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', () => {
+        if (window.innerWidth <= 900) {
+          sidebar.classList.remove('open');
+        }
+      });
+    });
+
+    // 2. Active Scroll Spy (Highlight menu link based on current section)
+    const sections = document.querySelectorAll('.section-block');
+    const navLinks = document.querySelectorAll('.nav-link');
+
+    window.addEventListener('scroll', () => {
+      let currentSectionId = '';
+
+      sections.forEach(section => {
+        const sectionTop = section.offsetTop - 100;
+        const sectionHeight = section.offsetHeight;
+        if (window.scrollY >= sectionTop && window.scrollY < sectionTop + sectionHeight) {
+          currentSectionId = section.getAttribute('id');
+        }
+      });
+
+      navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === `#${currentSectionId}`) {
+          link.classList.add('active');
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>
