@@ -321,6 +321,42 @@
       color: var(--text-muted);
     }
 
+    /* Educational explanation text box styling */
+    .command-explain {
+      margin-top: 8px;
+      padding: 10px 12px;
+      background-color: rgba(255, 255, 255, 0.03);
+      border-left: 3px solid var(--accent-cyan);
+      border-radius: 0 6px 6px 0;
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      line-height: 1.45;
+    }
+
+    .command-explain strong {
+      color: var(--text-primary);
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    a.terminal-link {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.2s ease, transform 0.15s ease;
+    }
+
+    a.terminal-link:hover {
+      border-color: var(--accent-cyan);
+      transform: translateY(-1px);
+    }
+
+    a.terminal-link:hover .terminal-header {
+      color: var(--accent-cyan);
+    }
+
     /* ==========================================================================
        7. EDITING / EXTENSION PLACEHOLDER STYLES
        ========================================================================== */
@@ -526,14 +562,16 @@
           <div class="card">
             <h3 class="card-title">Parsing One-Liners</h3>
             <div class="card-content">
-              <p>Prepare terminal snippets for high-speed data extraction:</p>
-              <div class="terminal-block">
-                <div class="terminal-header">
-                  <span>BASH PIPELINE</span>
-                </div>
-                <div class="terminal-body"><span class="comment"># Extract unique IP addresses sorted by frequency</span>
+              <p>Prepare terminal snippets for high-speed data extraction (click snippet to jump to details):</p>
+              <a href="#ref-log-404" class="terminal-link">
+                <div class="terminal-block">
+                  <div class="terminal-header">
+                    <span>BASH PIPELINE (CLICK FOR DETAILED REF) &#10132;</span>
+                  </div>
+                  <div class="terminal-body"><span class="comment"># Extract unique IP addresses sorted by frequency</span>
 cat access.log | grep "404" | awk '{print $1}' | sort | uniq -c | sort -nr</div>
-              </div>
+                </div>
+              </a>
             </div>
             <div class="card-editable-slot">
               <!-- ADD DETAIL HERE LATER: Custom regex recipes for Base64 layers or key extractions -->
@@ -581,13 +619,15 @@ cat access.log | grep "404" | awk '{print $1}' | sort | uniq -c | sort -nr</div>
           <div class="card">
             <h3 class="card-title">Protocol Extractions via TShark</h3>
             <div class="card-content">
-              <div class="terminal-block">
-                <div class="terminal-header">
-                  <span>TSHARK PIPELINE</span>
-                </div>
-                <div class="terminal-body"><span class="comment"># Extract HTTP POST parameters directly from PCAP</span>
+              <a href="#ref-tshark-objects" class="terminal-link">
+                <div class="terminal-block">
+                  <div class="terminal-header">
+                    <span>TSHARK PIPELINE (CLICK FOR DETAILED REF) &#10132;</span>
+                  </div>
+                  <div class="terminal-body"><span class="comment"># Extract HTTP POST parameters directly from PCAP</span>
 tshark -r capture.pcap -Y "http.request.method == POST" -T fields -e http.file_data</div>
-              </div>
+                </div>
+              </a>
             </div>
             <div class="card-editable-slot">
               <!-- ADD DETAIL HERE LATER: DNS extraction, credentials recovery pipelines -->
@@ -702,7 +742,7 @@ tshark -r capture.pcap -Y "http.request.method == POST" -T fields -e http.file_d
         </div>
       </section>
 
-      <!-- REFERENCE -->
+      <!-- REFERENCE SECTION WITH EDUCATIONAL EXPLANATIONS -->
       <section id="reference" class="section-block">
         <div class="section-header">
           <h2 class="section-title">
@@ -714,88 +754,96 @@ tshark -r capture.pcap -Y "http.request.method == POST" -T fields -e http.file_d
           <div class="card">
             <h3 class="card-title">Network Analysis (`tshark`)</h3>
             <div class="card-content">
-              <div class="terminal-block">
-                <div class="terminal-header">
-                  <span>EXPORT HTTP OBJECTS</span>
-                </div>
+              <div id="ref-tshark-objects" class="terminal-block">
+                <div class="terminal-header"><span>EXPORT HTTP OBJECTS</span></div>
                 <div class="terminal-body">tshark -r capture.pcap --export-objects "http,./extracted"</div>
               </div>
-              <div class="terminal-block" style="margin-top: 10px;">
-                <div class="terminal-header">
-                  <span>DNS QUERY EXTRACTION</span>
-                </div>
+              <div class="command-explain">
+                <strong>What it is:</strong> Reconstructs and extracts files (images, downloads, scripts) transferred over unencrypted HTTP.<br>
+                <strong>What it's for:</strong> Fast-recovering files from PCAPs without manually following TCP streams in Wireshark.
+              </div>
+              <div class="terminal-block" style="margin-top: 14px;">
+                <div class="terminal-header"><span>DNS QUERY EXTRACTION</span></div>
                 <div class="terminal-body">tshark -r capture.pcap -Y "dns.flags.response == 0" -T fields -e dns.qry.name</div>
+              </div>
+              <div class="command-explain">
+                <strong>What it is:</strong> Filters for outbound DNS lookup requests and outputs only the requested domain names.<br>
+                <strong>What it's for:</strong> Identifying malware beaconing, C2 communication, or DNS data exfiltration quickly.
               </div>
             </div>
           </div>
 
           <div class="card">
-            <h3 class="card-title">Password Cracking (`hashcat`)</h3>
+            <h3 class="card-title">Log &amp; Text Processing</h3>
+            <div class="card-content">
+              <div id="ref-log-404" class="terminal-block">
+                <div class="terminal-header"><span>404 BRUTE-FORCE DETECTOR</span></div>
+                <div class="terminal-body">cat access.log | grep "404" | awk '{print $1}' | sort | uniq -c | sort -nr</div>
+              </div>
+              <div class="command-explain">
+                <strong>What it is:</strong> Finds 404 errors, extracts the requester IP (`$1`), and counts/sorts occurrences by volume.<br>
+                <strong>What it's for:</strong> Identifying web scanners or brute-force attacks by pinpointing high-volume invalid requests.
+              </div>
+              <div class="terminal-block" style="margin-top: 14px;">
+                <div class="terminal-header"><span>PATTERN EXTRACTION (`grep`)</span></div>
+                <div class="terminal-body">grep -rioE "NCL\{[^}]+\}" ./dumps/</div>
+              </div>
+              <div class="command-explain">
+                <strong>What it is:</strong> Searches files recursively and prints strings matching the `NCL{...}` flag pattern.<br>
+                <strong>What it's for:</strong> Pulling flags out of large log dumps or extracted archive directories automatically.
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="card-title">Password Cracking &amp; Crypto</h3>
             <div class="card-content">
               <div class="terminal-block">
-                <div class="terminal-header">
-                  <span>HASHCAT WORDLIST ATTACK</span>
-                </div>
+                <div class="terminal-header"><span>HASHCAT DICTIONARY ATTACK</span></div>
                 <div class="terminal-body"><span class="comment"># MD5 (-m 0), NTLM (-m 1000), SHA256 (-m 1400)</span>
 hashcat -m 0 -a 0 hashes.txt /usr/share/wordlists/rockyou.txt</div>
               </div>
-              <div class="terminal-block" style="margin-top: 10px;">
-                <div class="terminal-header">
-                  <span>STEGCRACKER</span>
-                </div>
+              <div class="command-explain">
+                <strong>What it is:</strong> Hashes dictionary passwords using MD5 (`-m 0`) and matches them against target hashes.<br>
+                <strong>What it's for:</strong> Recovering plaintext credentials in Password Cracking and System Exploitation challenges.
+              </div>
+              <div class="terminal-block" style="margin-top: 14px;">
+                <div class="terminal-header"><span>STEGCRACKER</span></div>
                 <div class="terminal-body">stegcracker image.jpg /usr/share/wordlists/rockyou.txt</div>
               </div>
-            </div>
-          </div>
-
-          <div class="card">
-            <h3 class="card-title">Pattern Extraction (`grep`)</h3>
-            <div class="card-content">
-              <div class="terminal-block">
-                <div class="terminal-header">
-                  <span>EXTRACT MATCHING FLAGS</span>
-                </div>
-                <div class="terminal-body"><span class="comment"># Search for standard NCL flag formats recursively</span>
-grep -rioE "NCL\{[^}]+\}" ./dumps/</div>
+              <div class="command-explain">
+                <strong>What it is:</strong> Automates testing dictionary passwords against steganography images via `steghide`.<br>
+                <strong>What it's for:</strong> Extracting hidden payloads from password-protected JPEG files.
+              </div>
+              <div class="terminal-block" style="margin-top: 14px;">
+                <div class="terminal-header"><span>RSA WEAK KEY SOLVER</span></div>
+                <div class="terminal-body">python3 RsaCtfTool.py --publickey key.pub --uncipherfile cipher.bin</div>
+              </div>
+              <div class="command-explain">
+                <strong>What it is:</strong> Runs automated mathematical attacks against misconfigured or weak public RSA keys.<br>
+                <strong>What it's for:</strong> Factoring $N$ or exploiting small exponents ($e$) to decrypt RSA ciphertext.
               </div>
             </div>
           </div>
 
           <div class="card">
-            <h3 class="card-title">Web Fuzzing (`ffuf`)</h3>
+            <h3 class="card-title">Web Fuzzing &amp; Steganography</h3>
             <div class="card-content">
               <div class="terminal-block">
-                <div class="terminal-header">
-                  <span>DIRECTORY DISCOVERY</span>
-                </div>
-                <div class="terminal-body"><span class="comment"># Fast directory brute-forcing bypassing Burp rate-limits</span>
-ffuf -u http://&lt;IP&gt;/FUZZ -w /usr/share/wordlists/dirb/common.txt -mc 200,301</div>
+                <div class="terminal-header"><span>WEB DIRECTORY DISCOVERY (`ffuf`)</span></div>
+                <div class="terminal-body">ffuf -u http://&lt;IP&gt;/FUZZ -w /usr/share/wordlists/dirb/common.txt -mc 200,301</div>
               </div>
-            </div>
-          </div>
-
-          <div class="card">
-            <h3 class="card-title">LSB Steganography (`zsteg`)</h3>
-            <div class="card-content">
-              <div class="terminal-block">
-                <div class="terminal-header">
-                  <span>PNG / BMP LSB EXTRACTION</span>
-                </div>
-                <div class="terminal-body"><span class="comment"># Detect hidden data in PNG/BMP least-significant bits</span>
-zsteg -a image.png</div>
+              <div class="command-explain">
+                <strong>What it is:</strong> Replaces `FUZZ` in the URL with wordlist entries to test for valid responses (`200`/`301`).<br>
+                <strong>What it's for:</strong> Discovering hidden endpoints or admin files faster than Burp Suite's Community Intruder.
               </div>
-            </div>
-          </div>
-
-          <div class="card">
-            <h3 class="card-title">RSA Weak Key Attack (`RsaCtfTool`)</h3>
-            <div class="card-content">
-              <div class="terminal-block">
-                <div class="terminal-header">
-                  <span>AUTO-SOLVE RSA</span>
-                </div>
-                <div class="terminal-body"><span class="comment"># Auto-attack weak RSA keys or small exponents</span>
-python3 RsaCtfTool.py --publickey key.pub --uncipherfile cipher.bin</div>
+              <div class="terminal-block" style="margin-top: 14px;">
+                <div class="terminal-header"><span>LSB STEGANOGRAPHY (`zsteg`)</span></div>
+                <div class="terminal-body">zsteg -a image.png</div>
+              </div>
+              <div class="command-explain">
+                <strong>What it is:</strong> Inspects lowest-significant bits across color channels in PNG and BMP files.<br>
+                <strong>What it's for:</strong> Finding hidden text or data in pixel bits where traditional stego tools fail.
               </div>
             </div>
           </div>
@@ -803,13 +851,7 @@ python3 RsaCtfTool.py --publickey key.pub --uncipherfile cipher.bin</div>
         </div>
       </section>
 
-    </main>
-  </div>
-
-  <!-- ==========================================================================
-       JAVASCRIPT
-       Handles responsive navigation toggles & smooth scroll highlighting.
-       ========================================================================== -->
+      <!-- ========================================================================== -->
   <script>
     // 1. Mobile Menu Toggle
     const menuToggle = document.getElementById('menuToggle');
