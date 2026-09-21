@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mastering Number Bases - Interactive Cyber Security Module</title>
+    
+    <!-- SECTION: External Fonts & Tailwind CSS CDN -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- SECTION: Tailwind Custom Configuration -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            850: '#0f172a',
+                            900: '#0a0d12',
+                            950: '#05070a',
+                        },
+                        accent: {
+                            blue: '#38bdf8',
+                            green: '#22c55e',
+                            purple: '#a855f7',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans antialiased min-h-screen flex flex-col selection:bg-sky-500 selection:text-white">
+
+    <!-- SECTION: Navigation / Header Bar -->
+    <header class="sticky top-0 z-50 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 px-4 lg:px-8 py-3.5 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+            <div class="h-8 w-8 rounded-lg bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400 font-mono text-sm font-bold">
+                0x
+            </div>
+            <div>
+                <h1 class="text-sm font-semibold tracking-wide text-white">Cyber Skyline Trove</h1>
+                <p class="text-xs text-slate-400">Lesson: Number Bases</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-3">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span>
+                Interactive Mode
+            </span>
+        </div>
+    </header>
+
+    <!-- SECTION: Main Layout Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- SUB-SECTION: Sidebar Navigation / TOC (Desktop & Mobile Responsive) -->
+        <aside class="lg:col-span-3 space-y-6">
+            <div class="bg-slate-850 border border-slate-800 rounded-xl p-4 sticky top-20">
+                <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 px-2">Lesson Navigation</h2>
+                <nav class="space-y-1">
+                    <a href="#overview" class="flex items-center px-3 py-2 text-sm font-medium rounded-lg text-sky-400 bg-sky-500/10 border border-sky-500/20">
+                        Overview & Concepts
+                    </a>
+                    <a href="#challenges" class="flex items-center px-3 py-2 text-sm font-medium rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">
+                        Interactive Challenges
+                    </a>
+                    <a href="#reference" class="flex items-center px-3 py-2 text-sm font-medium rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition">
+                        Quick Reference Chart
+                    </a>
+                </nav>
+
+                <!-- Extensibility Notice for Content Creators -->
+                <div class="mt-6 pt-4 border-t border-slate-800 px-2">
+                    <p class="text-xs text-slate-500">
+                        💡 <span class="font-medium text-slate-400">Extensible App:</span> To add new questions, simply copy a <code class="text-sky-400 font-mono">&lt;section&gt;</code> block in the source code.
+                    </p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- SUB-SECTION: Main Content Column -->
+        <div class="lg:col-span-9 space-y-8">
+            
+            <!-- Hero / Intro Banner -->
+            <section id="overview" class="bg-slate-850 border border-slate-800 rounded-2xl p-6 sm:p-8 relative overflow-hidden">
+                <div class="absolute -right-10 -bottom-10 w-60 h-60 bg-sky-500/5 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div class="flex items-center space-x-2 text-xs font-mono text-sky-400 mb-2">
+                    <span>MODULE 01</span>
+                    <span>•</span>
+                    <span>ENCODING & DECODING</span>
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">Understanding Number Bases</h2>
+                <p class="mt-3 text-slate-300 text-sm sm:text-base leading-relaxed">
+                    Our analysts obtained password dumps storing hacker passwords. All plaintext passwords appear to be encoded using different number bases. Encoding is akin to translating between languages—it reorganizes data without encrypting it.
+                </p>
+
+                <!-- Key Concept Highlights -->
+                <div class="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="bg-slate-900/60 border border-slate-800 rounded-lg p-3.5">
+                        <span class="text-xs font-mono text-slate-400 uppercase">Hexadecimal (Base 16)</span>
+                        <p class="text-xs text-slate-300 mt-1">Identified by prefixes like <code class="text-sky-400">0x</code> using digits 0-9 and letters A-F.</p>
+                    </div>
+                    <div class="bg-slate-900/60 border border-slate-800 rounded-lg p-3.5">
+                        <span class="text-xs font-mono text-slate-400 uppercase">Base64</span>
+                        <p class="text-xs text-slate-300 mt-1">Uses <code class="text-sky-400">A-Z</code>, <code class="text-sky-400">a-z</code>, <code class="text-sky-400">0-9</code>, <code class="text-sky-400">+</code>, <code class="text-sky-400">/</code>, and <code class="text-sky-400">=</code> for padding.</p>
+                    </div>
+                    <div class="bg-slate-900/60 border border-slate-800 rounded-lg p-3.5">
+                        <span class="text-xs font-mono text-slate-400 uppercase">Binary (Base 2)</span>
+                        <p class="text-xs text-slate-300 mt-1">Composed strictly of <code class="text-sky-400">0</code> and <code class="text-sky-400">1</code> grouped into 8-bit bytes.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: Interactive Challenge Cards -->
+            <section id="challenges" class="space-y-6">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-white tracking-wide">Interactive Decoders</h3>
+                    <span class="text-xs text-slate-400 font-mono">4 Challenges Available</span>
+                </div>
+
+                <!-- QUESTION 1 CARD -->
+                <!-- Note: Duplicate this block structure to add Question 5, 6, etc. -->
+                <div class="bg-slate-850 border border-slate-800 rounded-xl p-5 sm:p-6 transition hover:border-slate-700">
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-6 h-6 rounded-md bg-sky-500/10 text-sky-400 font-mono text-xs font-bold flex items-center justify-center">1</span>
+                            <h4 class="text-sm font-semibold text-white">Hexadecimal Decoding</h4>
+                        </div>
+                        <span class="text-xs font-mono bg-slate-900 text-slate-400 px-2.5 py-1 rounded-md border border-slate-800">Base 16 → ASCII</span>
+                    </div>
+
+                    <p class="text-xs text-slate-400 mb-3">
+                        Convert the following hex string to ASCII text. Note: <code class="text-slate-300">0x</code> indicates a hex prefix and should be stripped.
+                    </p>
+
+                    <div class="bg-slate-900 p-3 rounded-lg border border-slate-800 font-mono text-sm text-sky-300 break-all mb-4">
+                        0x73636f7270696f6e
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                        <button onclick="decodeHex('0x73636f7270696f6e', 'ans-1')" class="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white text-xs font-medium rounded-lg transition active:scale-95 shadow-lg shadow-sky-600/20">
+                            Decode Value
+                        </button>
+                        <div id="ans-1" class="hidden flex-1 bg-slate-900 border border-emerald-500/30 rounded-lg px-3 py-2 text-xs font-mono text-emerald-400 items-center justify-between">
+                            <span>Decoded ASCII: <strong class="text-white text-sm ml-1" id="ans-1-text"></strong></span>
+                            <span class="text-[10px] text-emerald-500/80">✓ Valid Hex</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- QUESTION 2 CARD -->
+                <div class="bg-slate-850 border border-slate-800 rounded-xl p-5 sm:p-6 transition hover:border-slate-700">
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-6 h-6 rounded-md bg-purple-500/10 text-purple-400 font-mono text-xs font-bold flex items-center justify-center">2</span>
+                            <h4 class="text-sm font-semibold text-white">Base64 Decoding</h4>
+                        </div>
+                        <span class="text-xs font-mono bg-slate-900 text-slate-400 px-2.5 py-1 rounded-md border border-slate-800">Base64 → ASCII</span>
+                    </div>
+
+                    <p class="text-xs text-slate-400 mb-3">
+                        Identified by character set range (A-Z, a-z, 0-9, +, /, =) and trailing padding.
+                    </p>
+
+                    <div class="bg-slate-900 p-3 rounded-lg border border-slate-800 font-mono text-sm text-purple-300 break-all mb-4">
+                        c2NyaWJibGU=
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                        <button onclick="decodeBase64('c2NyaWJibGU=', 'ans-2')" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-xs font-medium rounded-lg transition active:scale-95 shadow-lg shadow-purple-600/20">
+                            Decode Value
+                        </button>
+                        <div id="ans-2" class="hidden flex-1 bg-slate-900 border border-emerald-500/30 rounded-lg px-3 py-2 text-xs font-mono text-emerald-400 items-center justify-between">
+                            <span>Decoded ASCII: <strong class="text-white text-sm ml-1" id="ans-2-text"></strong></span>
+                            <span class="text-[10px] text-emerald-500/80">✓ Valid Base64</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- QUESTION 3 CARD -->
+                <div class="bg-slate-850 border border-slate-800 rounded-xl p-5 sm:p-6 transition hover:border-slate-700">
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-6 h-6 rounded-md bg-emerald-500/10 text-emerald-400 font-mono text-xs font-bold flex items-center justify-center">3</span>
+                            <h4 class="text-sm font-semibold text-white">Binary Decoding</h4>
+                        </div>
+                        <span class="text-xs font-mono bg-slate-900 text-slate-400 px-2.5 py-1 rounded-md border border-slate-800">Base 2 → ASCII</span>
+                    </div>
+
+                    <p class="text-xs text-slate-400 mb-3">
+                        8-bit grouped binary numbers converted directly into human-readable text characters.
+                    </p>
+
+                    <div class="bg-slate-900 p-3 rounded-lg border border-slate-800 font-mono text-xs sm:text-sm text-emerald-300 break-all mb-4 leading-relaxed">
+                        01110011 01100101 01100011 01110101 01110010 01100101 01101100 01111001
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                        <button onclick="decodeBinary('01110011 01100101 01100011 01110101 01110010 01100101 01101100 01111001', 'ans-3')" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium rounded-lg transition active:scale-95 shadow-lg shadow-emerald-600/20">
+                            Decode Value
+                        </button>
+                        <div id="ans-3" class="hidden flex-1 bg-slate-900 border border-emerald-500/30 rounded-lg px-3 py-2 text-xs font-mono text-emerald-400 items-center justify-between">
+                            <span>Decoded ASCII: <strong class="text-white text-sm ml-1" id="ans-3-text"></strong></span>
+                            <span class="text-[10px] text-emerald-500/80">✓ Valid Binary</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- QUESTION 4 CARD (Double Encoding) -->
+                <div class="bg-slate-850 border border-slate-800 rounded-xl p-5 sm:p-6 transition hover:border-slate-700">
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-6 h-6 rounded-md bg-amber-500/10 text-amber-400 font-mono text-xs font-bold flex items-center justify-center">4</span>
+                            <h4 class="text-sm font-semibold text-white">Double Encoding (Binary + Base64)</h4>
+                        </div>
+                        <span class="text-xs font-mono bg-slate-900 text-amber-400/80 px-2.5 py-1 rounded-md border border-amber-500/20">Multi-Stage Pipeline</span>
+                    </div>
+
+                    <p class="text-xs text-slate-400 mb-3">
+                        Doubly encoded text: First converted from Binary to ASCII (which reveals Base64), then Base64 decoded to plaintext.
+                    </p>
+
+                    <div class="bg-slate-900 p-3 rounded-lg border border-slate-800 font-mono text-xs text-amber-300/90 break-all mb-4 leading-relaxed">
+                        01100010 01000111 00111001 01110011 01100010 01000111 01101100 01110111 01100010 00110011 01000001 00111101
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                        <button onclick="decodeDouble('01100010 01000111 00111001 01110011 01100010 01000111 01101100 01110111 01100010 00110011 01000001 00111101', 'ans-4')" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white text-xs font-medium rounded-lg transition active:scale-95 shadow-lg shadow-amber-600/20">
+                            Execute Multi-Stage Decode
+                        </button>
+                        <div id="ans-4" class="hidden flex-1 bg-slate-900 border border-emerald-500/30 rounded-lg px-3 py-2 text-xs font-mono text-emerald-400 space-y-1">
+                            <div>Stage 1 (Binary → Base64): <span id="ans-4-stage1" class="text-amber-300"></span></div>
+                            <div>Stage 2 (Base64 → ASCII): <strong id="ans-4-text" class="text-white text-sm"></strong></div>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- SECTION: Quick Reference Conversion Chart -->
+            <section id="reference" class="bg-slate-850 border border-slate-800 rounded-xl p-5 sm:p-6">
+                <h3 class="text-base font-semibold text-white mb-4 flex items-center justify-between">
+                    <span>Base Conversion Reference Chart</span>
+                    <span class="text-xs text-slate-400 font-mono font-normal">Common ASCII Snippets</span>
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs font-mono">
+                        <thead class="bg-slate-900 text-slate-400 border-b border-slate-800">
+                            <tr>
+                                <th class="p-2.5">Char</th>
+                                <th class="p-2.5">Decimal</th>
+                                <th class="p-2.5">Binary</th>
+                                <th class="p-2.5">Hexadecimal</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800/50 text-slate-300">
+                            <tr class="hover:bg-slate-800/30">
+                                <td class="p-2.5 text-sky-400 font-bold">A</td>
+                                <td class="p-2.5">65</td>
+                                <td class="p-2.5">01000001</td>
+                                <td class="p-2.5">0x41</td>
+                            </tr>
+                            <tr class="hover:bg-slate-800/30">
+                                <td class="p-2.5 text-sky-400 font-bold">a</td>
+                                <td class="p-2.5">97</td>
+                                <td class="p-2.5">01100001</td>
+                                <td class="p-2.5">0x61</td>
+                            </tr>
+                            <tr class="hover:bg-slate-800/30">
+                                <td class="p-2.5 text-sky-400 font-bold">0</td>
+                                <td class="p-2.5">48</td>
+                                <td class="p-2.5">00110000</td>
+                                <td class="p-2.5">0x30</td>
+                            </tr>
+                            <tr class="hover:bg-slate-800/30">
+                                <td class="p-2.5 text-sky-400 font-bold">!</td>
+                                <td class="p-2.5">33</td>
+                                <td class="p-2.5">00100001</td>
+                                <td class="p-2.5">0x21</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- SECTION: Application Footer -->
+    <footer class="border-t border-slate-800 bg-slate-950 py-6 text-center text-xs text-slate-500 mt-12">
+        <p>© 2026 Interactive Cybersecurity Cyber Skyline Trove Companion.</p>
+    </footer>
+
+    <!-- SECTION: JavaScript Interactivity Logic -->
+    <script>
+        /**
+         * Converts Hexadecimal string (with or without '0x' prefix) to ASCII string.
+         */
+        function decodeHex(hexStr, targetId) {
+            let hex = hexStr.replace(/^0x/i, '');
+            let str = '';
+            for (let i = 0; i < hex.length; i += 2) {
+                str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+            }
+            document.getElementById(targetId + '-text').innerText = str;
+            document.getElementById(targetId).classList.remove('hidden');
+            document.getElementById(targetId).classList.add('flex');
+        }
+
+        /**
+         * Decodes standard Base64 encoded string to ASCII text.
+         */
+        function decodeBase64(b64Str, targetId) {
+            try {
+                let decoded = atob(b64Str);
+                document.getElementById(targetId + '-text').innerText = decoded;
+                document.getElementById(targetId).classList.remove('hidden');
+                document.getElementById(targetId).classList.add('flex');
+            } catch (e) {
+                alert('Invalid Base64 string');
+            }
+        }
+
+        /**
+         * Converts space-separated 8-bit binary strings into ASCII text.
+         */
+        function decodeBinary(binaryStr, targetId) {
+            let result = binaryStr.split(' ').map(bin => {
+                return String.fromCharCode(parseInt(bin, 2));
+            }).join('');
+            
+            document.getElementById(targetId + '-text').innerText = result;
+            document.getElementById(targetId).classList.remove('hidden');
+            document.getElementById(targetId).classList.add('flex');
+        }
+
+        /**
+         * Multi-stage pipeline: Converts binary to string (Base64), then decodes Base64 to ASCII.
+         */
+        function decodeDouble(binaryStr, targetId) {
+            // Stage 1: Binary to Base64 String
+            let stage1 = binaryStr.split(' ').map(bin => {
+                return String.fromCharCode(parseInt(bin, 2));
+            }).join('');
+
+            // Stage 2: Base64 string to Plaintext ASCII
+            let stage2 = atob(stage1);
+
+            document.getElementById(targetId + '-stage1').innerText = stage1;
+            document.getElementById(targetId + '-text').innerText = stage2;
+            document.getElementById(targetId).classList.remove('hidden');
+            document.getElementById(targetId).classList.add('block');
+        }
+    </script>
+</body>
+</html>
