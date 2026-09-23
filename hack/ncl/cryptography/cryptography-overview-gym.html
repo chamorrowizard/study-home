@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CryptoVerse | Interactive Cryptography Hub</title>
+    <!-- Tailwind CSS CDN for modern utility-first styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for UI icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Inter and JetBrains Mono for clean code & text display -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            900: '#14532d',
+                        },
+                        dark: {
+                            bg: '#0b0f17',
+                            card: '#111827',
+                            border: '#1f2937',
+                            accent: '#1e293b'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar styling for a sleek dark aesthetic */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b0f17;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1f2937;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #374151;
+        }
+    </style>
+    <!-- KaTeX CSS & JS for rendering LaTeX math formulas -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+</head>
+<body class="bg-dark-bg text-slate-200 font-sans antialiased min-h-screen flex flex-col md:flex-row">
+
+    <!-- Mobile Header -->
+    <header class="md:hidden flex items-center justify-between p-4 bg-dark-card border-b border-dark-border sticky top-0 z-50">
+        <div class="flex items-center gap-2">
+            <i class="fa-solid fa-shield-halved text-brand-500 text-xl"></i>
+            <span class="font-bold text-lg text-white tracking-wider">Crypto<span class="text-brand-500">Verse</span></span>
+        </div>
+        <button id="mobileMenuBtn" class="text-slate-400 hover:text-white focus:outline-none">
+            <i class="fa-solid fa-bars text-xl"></i>
+        </button>
+    </header>
+
+    <!-- Sidebar Navigation -->
+    <aside id="sidebar" class="hidden md:flex flex-col w-full md:w-72 bg-dark-card border-r border-dark-border min-h-screen sticky top-0 h-screen z-40 transition-all duration-300">
+        <div class="p-6 flex items-center gap-3 border-b border-dark-border">
+            <div class="p-2 bg-brand-500/10 rounded-lg text-brand-500">
+                <i class="fa-solid fa-shield-halved text-2xl"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg text-white tracking-wide">Crypto<span class="text-brand-500">Verse</span></h1>
+                <p class="text-xs text-slate-400">Cyber Skyline Modules</p>
+            </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="p-4">
+            <div class="relative">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+                <input type="text" id="searchInput" placeholder="Search topics or ciphers..." 
+                    class="w-full bg-dark-bg border border-dark-border rounded-lg pl-9 pr-4 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-brand-500 transition-colors">
+            </div>
+        </div>
+
+        <!-- Module Navigation List -->
+        <nav class="flex-1 overflow-y-auto px-4 space-y-1 py-2" id="moduleNav">
+            <!-- Nav items rendered dynamically via JavaScript -->
+        </nav>
+
+        <!-- Footer Info -->
+        <div class="p-4 border-t border-dark-border text-xs text-slate-500 flex justify-between items-center">
+            <span>Status: <span class="text-brand-500">Ready</span></span>
+            <span>Modules: <strong id="moduleCount" class="text-slate-300">0</strong></span>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 p-4 md:p-8 max-w-6xl mx-auto w-full overflow-y-auto">
+        <!-- Dashboard Header -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+            <div>
+                <h2 class="text-2xl md:text-3xl font-bold text-white tracking-tight" id="activeTitle">Cryptography Lab</h2>
+                <p class="text-slate-400 text-sm mt-1" id="activeSubtitle">Select a lesson from the menu to explore concepts, walkthroughs, and interactive decoders.</p>
+            </div>
+            <div class="flex items-center gap-2" id="difficultyBadge">
+                <!-- Dynamic difficulty / status tag -->
+            </div>
+        </div>
+
+        <!-- Content Grid Layout -->
+        <div id="contentContainer" class="space-y-6">
+            <!-- Dynamic Module Content Populates Here -->
+        </div>
+    </main>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        /**
+         * ============================================================================
+         * 1. LESSON DATA STRUCTURE
+         * ============================================================================
+         * Add new cryptography lessons simply by appending new objects to this array.
+         */
+        const cryptoLessons = [
+            {
+                id: 'number-bases',
+                title: 'Number Bases',
+                difficulty: 'Easy',
+                category: 'Encoding',
+                icon: 'fa-hashtags',
+                description: 'Understanding representations of data in base-2 (binary), base-16 (hexadecimal), and base-64.',
+                summary: 'Number bases dictate how many unique digits or symbols represent numerical values. While humans naturally use decimal (base-10), computers rely on binary (base-2), hexadecimal (base-16), and Base64 for efficient byte manipulation and ASCII transport.',
+                tip: 'Watch out for Base64 padding (`=`) and endianness in hex conversions. If decoding hex yields binary junk, check whether you need to drop an initial `0x` prefix or handle byte ordering.',
+                examples: [
+                    { label: 'Hexadecimal to ASCII', cipher: '0x73636f7270696f6e', plain: 'scorpion' },
+                    { label: 'Base64 to ASCII', cipher: 'c2NyaWJibGU=', plain: 'scribble' },
+                    { label: 'Binary to ASCII', cipher: '01110011 01100101 01100011 01100101 01110010', plain: 'secer' }
+                ],
+                walkthrough: '1. **Hexadecimal (Base-16):** Pairs of characters represent bytes (e.g., `0x73` = 115 in decimal = ASCII `s`).\n2. **Base64:** Uses a 64-character set (`A-Z`, `a-z`, `0-9`, `+`, `/`) to represent 6-bit chunks, often padded with `=`.',
+                interactiveType: 'hexDecoder'
+            },
+            {
+                id: 'shift',
+                title: 'Shift Cipher (Caesar / ROT-13)',
+                difficulty: 'Easy',
+                category: 'Substitution',
+                icon: 'fa-rotate-right',
+                description: 'Symmetric substitution where each letter in the plaintext is shifted by a fixed key.',
+                summary: 'The Caesar Cipher replaces each letter with another letter located a fixed number of positions down the alphabet. ROT-13 is a specific variant with a key shift of 13, making encryption and decryption identical.',
+                tip: 'Shift keys can go backwards (decrypting with key $k$ is equivalent to shifting forward by $26 - k$). Non-alphabetic characters (spaces, punctuation, numbers) are almost always left unchanged.',
+                examples: [
+                    { label: 'ROT-13 Example', cipher: 'Uryyb Jbeyq!', plain: 'Hello World!' }
+                ],
+                walkthrough: '1. Identify the letter shift key $k$.\n2. Shift each character back by $k$ positions: $P_i = (C_i - k) \\pmod{26}$.\n3. Non-alphabetic characters remain unaffected.',
+                interactiveType: 'caesardecoder'
+            },
+            {
+                id: 'atbash',
+                title: '@bash Cipher',
+                difficulty: 'Easy',
+                category: 'Substitution',
+                icon: 'fa-arrow-right-left',
+                description: 'A monoalphabetic substitution cipher where the alphabet is completely reversed.',
+                summary: 'The Atbash cipher maps the 1st letter of the alphabet to the last (A <-> Z), the 2nd to the second-to-last (B <-> Y), and so on.',
+                tip: 'Atbash is its own inverse! Applying the Atbash transform twice returns the original text, so encryption and decryption use the exact same algorithm.',
+                examples: [
+                    { label: 'Atbash Example', cipher: 'Svool Dliow', plain: 'Hello World' }
+                ],
+                walkthrough: 'Map each character to its reversed counterpart:\n`A<->Z, B<->Y, C<->X, D<->W ... M<->N`',
+                interactiveType: 'atbashDecoder'
+            },
+            {
+                id: 'beep',
+                title: 'Beep (Morse Code)',
+                difficulty: 'Easy',
+                category: 'Encoding',
+                icon: 'fa-wave-square',
+                description: 'Encoding textual characters as standardized sequences of short and long signals (dots and dashes).',
+                summary: 'Morse code translates characters into dots (`.`) and dashes (`-`). Words are often separated by slashes (`/`) or multiple spaces.',
+                tip: 'Pay close attention to delimiters! A single space separates characters within a word, while slashes (`/`) or multiple spaces separate whole words.',
+                examples: [
+                    { label: 'Morse Example', cipher: '.... . .-.. .-.. --- / .-- --- .-. .-.. -..', plain: 'HELLO WORLD' },
+                ],
+                walkthrough: '1. Separate symbols by spaces to identify letters.\n2. Separate slash delimiters (`/`) to identify word boundaries.\n3. Lookup sequences in a standard Morse alphabet table.',
+                interactiveType: 'morseDecoder'
+            },
+            {
+                id: 'fencing',
+                title: 'Fencing (Rail Fence Cipher)',
+                difficulty: 'Medium',
+                category: 'Transposition',
+                icon: 'fa-bars-staggered',
+                description: 'A transposition cipher that writes text downwards on successive "rails" of an imaginary fence.',
+                summary: 'Unlike substitution ciphers, rail fence ciphers rearrange character positions rather than replacing them. The key determines the number of horizontal rails.',
+                tip: 'Don\'t confuse the rail count with letter spacing. Rail fence movement bounces in a zigzag wave pattern ($0 \\to R-1 \\to 0$), not simple block columns.',
+                examples: [
+                    { label: 'Key 4 Example', cipher: 'TATHSSEIIERSC', plain: 'THIS IS A SECRET' }
+                ],
+                walkthrough: '1. Set up $N$ rails based on the key.\n2. Fill characters in a diagonal zig-zag pattern.\n3. Read off rows sequentially to reconstruct original text.',
+                interactiveType: 'railFenceDecoder'
+            },
+            {
+                id: 'xor',
+                title: 'XOR Cipher',
+                difficulty: 'Medium',
+                category: 'Bitwise',
+                icon: 'fa-bolt',
+                description: 'Bitwise Exclusive OR operation against a repeating key string.',
+                summary: 'The XOR cipher applies the logical Exclusive-OR operation ($1 \\oplus 0 = 1$, $1 \\oplus 1 = 0$) bit-by-bit between ciphertext and a key. Because $(A \\oplus K) \\oplus K = A$, applying the key twice recovers the plaintext.',
+                tip: 'If your output contains non-printable ASCII characters, convert the string to Hex before processing or check if your key needs to repeat across the full string length.',
+                examples: [
+                    { label: 'Key: key', cipher: '2*,K(,81Y>+5', plain: 'Sample text' }
+                ],
+                walkthrough: '1. Convert key and ciphertext to 8-bit binary numbers.\n2. XOR corresponding bits: matching bits yield `0`, differing bits yield `1`.\n3. Reconvert binary result back to ASCII characters.',
+                interactiveType: 'xorDecoder'
+            },
+            {
+                id: 'stego-1',
+                title: 'Stego 1',
+                difficulty: 'Easy',
+                category: 'Steganography',
+                icon: 'fa-image',
+                description: 'Concealing text or data inside non-text files, such as images or audio.',
+                summary: 'Steganography hides the very existence of a secret message. In Linux systems, string extraction tools like `strings` combined with pattern search `grep` can inspect binary headers or footers for embedded text flags.',
+                tip: 'Use case-insensitive flags when searching binary strings: `strings file | grep -i "flag"`. Also try `binwalk` or inspect file headers for hidden trailing payload data.',
+                examples: [
+                    { label: 'CLI Command', cipher: 'strings image.jpg | grep -i "NCL{"', plain: 'Flag found in output' }
+                ],
+                walkthrough: '1. Run `strings <filename>` to output printable characters.\n2. Pipe into pattern matchers: `strings image.jpg | grep -i "flag"`.',
+                interactiveType: 'infoOnly'
+            },
+            {
+                id: 'rsa',
+                title: 'RSA Cryptosystem',
+                difficulty: 'Hard',
+                category: 'Asymmetric',
+                icon: 'fa-key',
+                description: 'Public-key cryptosystem based on the mathematical difficulty of prime factorization.',
+                summary: 'RSA uses a public key $(n, e)$ for encryption and a private key $d$ for decryption. If prime factors $p$ and $q$ of $n$ are small, $n$ can be factored to easily calculate $d$.',
+                tip: 'Calculate $d$ using $\\phi(n) = (p-1)(q-1)$, NOT $n$! A common error is using $e^{-1} \\pmod n$ instead of $e^{-1} \\pmod{\\phi(n)}$.',
+                examples: [
+                    { label: 'Small Key RSA', cipher: 'n=1079, e=43, c=996', plain: 'm = c^d mod n' }
+                ],
+                walkthrough: '1. Factor $n = p \\times q$ (e.g. $1079 = 83 \\times 13$).\n2. Compute Euler totient: $\\phi(n) = (p-1)(q-1) = 82 \\times 12 = 984$.\n3. Find $d = e^{-1} \\pmod{\\phi(n)}$ (e.g. $43^{-1} \\pmod{984} = 595$).\n4. Decrypt: $m = c^d \\pmod n$.',
+                interactiveType: 'rsaCalculator'
+            },
+            {
+                id: 'french-vigenere',
+                title: 'French (Vigenère Cipher)',
+                difficulty: 'Medium',
+                category: 'Substitution',
+                icon: 'fa-shield-cat',
+                description: 'A polyalphabetic substitution cipher that uses a repeating keyword to shift letters.',
+                summary: 'The Vigenère cipher uses a series of woven Caesar ciphers based on the letters of a keyword. Each letter of the plaintext is shifted by the corresponding letter in the repeating keyword.',
+                tip: 'Key indexing only advances on alphabetic characters! Spaces and punctuation stay in place and should NOT consume a character from your keyword.',
+                examples: [
+                    { label: 'Vigenère Example', cipher: 'RIJVS UYVLH (Key: KEY)', plain: 'HELLO WORLD' }
+                ],
+                walkthrough: '1. Align the repeating keyword over the ciphertext.\n2. Shift each ciphertext character backward by the alphabetical index of the keyword character ($A=0, B=1, ...$).\n3. Formula: $P_i = (C_i - K_i + 26) \\pmod{26}$.',
+                interactiveType: 'vigenereDecoder'
+            },
+            {
+                id: 'double-base',
+                title: 'Double Base Encoding',
+                difficulty: 'Medium',
+                category: 'Encoding',
+                icon: 'fa-layer-group',
+                description: 'Chained encoding layers where data is encoded in binary, then Base64 (or vice-versa).',
+                summary: 'In multi-stage challenges, data is often wrapped in multiple encoding schemes. To recover the original plaintext, you must decode the layers in reverse sequence (e.g., Binary to ASCII $\\rightarrow$ Base64 to ASCII).',
+                tip: 'Decode in strict reverse order of operations! Always examine intermediate results to identify the next encoding format before proceeding.',
+                examples: [
+                    { label: 'Binary -> Base64', cipher: '01100010 01000111 00111001 01110011...', plain: 'bG9s... -> Plaintext' }
+                ],
+                walkthrough: '1. Identify outer layer format (e.g., 8-bit binary groups).\n2. Decode Binary to ASCII string.\n3. Identify inner layer format (e.g., Base64 ending in `=`).\n4. Decode Base64 string to recover final ASCII text.',
+                interactiveType: 'infoOnly'
+            },
+            {
+                id: 'strings-cmd',
+                title: 'Strings Command',
+                difficulty: 'Easy',
+                category: 'Analysis',
+                icon: 'fa-terminal',
+                description: 'Extracting human-readable text strings from raw binary files.',
+                summary: 'Binary files often conceal plain text embedded in headers, footers, or uncompressed sections. The Linux `strings` utility parses non-printable data and prints sequences of readable characters.',
+                tip: 'By default, `strings` searches for minimum sequences of 4 characters (`-n 4`). If missing short flags or keys, lower the limit with `strings -n 2 <filename>`.',
+                examples: [
+                    { label: 'CLI Pattern Search', cipher: 'strings binary_file | grep -E "NCL|FLAG"', plain: 'NCL{example_flag}' }
+                ],
+                walkthrough: '1. Run `strings <filename>` in terminal.\n2. Filter output with `grep`: `strings output.bin | grep -i "NCL{"`.\n3. Analyze surrounding text for keys or encoded payloads.',
+                interactiveType: 'infoOnly'
+            }
+        ];
+
+        let activeModuleId = cryptoLessons[0].id;
+
+        /**
+         * ============================================================================
+         * 2. UI INITIALIZATION & EVENT LISTENERS
+         * ============================================================================
+         */
+        document.addEventListener('DOMContentLoaded', () => {
+            renderNavigation(cryptoLessons);
+            loadModule(activeModuleId);
+
+            // Search filter listener
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase();
+                const filtered = cryptoLessons.filter(item => 
+                    item.title.toLowerCase().includes(query) || 
+                    item.category.toLowerCase().includes(query) ||
+                    item.description.toLowerCase().includes(query)
+                );
+                renderNavigation(filtered);
+            });
+
+            // Mobile toggle menu
+            document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+                const sidebar = document.getElementById('sidebar');
+                sidebar.classList.toggle('hidden');
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+                    e.preventDefault();
+                    document.getElementById('searchInput').focus();
+                }
+            });
+        });
+
+        /**
+         * ============================================================================
+         * 3. NAVIGATION RENDERING
+         * ============================================================================
+         */
+        function renderNavigation(items) {
+            const nav = document.getElementById('moduleNav');
+            document.getElementById('moduleCount').textContent = items.length;
+
+            if (items.length === 0) {
+                nav.innerHTML = `<div class="text-slate-500 text-xs p-4 text-center">No modules match search.</div>`;
+                return;
+            }
+
+            nav.innerHTML = items.map(item => {
+                const isActive = item.id === activeModuleId;
+                return `
+                    <button onclick="selectModule('${item.id}')" 
+                        class="w-full flex items-center justify-between p-3 rounded-xl text-left transition-all text-sm ${
+                            isActive 
+                                ? 'bg-brand-500/10 text-brand-500 font-semibold border border-brand-500/20' 
+                                : 'text-slate-400 hover:bg-dark-bg hover:text-slate-200'
+                        }">
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid ${item.icon} text-base w-5 text-center"></i>
+                            <span>${item.title}</span>
+                        </div>
+                        <span class="text-[10px] px-2 py-0.5 rounded-full border ${getDifficultyStyle(item.difficulty)}">
+                            ${item.difficulty}
+                        </span>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function getDifficultyStyle(difficulty) {
+            switch (difficulty.toLowerCase()) {
+                case 'easy': return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+                case 'medium': return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+                case 'hard': return 'bg-rose-500/10 text-rose-400 border-rose-500/20';
+                default: return 'bg-slate-500/10 text-slate-400 border-slate-500/20';
+            }
+        }
+
+        function selectModule(id) {
+            activeModuleId = id;
+            renderNavigation(cryptoLessons);
+            loadModule(id);
+            // Auto close mobile drawer on mobile select
+            if (window.innerWidth < 768) {
+                document.getElementById('sidebar').classList.add('hidden');
+            }
+        }
+
+        /**
+         * ============================================================================
+         * 4. MAIN MODULE CONTENT VIEW RENDERING
+         * ============================================================================
+         */
+        function loadModule(id) {
+            const module = cryptoLessons.find(m => m.id === id);
+            if (!module) return;
+
+            // Update Header
+            document.getElementById('activeTitle').textContent = module.title;
+            document.getElementById('activeSubtitle').textContent = module.description;
+            document.getElementById('difficultyBadge').innerHTML = `
+                <span class="text-xs px-2.5 py-1 rounded-md border ${getDifficultyStyle(module.difficulty)}">
+                    ${module.difficulty}
+                </span>
+                <span class="text-xs px-2.5 py-1 rounded-md border border-dark-border bg-dark-card text-slate-400">
+                    Category: ${module.category}
+                </span>
+            `;
+
+            // Build View Layout
+            const container = document.getElementById('contentContainer');
+            container.innerHTML = `
+                <!-- Concept Card -->
+                <div class="bg-dark-card border border-dark-border rounded-xl p-6 shadow-xl">
+                    <h3 class="text-lg font-bold text-white mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-book-open text-brand-500"></i> Core Concept
+                    </h3>
+                    <p class="text-slate-300 text-sm leading-relaxed">${module.summary}</p>
+                </div>
+
+                <!-- Pro Tip / Common Pitfalls Card -->
+                ${module.tip ? `
+                    <div class="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 shadow-xl flex items-start gap-3">
+                        <i class="fa-solid fa-lightbulb text-amber-400 text-lg mt-0.5 shrink-0"></i>
+                        <div class="text-xs text-amber-200/90 leading-relaxed">
+                            <strong class="text-amber-400 font-semibold block mb-1">Common Pitfall & Pro Tip:</strong>
+                            ${module.tip}
+                        </div>
+                    </div>
+                ` : ''}
+
+                <!-- Examples & Walkthrough Split -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Target Examples -->
+                    <div class="bg-dark-card border border-dark-border rounded-xl p-6 shadow-xl flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                                <i class="fa-solid fa-vial text-brand-500"></i> Sample Challenge Data
+                            </h3>
+                            <div class="space-y-3">
+                                ${module.examples.map(ex => `
+                                    <div class="bg-dark-bg border border-dark-border rounded-lg p-3">
+                                        <div class="text-xs text-slate-400 mb-1 font-medium">${ex.label}</div>
+                                        <div class="flex items-center justify-between gap-3 mb-1">
+                                            <div class="font-mono text-xs text-rose-400 break-all"><span class="text-slate-500">Cipher:</span> ${ex.cipher}</div>
+                                            <button onclick="copyToClipboard('${ex.cipher.replace(/'/g, "\\'")}', this)" 
+                                                    class="shrink-0 px-2 py-1 bg-dark-card border border-dark-border hover:border-brand-500/50 text-slate-300 rounded-lg text-[10px] font-medium transition-colors flex items-center gap-1">
+                                                <i class="fa-regular fa-copy"></i> Copy
+                                            </button>
+                                        </div>
+                                        <div class="font-mono text-xs text-brand-500 break-all"><span class="text-slate-500">Plain:</span> ${ex.plain}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step-by-Step Guide -->
+                    <div class="bg-dark-card border border-dark-border rounded-xl p-6 shadow-xl">
+                        <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-list-check text-brand-500"></i> Solution Walkthrough
+                        </h3>
+                        <div id="walkthroughContent" class="text-sm text-slate-300 space-y-2 leading-relaxed font-sans">
+                            ${module.walkthrough.split('\n').map(line => `<p>${line}</p>`).join('')}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interactive Playground Sandbox -->
+                <div class="bg-dark-card border border-dark-border rounded-xl p-6 shadow-xl">
+                    <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-terminal text-brand-500"></i> Interactive Decoder Tool
+                    </h3>
+                    <div id="interactiveArea">
+                        ${renderInteractiveArea(module.interactiveType)}
+                    </div>
+                </div>
+            `;
+
+            // Render LaTeX formulas in walkthrough and concept areas.
+            if (window.renderMathInElement) {
+                renderMathInElement(container, {
+                    delimiters: [
+                        { left: '$$', right: '$$', display: true },
+                        { left: '$', right: '$', display: false }
+                    ],
+                    throwOnError: false
+                });
+            }
+        }
+
+        /**
+         * ============================================================================
+         * 5. INTERACTIVE TOOL TEMPLATES & LOGIC
+         * ============================================================================
+         */
+        function renderInteractiveArea(type) {
+            switch(type) {
+                case 'hexDecoder':
+                    return `
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs text-slate-400 mb-1">Enter Hex String (with or without 0x)</label>
+                                <input type="text" id="hexInput" value="0x73636f7270696f6e" 
+                                    class="w-full bg-dark-bg border border-dark-border rounded-lg p-3 font-mono text-sm text-slate-200 focus:border-brand-500 focus:outline-none">
+                            </div>
+                            <button onclick="runHexDecode()" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-sm font-semibold transition-colors">
+                                Decode Hex to Text
+                            </button>
+                            <div class="p-4 bg-dark-bg border border-dark-border rounded-lg flex justify-between items-center gap-4">
+                                <div>
+                                    <span class="text-xs text-slate-500 block mb-1">Decoded ASCII Result:</span>
+                                    <span id="hexResult" class="font-mono text-brand-500 font-bold text-base">scorpion</span>
+                                </div>
+                                <button onclick="copyToClipboard(document.getElementById('hexResult').textContent, this)" 
+                                        class="px-3 py-1.5 bg-dark-card border border-dark-border hover:border-brand-500/50 text-slate-300 rounded-lg text-xs font-medium transition-colors flex items-center gap-2">
+                                    <i class="fa-regular fa-copy"></i> Copy
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                case 'caesardecoder':
+                    return `
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                                <div class="sm:col-span-3">
+                                    <label class="block text-xs text-slate-400 mb-1">Ciphertext</label>
+                                    <input type="text" id="caesarInput" value="Uryyb Jbeyq!" 
+                                        class="w-full bg-dark-bg border border-dark-border rounded-lg p-3 font-mono text-sm text-slate-200 focus:border-brand-500 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-slate-400 mb-1">Shift Key (1-25)</label>
+                                    <input type="number" id="caesarKey" value="13" min="1" max="25" 
+                                        class="w-full bg-dark-bg border border-dark-border rounded-lg p-3 font-mono text-sm text-slate-200 focus:border-brand-500 focus:outline-none">
+                                </div>
+                            </div>
+                            <button onclick="runCaesarDecode()" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-sm font-semibold transition-colors">
+                                Apply Shift
+                            </button>
+                            <div class="p-4 bg-dark-bg border border-dark-border rounded-lg flex justify-between items-center gap-4">
+                                <div>
+                                    <span class="text-xs text-slate-500 block mb-1">Decoded Result:</span>
+                                    <span id="caesarResult" class="font-mono text-brand-500 font-bold text-base">Hello World!</span>
+                                </div>
+                                <button onclick="copyToClipboard(document.getElementById('caesarResult').textContent, this)" 
+                                        class="px-3 py-1.5 bg-dark-card border border-dark-border hover:border-brand-500/50 text-slate-300 rounded-lg text-xs font-medium transition-colors flex items-center gap-2">
+                                    <i class="fa-regular fa-copy"></i> Copy
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                case 'railFenceDecoder':
+                    return `
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                                <div class="sm:col-span-3">
+                                    <label class="block text-xs text-slate-400 mb-1">Ciphertext</label>
+                                    <input type="text" id="railInput" value="TATHSSEIIERSC" 
+                                        class="w-full bg-dark-bg border border-dark-border rounded-lg p-3 font-mono text-sm text-slate-200 focus:border-brand-500 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-slate-400 mb-1">Number of Rails (Key)</label>
+                                    <input type="number" id="railKey" value="4" min="2" max="10" 
+                                        class="w-full bg-dark-bg border border-dark-border rounded-lg p-3 font-mono text-sm text-slate-200 focus:border-brand-500 focus:outline-none">
+                                </div>
+                            </div>
+                            <button onclick="runRailFenceDecode()" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-sm font-semibold transition-colors">
+                                Decrypt Rail Fence
+                            </button>
+                            <div class="p-4 bg-dark-bg border border-dark-border rounded-lg flex justify-between items-center gap-4">
+                                <div>
+                                    <span class="text-xs text-slate-500 block mb-1">Decoded Text:</span>
+                                    <span id="railResult" class="font-mono text-brand-500 font-bold text-base">THIS IS A SECRET</span>
+                                </div>
+                                <button onclick="copyToClipboard(document.getElementById('railResult').textContent, this)" 
+                                        class="px-3 py-1.5 bg-dark-card border border-dark-border hover:border-brand-500/50 text-slate-300 rounded-lg text-xs font-medium transition-colors flex items-center gap-2">
+                                    <i class="fa-regular fa-copy"></i> Copy
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                case 'vigenereDecoder':
+                    return `
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div class="sm:col-span-2">
+                                    <label class="block text-xs text-slate-400 mb-1">Ciphertext</label>
+                                    <input type="text" id="vigenereInput" value="RIJVS UYVLH" 
+                                        class="w-full bg-dark-bg border border-dark-border rounded-lg p-3 font-mono text-sm text-slate-200 focus:border-brand-500 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-slate-400 mb-1">Keyword</label>
+                                    <input type="text" id="vigenereKey" value="KEY" 
+                                        class="w-full bg-dark-bg border border-dark-border rounded-lg p-3 font-mono text-sm text-slate-200 focus:border-brand-500 focus:outline-none">
+                                </div>
+                            </div>
+                            <button onclick="runVigenereDecode()" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-sm font-semibold transition-colors">
+                                Decrypt Vigenère Cipher
+                            </button>
+                            <div class="p-4 bg-dark-bg border border-dark-border rounded-lg flex justify-between items-center gap-4">
+                                <div>
+                                    <span class="text-xs text-slate-500 block mb-1">Decoded Result:</span>
+                                    <span id="vigenereResult" class="font-mono text-brand-500 font-bold text-base">HELLO WORLD</span>
+                                </div>
+                                <button onclick="copyToClipboard(document.getElementById('vigenereResult').textContent, this)" 
+                                        class="px-3 py-1.5 bg-dark-card border border-dark-border hover:border-brand-500/50 text-slate-300 rounded-lg text-xs font-medium transition-colors flex items-center gap-2">
+                                    <i class="fa-regular fa-copy"></i> Copy
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                case 'morseDecoder':
+                    return `
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs text-slate-400 mb-1">Morse Code Input (Dots '.', Dashes '-', Spaces ' ', Word Slashing '/')</label>
+                                <input type="text" id="morseInput" value=".... . .-.. .-.. --- / .-- --- .-. .-.. -.." 
+                                    class="w-full bg-dark-bg border border-dark-border rounded-lg p-3 font-mono text-sm text-slate-200 focus:border-brand-500 focus:outline-none">
+                            </div>
+                            <button onclick="runMorseDecode()" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-sm font-semibold transition-colors">
+                                Translate Morse
+                            </button>
+                            <div class="p-4 bg-dark-bg border border-dark-border rounded-lg flex justify-between items-center gap-4">
+                                <div>
+                                    <span class="text-xs text-slate-500 block mb-1">Text Result:</span>
+                                    <span id="morseResult" class="font-mono text-brand-500 font-bold text-base">HELLO WORLD</span>
+                                </div>
+                                <button onclick="copyToClipboard(document.getElementById('morseResult').textContent, this)" 
+                                        class="px-3 py-1.5 bg-dark-card border border-dark-border hover:border-brand-500/50 text-slate-300 rounded-lg text-xs font-medium transition-colors flex items-center gap-2">
+                                    <i class="fa-regular fa-copy"></i> Copy
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                case 'xorDecoder':
+                    return `
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div class="sm:col-span-2">
+                                    <label class="block text-xs text-slate-400 mb-1">Ciphertext String</label>
+                                    <input type="text" id="xorInput" value="2*,K(,81Y>+5" 
+                                        class="w-full bg-dark-bg border border-dark-border rounded-lg p-3 font-mono text-sm text-slate-200 focus:border-brand-500 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-slate-400 mb-1">XOR Key (Text)</label>
+                                    <input type="text" id="xorKey" value="key" 
+                                        class="w-full bg-dark-bg border border-dark-border rounded-lg p-3 font-mono text-sm text-slate-200 focus:border-brand-500 focus:outline-none">
+                                </div>
+                            </div>
+                            <button onclick="runXorDecode()" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-sm font-semibold transition-colors">
+                                Execute Bitwise XOR
+                            </button>
+                            <div class="p-4 bg-dark-bg border border-dark-border rounded-lg flex justify-between items-center gap-4">
+                                <div>
+                                    <span class="text-xs text-slate-500 block mb-1">XOR Output:</span>
+                                    <span id="xorResult" class="font-mono text-brand-500 font-bold text-base">Sample text</span>
+                                </div>
+                                <button onclick="copyToClipboard(document.getElementById('xorResult').textContent, this)" 
+                                        class="px-3 py-1.5 bg-dark-card border border-dark-border hover:border-brand-500/50 text-slate-300 rounded-lg text-xs font-medium transition-colors flex items-center gap-2">
+                                    <i class="fa-regular fa-copy"></i> Copy
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                case 'atbashDecoder':
+                    return `
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs text-slate-400 mb-1">Input Text</label>
+                                <input type="text" id="atbashInput" value="Svool Dliow" 
+                                    class="w-full bg-dark-bg border border-dark-border rounded-lg p-3 font-mono text-sm text-slate-200 focus:border-brand-500 focus:outline-none">
+                            </div>
+                            <button onclick="runAtbashDecode()" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-sm font-semibold transition-colors">
+                                Reverse Atbash Alphabet
+                            </button>
+                            <div class="p-4 bg-dark-bg border border-dark-border rounded-lg flex justify-between items-center gap-4">
+                                <div>
+                                    <span class="text-xs text-slate-500 block mb-1">Transformed Result:</span>
+                                    <span id="atbashResult" class="font-mono text-brand-500 font-bold text-base">Hello World</span>
+                                </div>
+                                <button onclick="copyToClipboard(document.getElementById('atbashResult').textContent, this)" 
+                                        class="px-3 py-1.5 bg-dark-card border border-dark-border hover:border-brand-500/50 text-slate-300 rounded-lg text-xs font-medium transition-colors flex items-center gap-2">
+                                    <i class="fa-regular fa-copy"></i> Copy
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                case 'rsaCalculator':
+                    return `
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                <div>
+                                    <label class="block text-xs text-slate-400 mb-1">n (Modulus)</label>
+                                    <input type="number" id="rsaN" value="1079" class="w-full bg-dark-bg border border-dark-border rounded-lg p-2 font-mono text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-slate-400 mb-1">e (Public Exponent)</label>
+                                    <input type="number" id="rsaE" value="43" class="w-full bg-dark-bg border border-dark-border rounded-lg p-2 font-mono text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-slate-400 mb-1">Cipher Block(s) (space separated)</label>
+                                    <input type="text" id="rsaC" value="996 894 379" class="w-full bg-dark-bg border border-dark-border rounded-lg p-2 font-mono text-sm">
+                                </div>
+                            </div>
+                            <button onclick="runRSACalculate()" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-sm font-semibold transition-colors">
+                                Factor Key & Decrypt Cipher Blocks
+                            </button>
+                            <div class="p-4 bg-dark-bg border border-dark-border rounded-lg font-mono text-xs space-y-1 flex justify-between items-center gap-4">
+                                <div id="rsaOutput" class="text-brand-500 font-bold">Press calculate to solve.</div>
+                                <button onclick="copyToClipboard(document.getElementById('rsaOutput').textContent, this)" 
+                                        class="shrink-0 px-3 py-1.5 bg-dark-card border border-dark-border hover:border-brand-500/50 text-slate-300 rounded-lg text-xs font-medium transition-colors flex items-center gap-2">
+                                    <i class="fa-regular fa-copy"></i> Copy
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                default:
+                    return `
+                        <div class="p-4 bg-dark-bg border border-dark-border rounded-lg text-slate-400 text-sm">
+                            <i class="fa-solid fa-circle-info text-brand-500 mr-2"></i> Standard interactive decoding sandbox is not required for this topic. Refer to the solution guide above.
+                        </div>
+                    `;
+            }
+        }
+
+        // --- Interactive Decoder Algorithms ---
+
+        function copyToClipboard(text, btnElement) {
+            const originalText = btnElement.innerHTML;
+            const showCopied = () => {
+                btnElement.innerHTML = `<i class="fa-solid fa-check text-brand-500"></i> Copied!`;
+                setTimeout(() => {
+                    btnElement.innerHTML = originalText;
+                }, 2000);
+            };
+
+            const fallbackCopy = () => {
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                textArea.style.position = 'fixed';
+                textArea.style.opacity = '0';
+                document.body.appendChild(textArea);
+                textArea.select();
+                const copied = document.execCommand('copy');
+                textArea.remove();
+                if (copied) showCopied();
+            };
+
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(showCopied).catch(fallbackCopy);
+            } else {
+                fallbackCopy();
+            }
+        }
+
+        function runHexDecode() {
+            let input = document.getElementById('hexInput').value.trim();
+            if (input.startsWith('0x')) input = input.slice(2);
+            let str = '';
+            for (let i = 0; i < input.length; i += 2) {
+                str += String.fromCharCode(parseInt(input.substr(i, 2), 16));
+            }
+            document.getElementById('hexResult').textContent = str || 'Invalid Hex Input';
+        }
+
+        function runCaesarDecode() {
+            const input = document.getElementById('caesarInput').value;
+            const shift = parseInt(document.getElementById('caesarKey').value) || 0;
+            const res = input.replace(/[a-zA-Z]/g, (c) => {
+                const base = c <= 'Z' ? 65 : 97;
+                return String.fromCharCode((c.charCodeAt(0) - base - shift + 26) % 26 + base);
+            });
+            document.getElementById('caesarResult').textContent = res;
+        }
+
+        function runRailFenceDecode() {
+            const cipher = document.getElementById('railInput').value;
+            const rails = parseInt(document.getElementById('railKey').value) || 2;
+            if (rails <= 1 || cipher.length === 0) return;
+
+            const fence = Array.from({ length: rails }, () => Array(cipher.length).fill(null));
+            let rail = 0;
+            let direction = 1;
+
+            for (let i = 0; i < cipher.length; i++) {
+                fence[rail][i] = '*';
+                if (rail === 0) direction = 1;
+                else if (rail === rails - 1) direction = -1;
+                rail += direction;
+            }
+
+            let index = 0;
+            for (let row = 0; row < rails; row++) {
+                for (let column = 0; column < cipher.length; column++) {
+                    if (fence[row][column] === '*' && index < cipher.length) {
+                        fence[row][column] = cipher[index++];
+                    }
+                }
+            }
+
+            let result = '';
+            rail = 0;
+            direction = 1;
+            for (let i = 0; i < cipher.length; i++) {
+                result += fence[rail][i];
+                if (rail === 0) direction = 1;
+                else if (rail === rails - 1) direction = -1;
+                rail += direction;
+            }
+
+            document.getElementById('railResult').textContent = result;
+        }
+
+        function runVigenereDecode() {
+            const input = document.getElementById('vigenereInput').value;
+            const key = document.getElementById('vigenereKey').value.toUpperCase().replace(/[^A-Z]/g, '');
+            if (!key) return;
+
+            let result = '';
+            let keyIdx = 0;
+
+            for (let i = 0; i < input.length; i++) {
+                const char = input[i];
+                if (/[a-zA-Z]/.test(char)) {
+                    const isUpper = char === char.toUpperCase();
+                    const cCode = char.toUpperCase().charCodeAt(0) - 65;
+                    const kCode = key[keyIdx % key.length].charCodeAt(0) - 65;
+                    const pCode = (cCode - kCode + 26) % 26;
+                    const decodedChar = String.fromCharCode(pCode + 65);
+                    result += isUpper ? decodedChar : decodedChar.toLowerCase();
+                    keyIdx++;
+                } else {
+                    result += char;
+                }
+            }
+            document.getElementById('vigenereResult').textContent = result;
+        }
+
+        function runMorseDecode() {
+            const morseMap = {
+                '.-': 'A', '-...': 'B', '-.-.': 'C', '-..': 'D', '.': 'E', '..-.': 'F',
+                '--.': 'G', '....': 'H', '..': 'I', '.---': 'J', '-.-': 'K', '.-..': 'L',
+                '--': 'M', '-.': 'N', '---': 'O', '.--.': 'P', '--.-': 'Q', '.-.': 'R',
+                '...': 'S', '-': 'T', '..-': 'U', '...-': 'V', '.--': 'W', '-..-': 'X',
+                '-.--': 'Y', '--..': 'Z', '-----': '0', '.----': '1', '..---': '2',
+                '...--': '3', '....-': '4', '.....': '5', '-....': '6', '--...': '7',
+                '---..': '8', '----.': '9'
+            };
+
+            const input = document.getElementById('morseInput').value.trim();
+            const words = input.split('/');
+            const decodedWords = words.map(word => {
+                return word.trim().split(/\s+/).map(symbol => morseMap[symbol] || '?').join('');
+            });
+
+            document.getElementById('morseResult').textContent = decodedWords.join(' ');
+        }
+
+        function runXorDecode() {
+            const input = document.getElementById('xorInput').value;
+            const key = document.getElementById('xorKey').value;
+            if (!key) return;
+
+            let result = '';
+            for (let i = 0; i < input.length; i++) {
+                const charCode = input.charCodeAt(i);
+                const keyChar = key.charCodeAt(i % key.length);
+                result += String.fromCharCode(charCode ^ keyChar);
+            }
+            document.getElementById('xorResult').textContent = result;
+        }
+
+        function runAtbashDecode() {
+            const input = document.getElementById('atbashInput').value;
+            const res = input.replace(/[a-zA-Z]/g, (c) => {
+                const base = c <= 'Z' ? 65 : 97;
+                return String.fromCharCode(base + (25 - (c.charCodeAt(0) - base)));
+            });
+            document.getElementById('atbashResult').textContent = res;
+        }
+
+        function runRSACalculate() {
+            const n = parseInt(document.getElementById('rsaN').value);
+            const e = parseInt(document.getElementById('rsaE').value);
+            const rawC = document.getElementById('rsaC').value.trim();
+            const blocks = rawC.split(/\s+/).map(x => parseInt(x)).filter(x => !isNaN(x));
+
+            let p = 0, q = 0;
+            for (let i = 2; i < n; i++) {
+                if (n % i === 0) {
+                    p = i;
+                    q = n / i;
+                    break;
+                }
+            }
+
+            if (!p) {
+                document.getElementById('rsaOutput').textContent = "Could not factor n.";
+                return;
+            }
+
+            const phi = (p - 1) * (q - 1);
+            let d = 0;
+            for (let i = 1; i < phi; i++) {
+                if ((e * i) % phi === 1) {
+                    d = i;
+                    break;
+                }
+            }
+
+            const decryptedVals = blocks.map(c => (BigInt(c) ** BigInt(d) % BigInt(n)).toString());
+
+            document.getElementById('rsaOutput').innerHTML = `
+                Factors: p = ${p}, q = ${q}<br>
+                Euler Totient φ(n) = ${phi}<br>
+                Private Key Exponent d = ${d}<br>
+                Decrypted Block Values m = <span class="text-white font-bold">${decryptedVals.join(', ')}</span>
+            `;
+        }
+    </script>
+</body>
+</html>
