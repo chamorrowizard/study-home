@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CYBER_OPS // OSINT Knowledge Base</title>
+
+  <!-- Tailwind CSS CDN for utility-first styling -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Lucide Icons CDN for UI iconography -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Custom CSS & Font Configurations -->
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;700&family=Inter:wght@300;400;600;700&display=swap');
+
+    :root {
+      --bg-slate: #0f172a;
+      --card-slate: #1e293b;
+      --border-slate: #334155;
+      --accent-green: #10b981;
+      --accent-cyan: #06b6d4;
+    }
+
+    body {
+      background-color: var(--bg-slate);
+      font-family: 'Inter', sans-serif;
+      color: #e2e8f0;
+    }
+
+    code, kbd, pre, .font-mono {
+      font-family: 'Fira Code', monospace;
+    }
+
+    /* Terminal-style custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #10b981;
+    }
+
+    /* Scanline overlay effect for hacker aesthetic */
+    .scanlines {
+      background: linear-gradient(
+        rgba(18, 16, 16, 0) 50%, 
+        rgba(0, 0, 0, 0.25) 50%
+      );
+      background-size: 100% 4px;
+    }
+
+    /* Card glow highlight on hover */
+    .module-card {
+      transition: all 0.2s ease-in-out;
+      border: 1px solid var(--border-slate);
+    }
+    .module-card:hover {
+      border-color: var(--accent-green);
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
+      transform: translateY(-2px);
+    }
+
+    /* Active navigation highlight */
+    .nav-active {
+      background-color: rgba(16, 185, 129, 0.1);
+      border-left: 3px solid var(--accent-green);
+      color: #10b981;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col md:flex-row antialiased relative selection:bg-emerald-500 selection:text-slate-900">
+
+  <!-- ========================================== -->
+  <!-- SIDEBAR / NAVIGATION (Desktop & Mobile)    -->
+  <!-- ========================================== -->
+  <aside class="w-full md:w-72 bg-slate-900/90 border-b md:border-b-0 md:border-r border-slate-800 p-4 flex flex-col justify-between shrink-0 z-20 backdrop-blur">
+    <div>
+      <!-- System Header -->
+      <div class="flex items-center justify-between pb-6 mb-6 border-b border-slate-800">
+        <div class="flex items-center gap-3">
+          <div class="p-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg text-emerald-400">
+            <i data-lucide="terminal" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h1 class="font-mono font-bold text-slate-100 text-sm tracking-wider uppercase">CYBER_OPS</h1>
+            <p class="text-xs text-slate-400 font-mono">v2.026 // OSINT_KB</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Search Input -->
+      <div class="relative mb-6">
+        <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-slate-500"></i>
+        <input 
+          type="text" 
+          id="search-input"
+          placeholder="Filter modules..." 
+          class="w-full bg-slate-950 border border-slate-800 rounded-lg pl-9 pr-3 py-2 text-xs font-mono text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition"
+          onkeyup="filterModules()"
+        >
+      </div>
+
+      <!-- Category Filter Links -->
+      <nav class="space-y-1 font-mono text-xs" id="category-nav">
+        <button onclick="filterCategory('all')" class="category-btn nav-active w-full flex items-center justify-between px-3 py-2.5 rounded-md text-left transition">
+          <span class="flex items-center gap-2"><i data-lucide="layers" class="w-4 h-4"></i> ALL_MODULES</span>
+          <span class="bg-slate-800 px-1.5 py-0.5 rounded text-[10px] text-slate-400" id="count-all">8</span>
+        </button>
+        <button onclick="filterCategory('recon')" class="category-btn w-full flex items-center justify-between px-3 py-2.5 rounded-md text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 text-left transition">
+          <span class="flex items-center gap-2"><i data-lucide="globe" class="w-4 h-4"></i> RECON & DNS</span>
+          <span class="bg-slate-800 px-1.5 py-0.5 rounded text-[10px] text-slate-400">3</span>
+        </button>
+        <button onclick="filterCategory('crypto')" class="category-btn w-full flex items-center justify-between px-3 py-2.5 rounded-md text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 text-left transition">
+          <span class="flex items-center gap-2"><i data-lucide="shield-check" class="w-4 h-4"></i> CRYPTO & AUTH</span>
+          <span class="bg-slate-800 px-1.5 py-0.5 rounded text-[10px] text-slate-400">2</span>
+        </button>
+        <button onclick="filterCategory('forensics')" class="category-btn w-full flex items-center justify-between px-3 py-2.5 rounded-md text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 text-left transition">
+          <span class="flex items-center gap-2"><i data-lucide="file-search" class="w-4 h-4"></i> FORENSICS & DATA</span>
+          <span class="bg-slate-800 px-1.5 py-0.5 rounded text-[10px] text-slate-400">3</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- Quick Status Footer -->
+    <div class="mt-6 pt-4 border-t border-slate-800 font-mono text-[11px] text-slate-500 flex items-center justify-between">
+      <span class="flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        SYSTEM_READY
+      </span>
+      <span>NCL_2026</span>
+    </div>
+  </aside>
+
+  <!-- ========================================== -->
+  <!-- MAIN WORKSPACE                             -->
+  <!-- ========================================== -->
+  <main class="flex-1 p-4 md:p-8 overflow-y-auto max-w-7xl">
+    
+    <!-- Workspace Header -->
+    <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-slate-800">
+      <div>
+        <h2 class="text-xl md:text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+          Open Source Intelligence Field Guide
+        </h2>
+        <p class="text-sm text-slate-400 mt-1">Operational reference, command cheatsheets, and investigation methodology.</p>
+      </div>
+      
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-3">
+        <button onclick="toggleModal(true)" class="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold px-3.5 py-2 rounded-lg text-xs font-mono transition">
+          <i data-lucide="plus" class="w-4 h-4"></i> ADD_MODULE
+        </button>
+      </div>
+    </header>
+
+    <!-- MODULE CARDS GRID -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="module-grid">
+
+      <!-- CARD 1: OWASP & Archive Analysis -->
+      <article class="module-card bg-slate-900 rounded-xl p-5 flex flex-col justify-between" data-category="recon" data-tags="owasp wayback archive web top10">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="px-2.5 py-1 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 rounded text-[10px] font-mono font-semibold uppercase">Recon / Web</span>
+            <span class="text-xs font-mono text-slate-500">HARD</span>
+          </div>
+          <h3 class="text-base font-bold text-slate-100 mb-2">OWASP & Web Archiving</h3>
+          <p class="text-xs text-slate-400 mb-4 leading-relaxed">
+            Historical footprinting of web targets, analyzing OWASP Top 10 naming conventions, and extracting legacy documents via Wayback Machine.
+          </p>
+          <div class="bg-slate-950 rounded-lg p-3 border border-slate-800 mb-4 font-mono text-xs text-slate-300 space-y-2">
+            <div class="text-slate-500 text-[10px] uppercase font-bold">// Essential Tools</div>
+            <div class="text-emerald-400">web.archive.org</div>
+            <div class="text-slate-400">web.archive.org/web/*/[target-url]</div>
+          </div>
+        </div>
+        <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-400">
+          <span class="flex items-center gap-1"><i data-lucide="clock" class="w-3.5 h-3.5"></i> Historic Audit</span>
+          <span class="text-emerald-400 hover:underline cursor-pointer" onclick="alert('Viewing OWASP Notes')">Details &rarr;</span>
+        </div>
+      </article>
+
+      <!-- CARD 2: WHOIS Domain Recon -->
+      <article class="module-card bg-slate-900 rounded-xl p-5 flex flex-col justify-between" data-category="recon" data-tags="whois dns domain icann tld">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="px-2.5 py-1 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 rounded text-[10px] font-mono font-semibold uppercase">Recon / DNS</span>
+            <span class="text-xs font-mono text-slate-500">EASY</span>
+          </div>
+          <h3 class="text-base font-bold text-slate-100 mb-2">WHOIS & Registrant Lookup</h3>
+          <p class="text-xs text-slate-400 mb-4 leading-relaxed">
+            Extracting registrar details, TLD delegation info, contact metadata, and domain hierarchy (SLD vs TLD).
+          </p>
+          <div class="bg-slate-950 rounded-lg p-3 border border-slate-800 mb-4 font-mono text-xs text-slate-300 space-y-1">
+            <div class="text-slate-500 text-[10px] uppercase font-bold">// Terminal Command</div>
+            <div class="text-emerald-400">$ whois [target-domain]</div>
+          </div>
+        </div>
+        <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-400">
+          <span class="flex items-center gap-1"><i data-lucide="globe" class="w-3.5 h-3.5"></i> ICANN Registry</span>
+          <span class="text-emerald-400 hover:underline cursor-pointer">Details &rarr;</span>
+        </div>
+      </article>
+
+      <!-- CARD 3: DNS Record Parsing -->
+      <article class="module-card bg-slate-900 rounded-xl p-5 flex flex-col justify-between" data-category="recon" data-tags="dns rfc dig ns nssec ipv6 cname mx">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="px-2.5 py-1 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 rounded text-[10px] font-mono font-semibold uppercase">Recon / DNS</span>
+            <span class="text-xs font-mono text-slate-500">EASY</span>
+          </div>
+          <h3 class="text-base font-bold text-slate-100 mb-2">DNS Record Specification</h3>
+          <p class="text-xs text-slate-400 mb-4 leading-relaxed">
+            Identification of authoritative record types via RFC specifications (NS zone delegation, AAAA IPv6, DNSSEC RFC 4034).
+          </p>
+          <div class="bg-slate-950 rounded-lg p-3 border border-slate-800 mb-4 font-mono text-xs text-slate-300 space-y-1">
+            <div class="text-slate-500 text-[10px] uppercase font-bold">// Lookup Utility</div>
+            <div class="text-emerald-400">$ dig ANY +noall +answer [domain]</div>
+          </div>
+        </div>
+        <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-400">
+          <span class="flex items-center gap-1"><i data-lucide="server" class="w-3.5 h-3.5"></i> RFC Standards</span>
+          <span class="text-emerald-400 hover:underline cursor-pointer">Details &rarr;</span>
+        </div>
+      </article>
+
+      <!-- CARD 4: SSL Certificate Analysis -->
+      <article class="module-card bg-slate-900 rounded-xl p-5 flex flex-col justify-between" data-category="crypto" data-tags="ssl tls certificate chain key bits issuer cert">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="px-2.5 py-1 bg-purple-500/10 border border-purple-500/20 text-purple-400 rounded text-[10px] font-mono font-semibold uppercase">Crypto / TLS</span>
+            <span class="text-xs font-mono text-slate-500">MEDIUM</span>
+          </div>
+          <h3 class="text-base font-bold text-slate-100 mb-2">SSL/TLS Chain Analysis</h3>
+          <p class="text-xs text-slate-400 mb-4 leading-relaxed">
+            Inspecting public key bit lengths, issuer Common Names (CN), certificate validity windows, and complete trust chains.
+          </p>
+          <div class="bg-slate-950 rounded-lg p-3 border border-slate-800 mb-4 font-mono text-xs text-slate-300 space-y-1">
+            <div class="text-slate-500 text-[10px] uppercase font-bold">// OpenSSL CLI</div>
+            <div class="text-emerald-400">$ openssl s_client -connect [host]:443</div>
+          </div>
+        </div>
+        <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-400">
+          <span class="flex items-center gap-1"><i data-lucide="lock" class="w-3.5 h-3.5"></i> Cert Audit</span>
+          <span class="text-emerald-400 hover:underline cursor-pointer">Details &rarr;</span>
+        </div>
+      </article>
+
+      <!-- CARD 5: PGP Public Keyserver Lookup -->
+      <article class="module-card bg-slate-900 rounded-xl p-5 flex flex-col justify-between" data-category="crypto" data-tags="pgp gpg key fingerprint uid email server ubuntu mit">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="px-2.5 py-1 bg-purple-500/10 border border-purple-500/20 text-purple-400 rounded text-[10px] font-mono font-semibold uppercase">Crypto / Identity</span>
+            <span class="text-xs font-mono text-slate-500">EASY</span>
+          </div>
+          <h3 class="text-base font-bold text-slate-100 mb-2">PGP Keyserver Intelligence</h3>
+          <p class="text-xs text-slate-400 mb-4 leading-relaxed">
+            Querying public PGP keyservers (Ubuntu, MIT, OpenPGP) to extract hex fingerprints, UID emails, and key expiration dates.
+          </p>
+          <div class="bg-slate-950 rounded-lg p-3 border border-slate-800 mb-4 font-mono text-xs text-slate-300 space-y-1">
+            <div class="text-slate-500 text-[10px] uppercase font-bold">// Keyservers</div>
+            <div class="text-emerald-400">keyserver.ubuntu.com</div>
+          </div>
+        </div>
+        <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-400">
+          <span class="flex items-center gap-1"><i data-lucide="key" class="w-3.5 h-3.5"></i> GPG Infrastructure</span>
+          <span class="text-emerald-400 hover:underline cursor-pointer">Details &rarr;</span>
+        </div>
+      </article>
+
+      <!-- CARD 6: EXIF Metadata Extraction -->
+      <article class="module-card bg-slate-900 rounded-xl p-5 flex flex-col justify-between" data-category="forensics" data-tags="meta metadata exif exiftool gps camera image geotag">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="px-2.5 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded text-[10px] font-mono font-semibold uppercase">Forensics / Image</span>
+            <span class="text-xs font-mono text-slate-500">EASY</span>
+          </div>
+          <h3 class="text-base font-bold text-slate-100 mb-2">EXIF Photo Metadata Extraction</h3>
+          <p class="text-xs text-slate-400 mb-4 leading-relaxed">
+            Parsing camera make/model, exposure time, original timestamp, resolution, and converting DMS GPS coordinates to decimal.
+          </p>
+          <div class="bg-slate-950 rounded-lg p-3 border border-slate-800 mb-4 font-mono text-xs text-slate-300 space-y-1">
+            <div class="text-slate-500 text-[10px] uppercase font-bold">// ExifTool CLI</div>
+            <div class="text-emerald-400">$ exiftool -gpsposition target.jpg</div>
+          </div>
+        </div>
+        <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-400">
+          <span class="flex items-center gap-1"><i data-lucide="image" class="w-3.5 h-3.5"></i> Spatial Analysis</span>
+          <span class="text-emerald-400 hover:underline cursor-pointer">Details &rarr;</span>
+        </div>
+      </article>
+
+      <!-- CARD 7: HTTP Header Audit -->
+      <article class="module-card bg-slate-900 rounded-xl p-5 flex flex-col justify-between" data-category="forensics" data-tags="http headers referer user-agent accept browser server">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="px-2.5 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded text-[10px] font-mono font-semibold uppercase">Forensics / Web</span>
+            <span class="text-xs font-mono text-slate-500">EASY</span>
+          </div>
+          <h3 class="text-base font-bold text-slate-100 mb-2">HTTP Header Field Analysis</h3>
+          <p class="text-xs text-slate-400 mb-4 leading-relaxed">
+            Audit request/response headers including standard misspelling exceptions (e.g., Referer vs Referrer) and User-Agent identification.
+          </p>
+          <div class="bg-slate-950 rounded-lg p-3 border border-slate-800 mb-4 font-mono text-xs text-slate-300 space-y-1">
+            <div class="text-slate-500 text-[10px] uppercase font-bold">// cURL Command</div>
+            <div class="text-emerald-400">$ curl -I https://target.site</div>
+          </div>
+        </div>
+        <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-400">
+          <span class="flex items-center gap-1"><i data-lucide="arrow-left-right" class="w-3.5 h-3.5"></i> Protocol Inspection</span>
+          <span class="text-emerald-400 hover:underline cursor-pointer">Details &rarr;</span>
+        </div>
+      </article>
+
+      <!-- CARD 8: Threat Intel & Vulnerability Research -->
+      <article class="module-card bg-slate-900 rounded-xl p-5 flex flex-col justify-between" data-category="forensics" data-tags="cve threat intel poodle openssl vsftpd vulnerability backdoor">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="px-2.5 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded text-[10px] font-mono font-semibold uppercase">Threat Intel</span>
+            <span class="text-xs font-mono text-slate-500">EASY</span>
+          </div>
+          <h3 class="text-base font-bold text-slate-100 mb-2">Vulnerability & CVE Research</h3>
+          <p class="text-xs text-slate-400 mb-4 leading-relaxed">
+            Mapping historical exploits, backdoor revisions (e.g., vsftpd 2.3.4), CVE designations (POODLE), and patch revisions.
+          </p>
+          <div class="bg-slate-950 rounded-lg p-3 border border-slate-800 mb-4 font-mono text-xs text-slate-300 space-y-1">
+            <div class="text-slate-500 text-[10px] uppercase font-bold">// Reference Databases</div>
+            <div class="text-emerald-400">cve.mitre.org / NVD</div>
+          </div>
+        </div>
+        <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-400">
+          <span class="flex items-center gap-1"><i data-lucide="shield-alert" class="w-3.5 h-3.5"></i> Exploit DB</span>
+          <span class="text-emerald-400 hover:underline cursor-pointer">Details &rarr;</span>
+        </div>
+      </article>
+
+    </div>
+  </main>
+
+  <!-- ========================================== -->
+  <!-- MODAL: ADD NEW MODULE (Client-Side Dynamic) -->
+  <!-- ========================================== -->
+  <div id="add-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-slate-900 border border-slate-800 rounded-xl w-full max-w-lg p-6 shadow-2xl">
+      <div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-800">
+        <h3 class="font-mono font-bold text-slate-100 flex items-center gap-2">
+          <i data-lucide="plus-circle" class="w-5 h-5 text-emerald-400"></i> CREATE_NEW_MODULE
+        </h3>
+        <button onclick="toggleModal(false)" class="text-slate-500 hover:text-slate-300">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="module-form" onsubmit="addModule(event)" class="space-y-4">
+        <div>
+          <label class="block font-mono text-xs text-slate-400 mb-1">MODULE TITLE</label>
+          <input type="text" id="new-title" required placeholder="e.g. Subdomain Enumeration" class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-xs font-mono text-slate-200 focus:outline-none focus:border-emerald-500">
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block font-mono text-xs text-slate-400 mb-1">CATEGORY</label>
+            <select id="new-category" class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-xs font-mono text-slate-200 focus:outline-none focus:border-emerald-500">
+              <option value="recon">RECON & DNS</option>
+              <option value="crypto">CRYPTO & AUTH</option>
+              <option value="forensics">FORENSICS & DATA</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-mono text-xs text-slate-400 mb-1">DIFFICULTY</label>
+            <select id="new-diff" class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-xs font-mono text-slate-200 focus:outline-none focus:border-emerald-500">
+              <option value="EASY">EASY</option>
+              <option value="MEDIUM">MEDIUM</option>
+              <option value="HARD">HARD</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-mono text-xs text-slate-400 mb-1">DESCRIPTION</label>
+          <textarea id="new-desc" rows="3" required placeholder="Overview of operational steps and targets..." class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-xs font-mono text-slate-200 focus:outline-none focus:border-emerald-500"></textarea>
+        </div>
+
+        <div>
+          <label class="block font-mono text-xs text-slate-400 mb-1">COMMAND / KEY UTILITY</label>
+          <input type="text" id="new-cmd" placeholder="e.g. $ subfinder -d target.com" class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-xs font-mono text-slate-200 focus:outline-none focus:border-emerald-500">
+        </div>
+
+        <div class="pt-4 flex justify-end gap-3 border-t border-slate-800">
+          <button type="button" onclick="toggleModal(false)" class="px-4 py-2 font-mono text-xs text-slate-400 hover:text-slate-200">CANCEL</button>
+          <button type="submit" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-mono text-xs font-bold rounded">COMMIT_MODULE</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- JAVASCRIPT: LOGIC & DYNAMIC FILTERING      -->
+  <!-- ========================================== -->
+  <script>
+    // Initialize Lucide Icons
+    lucide.createIcons();
+
+    // Category Filter Handler
+    function filterCategory(cat) {
+      const cards = document.querySelectorAll('.module-card');
+      const buttons = document.querySelectorAll('.category-btn');
+
+      // Update button styling
+      buttons.forEach(btn => btn.classList.remove('nav-active'));
+      event.currentTarget.classList.add('nav-active');
+
+      // Show/Hide Cards
+      cards.forEach(card => {
+        if (cat === 'all' || card.dataset.category === cat) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    // Live Keyword Search Filter
+    function filterModules() {
+      const query = document.getElementById('search-input').value.toLowerCase();
+      const cards = document.querySelectorAll('.module-card');
+
+      cards.forEach(card => {
+        const text = card.textContent.toLowerCase();
+        const tags = card.dataset.tags ? card.dataset.tags.toLowerCase() : '';
+        if (text.includes(query) || tags.includes(query)) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    // Modal Display Toggle
+    function toggleModal(show) {
+      const modal = document.getElementById('add-modal');
+      if (show) {
+        modal.classList.remove('hidden');
+      } else {
+        modal.classList.add('hidden');
+      }
+    }
+
+    // Dynamic Module Creation Handler
+    function addModule(e) {
+      e.preventDefault();
+      
+      const title = document.getElementById('new-title').value;
+      const category = document.getElementById('new-category').value;
+      const diff = document.getElementById('new-diff').value;
+      const desc = document.getElementById('new-desc').value;
+      const cmd = document.getElementById('new-cmd').value;
+
+      // Color mapping by category
+      let categoryBadgeClass = "bg-cyan-500/10 border-cyan-500/20 text-cyan-400";
+      if (category === 'crypto') categoryBadgeClass = "bg-purple-500/10 border-purple-500/20 text-purple-400";
+      if (category === 'forensics') categoryBadgeClass = "bg-amber-500/10 border-amber-500/20 text-amber-400";
+
+      // Build HTML element
+      const cardHTML = `
+        <article class="module-card bg-slate-900 rounded-xl p-5 flex flex-col justify-between" data-category="${category}" data-tags="${title.toLowerCase()} ${desc.toLowerCase()}">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="px-2.5 py-1 ${categoryBadgeClass} border rounded text-[10px] font-mono font-semibold uppercase">${category}</span>
+              <span class="text-xs font-mono text-slate-500">${diff}</span>
+            </div>
+            <h3 class="text-base font-bold text-slate-100 mb-2">${title}</h3>
+            <p class="text-xs text-slate-400 mb-4 leading-relaxed">${desc}</p>
+            ${cmd ? `
+            <div class="bg-slate-950 rounded-lg p-3 border border-slate-800 mb-4 font-mono text-xs text-slate-300 space-y-1">
+              <div class="text-slate-500 text-[10px] uppercase font-bold">// Command</div>
+              <div class="text-emerald-400">${cmd}</div>
+            </div>` : ''}
+          </div>
+          <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-400">
+            <span class="flex items-center gap-1"><i data-lucide="terminal" class="w-3.5 h-3.5"></i> Custom Module</span>
+            <span class="text-emerald-400 hover:underline cursor-pointer">Details &rarr;</span>
+          </div>
+        </article>
+      `;
+
+      // Append to DOM grid
+      document.getElementById('module-grid').insertAdjacentHTML('beforeend', cardHTML);
+      
+      // Re-initialize Lucide Icons for new content
+      lucide.createIcons();
+
+      // Reset form and close modal
+      document.getElementById('module-form').reset();
+      toggleModal(false);
+    }
+  </script>
+</body>
+</html>
