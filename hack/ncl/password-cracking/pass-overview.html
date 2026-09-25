@@ -181,118 +181,84 @@
       <!-- Main Cards Container -->
       <div class="grid grid-cols-1 gap-6" id="cardsGrid">
 
-        <!-- MODULE CARD 1: Linux /etc/shadow & Yescrypt Hashes -->
-        <article 
+        <!-- MODULE CARD 0: Rockyou Wordlist & Standard Dictionary Attacks -->
+        <article
           class="module-card w-full bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl text-slate-200 transition-all duration-200 hover:border-slate-700"
           data-category="HASH_RECOVERY"
-          data-difficulty="HARD"
-          data-tags="password cracking yescrypt shadow /etc/shadow linux hashcat john the ripper rockyou salt hash digest epoch timestamp crypt cyber skyline ncl trove"
+          data-difficulty="EASY"
+          data-tags="password cracking rockyou dictionary attack hashcat md5 gzip tar decompress trove cyber skyline"
         >
-          <!-- Header Badge & Difficulty -->
           <div class="flex items-center justify-between mb-4">
-            <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-cyan-950/80 text-cyan-400 border border-cyan-800/50 uppercase tracking-wider font-mono">
-              Linux / System Hashes
-            </span>
-            <span class="px-2.5 py-1 text-xs font-bold rounded bg-red-950/80 text-red-400 border border-red-800/50 font-mono">
-              HARD
-            </span>
+            <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-cyan-950/80 text-cyan-400 border border-cyan-800/50 uppercase tracking-wider font-mono">Linux / System Hashes</span>
+            <span class="px-2.5 py-1 text-xs font-bold rounded bg-emerald-950/80 text-emerald-400 border border-emerald-800/50 font-mono">EASY</span>
           </div>
 
-          <!-- Title & Overview -->
           <h2 class="text-xl font-bold text-slate-100 mb-2 font-mono flex items-center gap-2">
-            <span class="text-emerald-400">&gt;</span> Kali Linux Shadow &amp; Yescrypt Hashes
+            <span class="text-emerald-400">&gt;</span> Rockyou Wordlist &amp; Hashcat Dictionary Attack
           </h2>
           <p class="text-sm text-slate-400 mb-6 leading-relaxed">
-            Analyze Linux <code class="text-amber-300 font-mono bg-slate-950 px-1 py-0.5 rounded">/etc/shadow</code> extracts using modern <code class="text-emerald-400 font-mono bg-slate-950 px-1 py-0.5 rounded">yescrypt</code> ($y$), parse shadow colon delimiters, isolate target sub-fields, calculate password age, and run local system crypt hash recovery.
+            Decompress standard Kali Linux wordlists and execute high-speed dictionary attacks using <code class="text-emerald-400 font-mono bg-slate-950 px-1 py-0.5 rounded">hashcat</code> (<code class="text-amber-300 font-mono bg-slate-950 px-1 py-0.5 rounded">-a 0</code>) against identified hash types such as MD5 (<code class="text-amber-300 font-mono bg-slate-950 px-1 py-0.5 rounded">-m 0</code>).
           </p>
 
-          <!-- Operational Context (When & Why) -->
           <div class="mb-6 bg-slate-950/60 rounded-lg p-4 border border-slate-800/80 space-y-3">
             <div>
-              <h3 class="text-xs font-mono font-bold text-amber-400 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
-                <i data-lucide="help-circle" class="w-3.5 h-3.5"></i>
-                // When to Use This Technique
-              </h3>
+              <h3 class="text-xs font-mono font-bold text-amber-400 uppercase tracking-wide mb-1.5 flex items-center gap-1.5"><i data-lucide="help-circle" class="w-3.5 h-3.5"></i>// When to Use This Technique</h3>
               <ul class="text-xs text-slate-300 space-y-1 list-disc list-inside">
-                <li>The challenge provides a raw dump from an <code class="bg-slate-900 px-1 text-slate-200 rounded">/etc/shadow</code> file containing <code class="text-emerald-400 bg-slate-900 px-1 rounded">$y$j9T$...</code> hash strings.</li>
-                <li>Questions ask for explicit metadata without cracking: active account username, 22-character salt, 43-character digest, or last password change date.</li>
-                <li>Prompts explicitly state accounts originate from modern Kali Linux installs using default system password hashing.</li>
+                <li>Challenges specify passwords originate from known data leaks or the <code class="text-slate-200 font-mono">rockyou.txt</code> wordlist.</li>
+                <li>Standard 32-character hexadecimal hashes (MD5) or general single-iteration digests are provided in a prompt dump.</li>
               </ul>
             </div>
             <div class="pt-2 border-t border-slate-800/60">
-              <h3 class="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
-                <i data-lucide="info" class="w-3.5 h-3.5"></i>
-                // Why This Specific Approach Works
-              </h3>
-              <ul class="text-xs text-slate-300 space-y-1 list-disc list-inside">
-                <li><strong>System Crypt Integration:</strong> Modern GPU tools like Hashcat lack direct yescrypt execution kernels. Running John the Ripper with <code class="text-emerald-400 font-mono bg-slate-900 px-1 rounded">--format=crypt</code> routes the hash check through the host Linux operating system's native C library <code class="text-slate-200 font-mono">crypt(3)</code> call.</li>
-                <li><strong>Delimiter Isolation Mechanics:</strong> Linux shadow entries separate parameters using colons (<code class="text-amber-400 font-mono">:</code>) and hash bounds using dollar signs (<code class="text-amber-400 font-mono">$</code>). Understanding this structure lets you answer multiple competition questions before ever attempting a dictionary attack.</li>
-              </ul>
+              <h3 class="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wide mb-1.5 flex items-center gap-1.5"><i data-lucide="info" class="w-3.5 h-3.5"></i>// Why This Specific Approach Works</h3>
+              <ul class="text-xs text-slate-300 space-y-1 list-disc list-inside"><li><strong>GPU Dictionary Acceleration:</strong> Hashcat processes dictionary lines at millions of checks per second when leveraging native GPU execution modes.</li></ul>
             </div>
           </div>
 
-          <!-- Field Guide & Commands -->
           <div class="mb-6 space-y-4">
-            <h3 class="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">
-              <i data-lucide="terminal" class="w-3.5 h-3.5"></i>
-              // Step-by-Step / Key Fields
-            </h3>
-
-            <div class="bg-slate-950 p-3.5 rounded-lg border border-slate-800 font-mono text-xs overflow-x-auto">
-              <div class="text-slate-400 mb-1">// Shadow File Format:</div>
-              <div class="text-slate-200 whitespace-nowrap">
-                <span class="text-purple-400">username</span>:<span class="text-emerald-400">$y$cost$salt$hash</span>:<span class="text-amber-400">lastchanged_days</span>:min:max:warn:inact:expire
+            <h3 class="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wide mb-2 flex items-center gap-1.5"><i data-lucide="terminal" class="w-3.5 h-3.5"></i>// Step-by-Step / Commands</h3>
+            <div class="space-y-3 text-xs">
+              <div>
+                <div class="font-mono text-slate-300 font-bold mb-1">1. Decompress Kali Rockyou Wordlist:</div>
+                <div class="bg-slate-950 p-2.5 rounded border border-slate-800 font-mono text-xs text-emerald-400 select-all flex justify-between items-center group"><code>gzip -d /usr/share/wordlists/rockyou.txt.gz</code><button onclick="copyCode(this)" class="opacity-60 group-hover:opacity-100 text-slate-400 hover:text-white text-[10px] bg-slate-800 px-2 py-0.5 rounded ml-2">Copy</button></div>
               </div>
-              <div class="text-slate-400 mt-3 mb-1">// Yescrypt ($y$) Structural Breakdown:</div>
-              <div class="text-slate-200 whitespace-nowrap">
-                $y$<span class="text-cyan-400">$j9T$</span><span class="text-amber-400">sZPOHCdOIBvfkKhVJRSp7.</span>$<span class="text-emerald-400">oCNH1mJKQWFWM9HNjkjz3nFWuGPHF2RRG7j7eChfGw9</span>
-              </div>
-              <div class="text-slate-500 text-[11px] mt-1">
-                └─ ID  └ cost └─── Salt (22 chars) ───┘ └─── Hash Digest (43 chars) ───────────┘
-              </div>
-            </div>
-
-            <div class="space-y-2">
-              <div class="text-xs font-mono text-slate-300">1. Locate target account &amp; calculate change date:</div>
-              <p class="text-xs text-slate-400 pl-3 border-l-2 border-slate-800">
-                Ignore entries where field 2 contains <code class="text-slate-200">*</code> or <code class="text-slate-200">!</code> (locked accounts). Field 3 is an integer representing days elapsed since <em>Jan 1, 1970 UTC</em>. Multiply this number by 86,400 to convert to Unix timestamp epoch seconds or paste into a date converter.
-              </p>
-
-              <div class="text-xs font-mono text-slate-300 pt-1">2. Run John the Ripper via host Linux crypt(3):</div>
-              <div class="bg-slate-950 p-2.5 rounded border border-slate-800 font-mono text-xs text-emerald-400 select-all flex justify-between items-center group">
-                <code>john --format=crypt --wordlist=/usr/share/wordlists/rockyou.txt hashes.txt</code>
-                <button onclick="copyCode(this)" class="opacity-60 group-hover:opacity-100 text-slate-400 hover:text-white text-[10px] bg-slate-800 px-2 py-0.5 rounded ml-2">Copy</button>
+              <div>
+                <div class="font-mono text-slate-300 font-bold mb-1">2. Run Hashcat Dictionary Attack (MD5 -m 0):</div>
+                <div class="bg-slate-950 p-2.5 rounded border border-slate-800 font-mono text-xs text-emerald-400 select-all flex justify-between items-center group"><code>hashcat -m 0 -a 0 hash.txt /usr/share/wordlists/rockyou.txt</code><button onclick="copyCode(this)" class="opacity-60 group-hover:opacity-100 text-slate-400 hover:text-white text-[10px] bg-slate-800 px-2 py-0.5 rounded ml-2">Copy</button></div>
               </div>
             </div>
           </div>
 
-          <!-- Tips & Pitfalls -->
           <div class="mb-6 bg-slate-950/60 rounded-lg p-4 border border-slate-800/80">
-            <h3 class="text-xs font-mono font-bold text-purple-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">
-              <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i>
-              // Tips &amp; Gotchas
-            </h3>
-            <ul class="text-xs text-slate-300 space-y-2">
-              <li class="flex items-start gap-2">
-                <span class="text-amber-400 font-bold">!</span>
-                <span><strong>Hashcat Rejection:</strong> Hashcat does not support yescrypt. Running <code class="text-slate-200 font-mono">hashcat -m ...</code> on yescrypt will fail. Always execute John the Ripper on a live Linux distribution (like Kali) that supports yescrypt natively.</span>
-              </li>
-              <li class="flex items-start gap-2">
-                <span class="text-amber-400 font-bold">!</span>
-                <span><strong>Delimiter Stripping:</strong> The salt is bounded by <code class="text-amber-300 font-mono">$</code> symbols on both sides. When submitting the salt string to competition portals, do NOT include the leading or trailing <code class="text-amber-300 font-mono">$</code> characters.</span>
-              </li>
-            </ul>
+            <h3 class="text-xs font-mono font-bold text-purple-400 uppercase tracking-wide mb-2 flex items-center gap-1.5"><i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i>// Tips &amp; Gotchas</h3>
+            <ul class="text-xs text-slate-300 space-y-2"><li class="flex items-start gap-2"><span class="text-amber-400 font-bold">!</span><span><strong>Order Discrepancy:</strong> Hashcat prints cracked outputs in the order combinations are solved, NOT input line order. Always cross-reference solved plaintexts against target hash lines before submitting.</span></li></ul>
           </div>
 
-          <!-- Footer Links -->
-          <div class="pt-4 border-t border-slate-800/80 flex flex-wrap items-center justify-between text-xs font-mono gap-2">
-            <span class="text-slate-500">// Competition Resources</span>
-            <div class="flex items-center gap-4">
-              <a href="https://trove.cyberskyline.com/b46fa58080dc4d9b803ca7c7f7c53ecd" target="_blank" rel="noopener noreferrer" class="text-cyan-400 hover:text-cyan-300 hover:underline flex items-center gap-1">
-                [Kali Linux Walkthrough] &rarr;
-              </a>
-            </div>
+          <div class="pt-4 border-t border-slate-800/80 flex flex-wrap items-center justify-between text-xs font-mono gap-2"><span class="text-slate-500">// Competition Resources</span><div class="flex items-center gap-4"><a href="https://trove.cyberskyline.com/aecdcc78aa70413aae7ea09a1b4300d4" target="_blank" rel="noopener noreferrer" class="text-cyan-400 hover:text-cyan-300 hover:underline flex items-center gap-1">[Rockyou Walkthrough] &rarr;</a></div></div>
+        </article>
+
+        <!-- MODULE CARD 1: Linux /etc/shadow & Yescrypt Hashes -->
+        <article
+          class="module-card w-full bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl text-slate-200 transition-all duration-200 hover:border-slate-700"
+          data-category="HASH_RECOVERY"
+          data-difficulty="HARD"
+          data-tags="password cracking yescrypt shadow /etc/shadow linux hashcat john the ripper rockyou salt hash digest epoch timestamp crypt cyber skyline ncl trove hollie"
+        >
+          <div class="flex items-center justify-between mb-4"><span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-cyan-950/80 text-cyan-400 border border-cyan-800/50 uppercase tracking-wider font-mono">Linux / System Hashes</span><span class="px-2.5 py-1 text-xs font-bold rounded bg-red-950/80 text-red-400 border border-red-800/50 font-mono">HARD</span></div>
+          <h2 class="text-xl font-bold text-slate-100 mb-2 font-mono flex items-center gap-2"><span class="text-emerald-400">&gt;</span> Kali Linux Shadow &amp; Yescrypt Hashes</h2>
+          <p class="text-sm text-slate-400 mb-6 leading-relaxed">Analyze Linux <code class="text-amber-300 font-mono bg-slate-950 px-1 py-0.5 rounded">/etc/shadow</code> extracts using modern <code class="text-emerald-400 font-mono bg-slate-950 px-1 py-0.5 rounded">yescrypt</code> ($y$), parse shadow colon delimiters, isolate target sub-fields, calculate password age from Unix epoch days, and run local system crypt hash recovery.</p>
+
+          <div class="mb-6 bg-slate-950/60 rounded-lg p-4 border border-slate-800/80 space-y-3">
+            <div><h3 class="text-xs font-mono font-bold text-amber-400 uppercase tracking-wide mb-1.5 flex items-center gap-1.5"><i data-lucide="help-circle" class="w-3.5 h-3.5"></i>// When to Use This Technique</h3><ul class="text-xs text-slate-300 space-y-1 list-disc list-inside"><li>The challenge provides a raw dump from an <code class="bg-slate-900 px-1 text-slate-200 rounded">/etc/shadow</code> file containing <code class="text-emerald-400 bg-slate-900 px-1 rounded">$y$j9T$...</code> hash strings.</li><li>Questions ask for explicit metadata without cracking: active account username, 22-character salt, 43-character digest, or last password change date.</li><li>Prompts explicitly state accounts originate from modern Kali Linux installs using default system password hashing.</li></ul></div>
+            <div class="pt-2 border-t border-slate-800/60"><h3 class="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wide mb-1.5 flex items-center gap-1.5"><i data-lucide="info" class="w-3.5 h-3.5"></i>// Why This Specific Approach Works</h3><ul class="text-xs text-slate-300 space-y-1 list-disc list-inside"><li><strong>System Crypt Integration:</strong> Modern GPU tools like Hashcat lack direct yescrypt execution kernels. Running John the Ripper with <code class="text-emerald-400 font-mono bg-slate-900 px-1 rounded">--format=crypt</code> routes the hash check through the host Linux operating system's native C library <code class="text-slate-200 font-mono">crypt(3)</code> call.</li><li><strong>Delimiter Isolation Mechanics:</strong> Linux shadow entries separate parameters using colons (<code class="text-amber-400 font-mono">:</code>) and hash bounds using dollar signs (<code class="text-amber-400 font-mono">$</code>). Understanding this structure lets you answer multiple competition questions before ever attempting a dictionary attack.</li></ul></div>
           </div>
+
+          <div class="mb-6 space-y-4"><h3 class="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wide mb-2 flex items-center gap-1.5"><i data-lucide="terminal" class="w-3.5 h-3.5"></i>// Step-by-Step / Key Fields Breakdown</h3>
+            <div class="bg-slate-950 p-3.5 rounded-lg border border-slate-800 font-mono text-xs overflow-x-auto space-y-3"><div><div class="text-slate-400 mb-1">// Shadow File Format:</div><div class="text-slate-200 whitespace-nowrap"><span class="text-purple-400">username</span>:<span class="text-emerald-400">$y$cost$salt$hash</span>:<span class="text-amber-400">lastchanged_days</span>:min:max:warn:inact:expire</div></div><div class="pt-2 border-t border-slate-900"><div class="text-slate-400 mb-1">// Yescrypt ($y$) Structural Breakdown:</div><div class="text-slate-200 whitespace-nowrap">$y$<span class="text-cyan-400">$j9T$</span><span class="text-amber-400">/WzixhAsn8sdXhCquYzh01</span>$<span class="text-emerald-400">KZlio78LilItobsx/17ecFf1e2SbsduhP1sZEWuHrL4</span></div><div class="text-slate-500 text-[11px] mt-1">└─ ID  └ cost └─── Salt (22 chars) ───┘ └─── Hash Digest (43 chars) ───────────┘</div></div></div>
+            <div class="space-y-3 text-xs"><div><div class="font-mono text-slate-300 font-bold mb-1">1. Identify Active Target User &amp; Salt:</div><p class="text-slate-400 pl-3 border-l-2 border-slate-800 leading-relaxed">Ignore entries containing <code class="text-slate-200">*</code> or <code class="text-slate-200">!</code> in field 2 (locked accounts). Extract the 22-character salt string bounded by <code class="text-amber-400 font-mono">$</code> signs (e.g., <code class="text-slate-200 font-mono">/WzixhAsn8sdXhCquYzh01</code>).</p></div><div><div class="font-mono text-slate-300 font-bold mb-1">2. Calculate Last Password Change Date:</div><p class="text-slate-400 pl-3 border-l-2 border-slate-800 leading-relaxed">Field 3 contains the integer of days elapsed since <em>Jan 1, 1970 UTC</em> (e.g., <code class="text-amber-400 font-mono">18934</code>). Multiply by <code class="text-slate-200 font-mono">86400</code> to convert to Epoch seconds (<code class="text-slate-200 font-mono">1,635,897,600</code>) or convert directly to obtain <code class="text-emerald-400 font-mono">2021-11-03</code>.</p></div><div><div class="font-mono text-slate-300 font-bold mb-1">3. Prepare Target Hash File:</div><p class="text-slate-400 pl-3 border-l-2 border-slate-800 leading-relaxed mb-1.5">Save the complete target shadow entry (including username) into a file named <code class="text-slate-200 font-mono">passwords.txt</code>:</p><div class="bg-slate-950 p-2 rounded border border-slate-800 font-mono text-[11px] text-slate-300 overflow-x-auto">hollie:$y$j9T$/WzixhAsn8sdXhCquYzh01$KZlio78LilItobsx/17ecFf1e2SbsduhP1sZEWuHrL4:18934:0:99999:7:::</div></div><div><div class="font-mono text-slate-300 font-bold mb-1">4. Execute John the Ripper with Multi-Threading:</div><p class="text-slate-400 pl-3 border-l-2 border-slate-800 leading-relaxed mb-1.5">Use <code class="text-slate-200 font-mono">--format=crypt</code> to invoke system <code class="text-slate-200 font-mono">libcrypt</code> routines and <code class="text-slate-200 font-mono">--fork=$(nproc)</code> to utilize all available CPU cores:</p><div class="bg-slate-950 p-2.5 rounded border border-slate-800 font-mono text-xs text-emerald-400 select-all flex justify-between items-center group"><code>john --format=crypt --fork=$(nproc) --wordlist=/usr/share/wordlists/rockyou.txt passwords.txt</code><button onclick="copyCode(this)" class="opacity-60 group-hover:opacity-100 text-slate-400 hover:text-white text-[10px] bg-slate-800 px-2 py-0.5 rounded ml-2">Copy</button></div></div><div><div class="font-mono text-slate-300 font-bold mb-1">5. Retrieve Cached / Cracked Plaintext:</div><div class="bg-slate-950 p-2.5 rounded border border-slate-800 font-mono text-xs text-emerald-400 select-all flex justify-between items-center group"><code>john --show passwords.txt</code><button onclick="copyCode(this)" class="opacity-60 group-hover:opacity-100 text-slate-400 hover:text-white text-[10px] bg-slate-800 px-2 py-0.5 rounded ml-2">Copy</button></div></div></div>
+          </div>
+
+          <div class="mb-6 bg-slate-950/60 rounded-lg p-4 border border-slate-800/80"><h3 class="text-xs font-mono font-bold text-purple-400 uppercase tracking-wide mb-2 flex items-center gap-1.5"><i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i>// Tips &amp; Gotchas</h3><ul class="text-xs text-slate-300 space-y-2"><li class="flex items-start gap-2"><span class="text-amber-400 font-bold">!</span><span><strong>No Password Hashes Loaded:</strong> Ensure <code class="text-slate-200 font-mono">passwords.txt</code> contains the full `/etc/shadow` line starting with the username or complete `$y$` parameters. Omit trailing spaces.</span></li><li class="flex items-start gap-2"><span class="text-amber-400 font-bold">!</span><span><strong>Delimiter Stripping:</strong> Do NOT include the bounding <code class="text-amber-300 font-mono">$</code> signs when submitting the salt string to CTF platforms.</span></li><li class="flex items-start gap-2"><span class="text-amber-400 font-bold">!</span><span><strong>Potfile Caching:</strong> If John reports "No password hashes left to crack", the plaintext was already saved in <code class="text-slate-200 font-mono">~/.john/john.pot</code>. Run <code class="text-slate-200 font-mono">john --show passwords.txt</code>.</span></li></ul></div>
+          <div class="pt-4 border-t border-slate-800/80 flex flex-wrap items-center justify-between text-xs font-mono gap-2"><span class="text-slate-500">// Competition Resources</span><div class="flex items-center gap-4"><a href="https://trove.cyberskyline.com/b46fa58080dc4d9b803ca7c7f7c53ecd" target="_blank" rel="noopener noreferrer" class="text-cyan-400 hover:text-cyan-300 hover:underline flex items-center gap-1">[Kali Linux Walkthrough] &rarr;</a></div></div>
         </article>
 
         <!-- MODULE CARD 2: Mask & Pattern Recovery -->
