@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CTF.FieldGuide // Forensics Reference Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-950 text-slate-200 font-sans antialiased min-h-screen">
+
+  <!-- Main Container -->
+  <div class="max-w-7xl mx-auto px-4 py-6">
+    
+    <!-- Header Bar -->
+    <header class="flex flex-col sm:flex-row sm:items-center justify-between pb-6 mb-6 border-b border-slate-800 gap-4">
+      <div class="flex items-center gap-3">
+        <h1 class="text-xl font-mono font-bold text-slate-100 flex items-center gap-2">
+          <span class="text-emerald-400">&gt;_</span> CTF.FieldGuide <span class="text-slate-500 text-sm font-normal">// FORENSICS</span>
+        </h1>
+        <span class="px-2 py-0.5 text-xs font-mono bg-emerald-950 text-emerald-400 border border-emerald-800/80 rounded">v1.0</span>
+      </div>
+      <div class="flex items-center gap-3 font-mono text-xs">
+        <span class="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-950/50 text-emerald-400 border border-emerald-800/50 rounded-full">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> SYSTEM_READY
+        </span>
+        <a href="https://gchq.github.io/CyberChef/" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1 px-3 py-1 bg-slate-900 text-slate-300 hover:text-cyan-400 border border-slate-800 rounded transition-colors">
+          <i data-lucide="external-link" class="w-3.5 h-3.5"></i> CyberChef
+        </a>
+      </div>
+    </header>
+
+    <!-- Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      
+      <!-- Left Sidebar (Control Panel) -->
+      <aside class="lg:col-span-1 space-y-6">
+        
+        <!-- Search & Filter Controls -->
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-4">
+          <div>
+            <label class="text-xs font-mono font-bold text-slate-400 uppercase block mb-2 flex items-center gap-1.5">
+              <i data-lucide="search" class="w-3.5 h-3.5 text-cyan-400"></i> Search Field Guide
+            </label>
+            <input type="text" id="searchInput" oninput="filterCards()" placeholder="Search tools, flags, commands..." class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-cyan-500 font-mono placeholder:text-slate-600">
+          </div>
+
+          <div>
+            <label class="text-xs font-mono font-bold text-slate-400 uppercase block mb-2">Category Filter</label>
+            <div class="space-y-1 font-mono text-xs">
+              <button onclick="setCategory('ALL')" class="cat-btn w-full text-left px-2.5 py-1.5 rounded bg-cyan-950/60 text-cyan-400 border border-cyan-800/50 transition-colors">
+                [+] ALL MODULES
+              </button>
+              <button onclick="setCategory('MEMORY')" class="cat-btn w-full text-left px-2.5 py-1.5 rounded text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-colors">
+                [&gt;] Memory Analysis
+              </button>
+              <button onclick="setCategory('FILE_SYSTEM')" class="cat-btn w-full text-left px-2.5 py-1.5 rounded text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-colors">
+                [&gt;] File System & Carving
+              </button>
+              <button onclick="setCategory('ARTIFACTS')" class="cat-btn w-full text-left px-2.5 py-1.5 rounded text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-colors">
+                [&gt;] Registry & Hashdump
+              </button>
+              <button onclick="setCategory('GIT')" class="cat-btn w-full text-left px-2.5 py-1.5 rounded text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-colors">
+                [&gt;] Version Control
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label class="text-xs font-mono font-bold text-slate-400 uppercase block mb-2">Difficulty Filter</label>
+            <div class="grid grid-cols-4 gap-1 font-mono text-xs">
+              <button onclick="setDifficulty('ALL')" class="diff-btn py-1 rounded bg-slate-800 text-slate-200 text-center hover:bg-slate-700">Any</button>
+              <button onclick="setDifficulty('EASY')" class="diff-btn py-1 rounded bg-slate-950 text-emerald-400 border border-emerald-900/50 text-center hover:bg-slate-800">Easy</button>
+              <button onclick="setDifficulty('MEDIUM')" class="diff-btn py-1 rounded bg-slate-950 text-amber-400 border border-amber-900/50 text-center hover:bg-slate-800">Med</button>
+              <button onclick="setDifficulty('HARD')" class="diff-btn py-1 rounded bg-slate-950 text-rose-400 border border-rose-900/50 text-center hover:bg-slate-800">Hard</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metric Summary Panel -->
+        <div class="bg-slate-900/60 border border-slate-800/80 rounded-xl p-4 font-mono text-xs space-y-2">
+          <div class="flex justify-between text-slate-400">
+            <span>ACTIVE_MODULES:</span>
+            <span id="activeCount" class="text-emerald-400 font-bold">5 / 5</span>
+          </div>
+          <div class="flex justify-between text-slate-400">
+            <span>TARGET_ENGINE:</span>
+            <span class="text-cyan-400">Volatility3 / SleuthKit</span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main Cards Column -->
+      <main class="lg:col-span-3 space-y-6" id="cardsGrid">
+
+        <!-- CARD 1: Volatility OS & Environment Triaging -->
+        <article class="module-card w-full min-w-0 bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl text-slate-200 transition-all duration-200 hover:border-slate-700" data-category="MEMORY" data-difficulty="HARD">
+          <div class="flex items-center justify-between mb-4 gap-2">
+            <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-cyan-950/80 text-cyan-400 border border-cyan-800/50 uppercase tracking-wider font-mono">
+              MEMORY
+            </span>
+            <span class="px-2.5 py-1 text-xs font-bold rounded bg-rose-950/80 text-rose-400 border border-rose-800/50 font-mono">
+              HARD
+            </span>
+          </div>
+
+          <h2 class="text-xl font-bold text-slate-100 mb-2 font-mono flex items-center gap-2">
+            <span class="text-emerald-400">&gt;</span> Memory Dump Triage & OS Extraction
+          </h2>
+          <p class="text-sm text-slate-400 mb-6 leading-relaxed">
+            Identify operating system architecture, environmental variables, and active sessions from raw live system memory dumps (<code class="text-emerald-400 font-mono bg-slate-950 px-1 py-0.5 rounded">.mem</code>, <code class="text-emerald-400 font-mono bg-slate-950 px-1 py-0.5 rounded">.raw</code>, <code class="text-emerald-400 font-mono bg-slate-950 px-1 py-0.5 rounded">.vmem</code>) using Volatility3.
+          </p>
+
+          <!-- Context Panel -->
+          <div class="mb-6 bg-slate-950/60 rounded-lg p-4 border border-slate-800/80 space-y-3">
+            <div>
+              <h3 class="text-xs font-mono font-bold text-amber-400 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
+                <i data-lucide="help-circle" class="w-3.5 h-3.5"></i> // When to Use This
+              </h3>
+              <ul class="text-xs text-slate-300 space-y-1 list-disc list-inside">
+                <li>Initial triage stage of a host memory dump during incident response or CTF forensic challenges.</li>
+                <li>When establishing target hostname, active users, system architecture, or timezones before deeper artifact scanning.</li>
+              </ul>
+            </div>
+            <div>
+              <h3 class="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
+                <i data-lucide="info" class="w-3.5 h-3.5"></i> // Why This Specific Approach Works
+              </h3>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                Volatility3 parses kernel structures dynamically using symbol tables without legacy profile definitions. Extracting environmental variables (<code class="text-cyan-400 font-mono">envars</code>) reveals per-process environment blocks where critical details like <code class="text-emerald-400 font-mono">COMPUTERNAME</code>, user profiles, and active working paths reside.
+              </p>
+            </div>
+          </div>
+
+          <!-- Command Box -->
+          <div class="mb-6 space-y-3 min-w-0">
+            <h3 class="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wide flex items-center gap-1.5">
+              <i data-lucide="terminal" class="w-3.5 h-3.5"></i> // Key Commands
+            </h3>
+            
+            <div class="bg-slate-950 p-2.5 rounded border border-slate-800 font-mono text-xs text-emerald-400 flex items-center justify-between min-w-0 gap-2">
+              <div class="overflow-x-auto py-1 pr-1">
+                <code class="whitespace-nowrap">./vol.py -f ./memdump.mem windows.info.Info</code>
+              </div>
+              <button onclick="copyCode(this)" class="shrink-0 text-slate-400 hover:text-white text-[10px] bg-slate-800 px-2 py-0.5 rounded">Copy</button>
+            </div>
+
+            <div class="bg-slate-950 p-2.5 rounded border border-slate-800 font-mono text-xs text-emerald-400 flex items-center justify-between min-w-0 gap-2">
+              <div class="overflow-x-auto py-1 pr-1">
+                <code class="whitespace-nowrap">./vol.py -f ./memdump.mem windows.envars.Envars | grep -i "COMPUTERNAME\|USERNAME"</code>
+              </div>
+              <button onclick="copyCode(this)" class="shrink-0 text-slate-400 hover:text-white text-[10px] bg-slate-800 px-2 py-0.5 rounded">Copy</button>
+            </div>
+          </div>
+
+          <!-- Tips & Gotchas -->
+          <div class="mb-6 p-3 bg-amber-950/20 border border-amber-800/40 rounded-lg text-xs font-mono text-amber-300 flex items-start gap-2">
+            <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-400 shrink-0 mt-0.5"></i>
+            <div>
+              <span class="font-bold uppercase block mb-0.5">! Gotcha / Version Note</span>
+              Specific Volatility3 commits may parse symbol tables differently. If plugin execution fails, check Python dependencies or specify exact virtual environments with <code class="text-amber-200">pycryptodome</code> installed.
+            </div>
+          </div>
+
+          <!-- Card Footer -->
+          <div class="pt-4 border-t border-slate-800/80 flex justify-between items-center text-xs font-mono">
+            <span class="text-slate-500">// Documentation Links</span>
+            <a href="https://volatility3.readthedocs.io/en/latest/" target="_blank" rel="noopener noreferrer" class="text-cyan-400 hover:underline flex items-center gap-1">
+              [Volatility3 Docs] <i data-lucide="external-link" class="w-3 h-3"></i>
+            </a>
+          </div>
+        </article>
+
+        <!-- CARD 2: Memory File Scanning & Extraction -->
+        <article class="module-card w-full min-w-0 bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl text-slate-200 transition-all duration-200 hover:border-slate-700" data-category="MEMORY" data-difficulty="HARD">
+          <div class="flex items-center justify-between mb-4 gap-2">
+            <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-cyan-950/80 text-cyan-400 border border-cyan-800/50 uppercase tracking-wider font-mono">
+              MEMORY
+            </span>
+            <span class="px-2.5 py-1 text-xs font-bold rounded bg-rose-950/80 text-rose-400 border border-rose-800/50 font-mono">
+              HARD
+            </span>
+          </div>
+
+          <h2 class="text-xl font-bold text-slate-100 mb-2 font-mono flex items-center gap-2">
+            <span class="text-emerald-400">&gt;</span> Memory File Scan & Virtual Address Dumping
+          </h2>
+          <p class="text-sm text-slate-400 mb-6 leading-relaxed">
+            Locate active file handles in system RAM, map target paths, and dump cached file objects (databases, documents, logs) directly to disk using virtual memory addresses.
+          </p>
+
+          <!-- Context Panel -->
+          <div class="mb-6 bg-slate-950/60 rounded-lg p-4 border border-slate-800/80 space-y-3">
+            <div>
+              <h3 class="text-xs font-mono font-bold text-amber-400 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
+                <i data-lucide="help-circle" class="w-3.5 h-3.5"></i> // When to Use This
+              </h3>
+              <ul class="text-xs text-slate-300 space-y-1 list-disc list-inside">
+                <li>When searching for documents, browser history databases (SQLite), or open file handles present in memory at the time of system capture.</li>
+                <li>When the target file is deleted from physical storage but remains cached in Windows memory management pages.</li>
+              </ul>
+            </div>
+            <div>
+              <h3 class="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
+                <i data-lucide="info" class="w-3.5 h-3.5"></i> // Why This Specific Approach Works
+              </h3>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                <code class="text-cyan-400 font-mono">windows.filescan</code> inspects <code class="text-slate-300 font-mono">FILE_OBJECT</code> headers across kernel memory pools. Passing the specific virtual memory address (<code class="text-emerald-400 font-mono">--virtaddr</code>) to <code class="text-cyan-400 font-mono">DumpFiles</code> allows reconstruction of cached page streams directly to local output directories.
+              </p>
+            </div>
+          </div>
+
+          <!-- Command Box -->
+          <div class="mb-6 space-y-3 min-w-0">
+            <h3 class="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wide flex items-center gap-1.5">
+              <i data-lucide="terminal" class="w-3.5 h-3.5"></i> // Key Commands
+            </h3>
+
+            <div class="bg-slate-950 p-2.5 rounded border border-slate-800 font-mono text-xs text-emerald-400 flex items-center justify-between min-w-0 gap-2">
+              <div class="overflow-x-auto py-1 pr-1">
+                <code class="whitespace-nowrap">./vol.py -f ./memdump.mem windows.filescan.FileScan | grep -i "Users"</code>
+              </div>
+              <button onclick="copyCode(this)" class="shrink-0 text-slate-400 hover:text-white text-[10px] bg-slate-800 px-2 py-0.5 rounded">Copy</button>
+            </div>
+
+            <div class="bg-slate-950 p-2.5 rounded border border-slate-800 font-mono text-xs text-emerald-400 flex items-center justify-between min-w-0 gap-2">
+              <div class="overflow-x-auto py-1 pr-1">
+                <code class="whitespace-nowrap">./vol.py -f ./memdump.mem -o ./out windows.dumpfiles.DumpFiles --virtaddr 0xe00012345678</code>
+              </div>
+              <button onclick="copyCode(this)" class="shrink-0 text-slate-400 hover:text-white text-[10px] bg-slate-800 px-2 py-0.5 rounded">Copy</button>
+            </div>
+          </div>
+
+          <!-- Tips & Gotchas -->
+          <div class="mb-6 p-3 bg-amber-950/20 border border-amber-800/40 rounded-lg text-xs font-mono text-amber-300 flex items-start gap-2">
+            <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-400 shrink-0 mt-0.5"></i>
+            <div>
+              <span class="font-bold uppercase block mb-0.5">! Encoding Trap</span>
+              Non-English filenames or special path characters may output garbled text in standard terminals. Pipe commands through <code class="text-amber-200">iconv</code> or inspect UTF-8 streams when searching directory strings.
+            </div>
+          </div>
+
+          <!-- Card Footer -->
+          <div class="pt-4 border-t border-slate-800/80 flex justify-between items-center text-xs font-mono">
+            <span class="text-slate-500">// Documentation Links</span>
+            <a href="https://sqlitebrowser.org/" target="_blank" rel="noopener noreferrer" class="text-cyan-400 hover:underline flex items-center gap-1">
+              [SQLite DB Browser] <i data-lucide="external-link" class="w-3 h-3"></i>
+            </a>
+          </div>
+        </article>
+
+        <!-- CARD 3: Windows Hashdump & Registry Extraction -->
+        <article class="module-card w-full min-w-0 bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl text-slate-200 transition-all duration-200 hover:border-slate-700" data-category="ARTIFACTS" data-difficulty="MEDIUM">
+          <div class="flex items-center justify-between mb-4 gap-2">
+            <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-cyan-950/80 text-cyan-400 border border-cyan-800/50 uppercase tracking-wider font-mono">
+              ARTIFACTS
+            </span>
+            <span class="px-2.5 py-1 text-xs font-bold rounded bg-amber-950/80 text-amber-400 border border-amber-800/50 font-mono">
+              MEDIUM
+            </span>
+          </div>
+
+          <h2 class="text-xl font-bold text-slate-100 mb-2 font-mono flex items-center gap-2">
+            <span class="text-emerald-400">&gt;</span> NTLM Hash Dumping & Registry Analysis
+          </h2>
+          <p class="text-sm text-slate-400 mb-6 leading-relaxed">
+            Extract NTLM password hashes from local Security Account Manager (<code class="text-emerald-400 font-mono bg-slate-950 px-1 py-0.5 rounded">SAM</code>) and <code class="text-emerald-400 font-mono bg-slate-950 px-1 py-0.5 rounded">SYSTEM</code> registry hives stored in system memory.
+          </p>
+
+          <!-- Context Panel -->
+          <div class="mb-6 bg-slate-950/60 rounded-lg p-4 border border-slate-800/80 space-y-3">
+            <div>
+              <h3 class="text-xs font-mono font-bold text-amber-400 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
+                <i data-lucide="help-circle" class="w-3.5 h-3.5"></i> // When to Use This
+              </h3>
+              <ul class="text-xs text-slate-300 space-y-1 list-disc list-inside">
+                <li>When recovering user account credentials or verifying local password complexity enforcement from host memory.</li>
+                <li>To obtain NTLM hashes for offline cracking via Hashcat, John the Ripper, or online lookup databases.</li>
+              </ul>
+            </div>
+            <div>
+              <h3 class="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
+                <i data-lucide="info" class="w-3.5 h-3.5"></i> // Why This Specific Approach Works
+              </h3>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                The Windows kernel maps hive structures into RAM. Volatility locates registry hive base addresses in memory, locates LSA secrets and SAM structures, and decrypts stored user password hashes without locking hive files.
+              </p>
+            </div>
+          </div>
+
+          <!-- Command Box -->
+          <div class="mb-6 space-y-3 min-w-0">
+            <h3 class="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wide flex items-center gap-1.5">
+              <i data-lucide="terminal" class="w-3.5 h-3.5"></i> // Key Commands
+            </h3>
+
+            <div class="bg-slate-950 p-2.5 rounded border border-slate-800 font-mono text-xs text-emerald-400 flex items-center justify-between min-w-0 gap-2">
+              <div class="overflow-x-auto py-1 pr-1">
+                <code class="whitespace-nowrap">./vol.py -f ./memdump.mem windows.registry.hashdump.Hashdump</code>
+              </div>
+              <button onclick="copyCode(this)" class="shrink-0 text-slate-400 hover:text-white text-[10px] bg-slate-800 px-2 py-0.5 rounded">Copy</button>
+            </div>
+
+            <div class="bg-slate-950 p-2.5 rounded border border-slate-800 font-mono text-xs text-emerald-400 flex items-center justify-between min-w-0 gap-2">
+              <div class="overflow-x-auto py-1 pr-1">
+                <code class="whitespace-nowrap">hashcat -m 1000 -a 0 ntlm_hashes.txt /usr/share/wordlists/rockyou.txt</code>
+              </div>
+              <button onclick="copyCode(this)" class="shrink-0 text-slate-400 hover:text-white text-[10px] bg-slate-800 px-2 py-0.5 rounded">Copy</button>
+            </div>
+          </div>
+
+          <!-- Tips & Gotchas -->
+          <div class="mb-6 p-3 bg-amber-950/20 border border-amber-800/40 rounded-lg text-xs font-mono text-amber-300 flex items-start gap-2">
+            <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-400 shrink-0 mt-0.5"></i>
+            <div>
+              <span class="font-bold uppercase block mb-0.5">! Crypto Dependency Error</span>
+              If Volatility throws a cryptographic plugin failure, missing libraries are typically the cause. Resolve by running <code class="text-amber-200">pip3 install pycryptodome</code> inside your python environment.
+            </div>
+          </div>
+
+          <!-- Card Footer -->
+          <div class="pt-4 border-t border-slate-800/80 flex justify-between items-center text-xs font-mono">
+            <span class="text-slate-500">// Documentation Links</span>
+            <a href="https://crackstation.net/" target="_blank" rel="noopener noreferrer" class="text-cyan-400 hover:underline flex items-center gap-1">
+              [CrackStation Lookup] <i data-lucide="external-link" class="w-3 h-3"></i>
+            </a>
+          </div>
+        </article>
+
+        <!-- CARD 4: File Carving & Magic Byte Reconstruction -->
+        <article class="module-card w-full min-w-0 bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl text-slate-200 transition-all duration-200 hover:border-slate-700" data-category="FILE_SYSTEM" data-difficulty="MEDIUM">
+          <div class="flex items-center justify-between mb-4 gap-2">
+            <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-cyan-950/80 text-cyan-400 border border-cyan-800/50 uppercase tracking-wider font-mono">
+              FILE_SYSTEM
+            </span>
+            <span class="px-2.5 py-1 text-xs font-bold rounded bg-amber-950/80 text-amber-400 border border-amber-800/50 font-mono">
+              MEDIUM
+            </span>
+          </div>
+
+          <h2 class="text-xl font-bold text-slate-100 mb-2 font-mono flex items-center gap-2">
+            <span class="text-emerald-400">&gt;</span> File Carving & Magic Byte Repair
+          </h2>
+          <p class="text-sm text-slate-400 mb-6 leading-relaxed">
+            Extract raw binary payloads, repair corrupted header signatures (Magic Bytes), and recover deleted files using tools like <code class="text-emerald-400 font-mono bg-slate-950 px-1 py-0.5 rounded">scalpel</code>, <code class="text-emerald-400 font-mono bg-slate-950 px-1 py-0.5 rounded">foremost</code>, and hex editors.
+          </p>
+
+          <!-- Context Panel -->
+          <div class="mb-6 bg-slate-950/60 rounded-lg p-4 border border-slate-800/80 space-y-3">
+            <div>
+              <h3 class="text-xs font-mono font-bold text-amber-400 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
+                <i data-lucide="help-circle" class="w-3.5 h-3.5"></i> // When to Use This
+              </h3>
+              <ul class="text-xs text-slate-300 space-y-1 list-disc list-inside">
+                <li>When file system metadata (MFT/FAT) is unreadable, corrupted, or wiped.</li>
+                <li>When an image, zip, or executable fails to render due to intentional header byte tampering in CTF challenges.</li>
+              </ul>
+            </div>
+            <div>
+              <h3 class="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
+                <i data-lucide="info" class="w-3.5 h-3.5"></i> // Why This Specific Approach Works
+              </h3>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                Carving scans raw disk sectors for explicit header/footer byte sequences (e.g., PNG = <code class="text-emerald-400 font-mono">89 50 4E 47 0D 0A 1A 0A</code>). Overwriting broken headers with correct hex signatures restores standard container rendering across operating systems.
+              </p>
+            </div>
+          </div>
+
+          <!-- Command Box -->
+          <div class="mb-6 space-y-3 min-w-0">
+            <h3 class="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wide flex items-center gap-1.5">
+              <i data-lucide="terminal" class="w-3.5 h-3.5"></i> // Key Commands
+            </h3>
+
+            <div class="bg-slate-950 p-2.5 rounded border border-slate-800 font-mono text-xs text-emerald-400 flex items-center justify-between min-w-0 gap-2">
+              <div class="overflow-x-auto py-1 pr-1">
+                <code class="whitespace-nowrap">foremost -t png,jpg,pdf,zip -i disk_image.raw -o ./recovered_output</code>
+              </div>
+              <button onclick="copyCode(this)" class="shrink-0 text-slate-400 hover:text-white text-[10px] bg-slate-800 px-2 py-0.5 rounded">Copy</button>
+            </div>
+
+            <div class="bg-slate-950 p-2.5 rounded border border-slate-800 font-mono text-xs text-emerald-400 flex items-center justify-between min-w-0 gap-2">
+              <div class="overflow-x-auto py-1 pr-1">
+                <code class="whitespace-nowrap">hexeditor broken_file.png # Verify magic bytes match 89 50 4E 47</code>
+              </div>
+              <button onclick="copyCode(this)" class="shrink-0 text-slate-400 hover:text-white text-[10px] bg-slate-800 px-2 py-0.5 rounded">Copy</button>
+            </div>
+          </div>
+
+          <!-- Tips & Gotchas -->
+          <div class="mb-6 p-3 bg-amber-950/20 border border-amber-800/40 rounded-lg text-xs font-mono text-amber-300 flex items-start gap-2">
+            <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-400 shrink-0 mt-0.5"></i>
+            <div>
+              <span class="font-bold uppercase block mb-0.5">! Fragmentation Trap</span>
+              File carving tools assume contiguously allocated sectors. Heavily fragmented disk images may produce corrupt outputs; verify boundaries manually in a hex editor if carving fails.
+            </div>
+          </div>
+
+          <!-- Card Footer -->
+          <div class="pt-4 border-t border-slate-800/80 flex justify-between items-center text-xs font-mono">
+            <span class="text-slate-500">// Documentation Links</span>
+            <a href="https://manned.org/foremost" target="_blank" rel="noopener noreferrer" class="text-cyan-400 hover:underline flex items-center gap-1">
+              [Foremost Manual] <i data-lucide="external-link" class="w-3 h-3"></i>
+            </a>
+          </div>
+        </article>
+
+        <!-- CARD 5: Git Artifact Forensics & History Reconstruct -->
+        <article class="module-card w-full min-w-0 bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl text-slate-200 transition-all duration-200 hover:border-slate-700" data-category="GIT" data-difficulty="EASY">
+          <div class="flex items-center justify-between mb-4 gap-2">
+            <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-cyan-950/80 text-cyan-400 border border-cyan-800/50 uppercase tracking-wider font-mono">
+              GIT
+            </span>
+            <span class="px-2.5 py-1 text-xs font-bold rounded bg-emerald-950/80 text-emerald-400 border border-emerald-800/50 font-mono">
+              EASY
+            </span>
+          </div>
+
+          <h2 class="text-xl font-bold text-slate-100 mb-2 font-mono flex items-center gap-2">
+            <span class="text-emerald-400">&gt;</span> Git Repository Forensics & Commit Recovery
+          </h2>
+          <p class="text-sm text-slate-400 mb-6 leading-relaxed">
+            Extract deleted secrets, inspect dangling commit blobs, and review commit logs inside compromised or improperly scrubbed <code class="text-emerald-400 font-mono bg-slate-950 px-1 py-0.5 rounded">.git</code> version control directories.
+          </p>
+
+          <!-- Context Panel -->
+          <div class="mb-6 bg-slate-950/60 rounded-lg p-4 border border-slate-800/80 space-y-3">
+            <div>
+              <h3 class="text-xs font-mono font-bold text-amber-400 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
+                <i data-lucide="help-circle" class="w-3.5 h-3.5"></i> // When to Use This
+              </h3>
+              <ul class="text-xs text-slate-300 space-y-1 list-disc list-inside">
+                <li>When analyzing source code repositories where credentials, flags, or private keys were committed and later removed via <code class="text-slate-300 font-mono">git rm</code>.</li>
+                <li>When inspecting exposed <code class="text-slate-300 font-mono">.git</code> directories harvested from target web servers.</li>
+              </ul>
+            </div>
+            <div>
+              <h3 class="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
+                <i data-lucide="info" class="w-3.5 h-3.5"></i> // Why This Specific Approach Works
+              </h3>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                Git stores objects immutably inside <code class="text-slate-300 font-mono">.git/objects</code> by SHA-1 hash. Removing a file or force-pushing does not immediately delete dangling blobs until garbage collection (<code class="text-slate-300 font-mono">git gc</code>) runs, leaving unreferenced data fully recoverable via <code class="text-cyan-400 font-mono">git fsck</code>.
+              </p>
+            </div>
+          </div>
+
+          <!-- Command Box -->
+          <div class="mb-6 space-y-3 min-w-0">
+            <h3 class="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wide flex items-center gap-1.5">
+              <i data-lucide="terminal" class="w-3.5 h-3.5"></i> // Key Commands
+            </h3>
+
+            <div class="bg-slate-950 p-2.5 rounded border border-slate-800 font-mono text-xs text-emerald-400 flex items-center justify-between min-w-0 gap-2">
+              <div class="overflow-x-auto py-1 pr-1">
+                <code class="whitespace-nowrap">git log --all --full-history -- "path/to/file"</code>
+              </div>
+              <button onclick="copyCode(this)" class="shrink-0 text-slate-400 hover:text-white text-[10px] bg-slate-800 px-2 py-0.5 rounded">Copy</button>
+            </div>
+
+            <div class="bg-slate-950 p-2.5 rounded border border-slate-800 font-mono text-xs text-emerald-400 flex items-center justify-between min-w-0 gap-2">
+              <div class="overflow-x-auto py-1 pr-1">
+                <code class="whitespace-nowrap">git fsck --lost-found | grep "dangling blob" | awk '{print $3}' | xargs -I {} git cat-file -p {}</code>
+              </div>
+              <button onclick="copyCode(this)" class="shrink-0 text-slate-400 hover:text-white text-[10px] bg-slate-800 px-2 py-0.5 rounded">Copy</button>
+            </div>
+          </div>
+
+          <!-- Tips & Gotchas -->
+          <div class="mb-6 p-3 bg-amber-950/20 border border-amber-800/40 rounded-lg text-xs font-mono text-amber-300 flex items-start gap-2">
+            <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-400 shrink-0 mt-0.5"></i>
+            <div>
+              <span class="font-bold uppercase block mb-0.5">! Hidden Stash Gotcha</span>
+              Always run <code class="text-amber-200">git stash list</code> and inspect <code class="text-amber-200">git reflog</code>. Secrets are frequently left behind in uncommitted stash states during developer workflows.
+            </div>
+          </div>
+
+          <!-- Card Footer -->
+          <div class="pt-4 border-t border-slate-800/80 flex justify-between items-center text-xs font-mono">
+            <span class="text-slate-500">// Documentation Links</span>
+            <a href="https://git-scm.com/docs/git-fsck" target="_blank" rel="noopener noreferrer" class="text-cyan-400 hover:underline flex items-center gap-1">
+              [Git FSCK Reference] <i data-lucide="external-link" class="w-3 h-3"></i>
+            </a>
+          </div>
+        </article>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Client-side Search & Filtering Engine -->
+  <script>
+    lucide.createIcons();
+
+    let currentCategory = 'ALL';
+    let currentDifficulty = 'ALL';
+
+    function copyCode(btn) {
+      const codeBlock = btn.previousElementSibling.querySelector('code');
+      if (codeBlock) {
+        navigator.clipboard.writeText(codeBlock.innerText);
+        const originalText = btn.innerText;
+        btn.innerText = 'Copied!';
+        btn.classList.add('text-emerald-400');
+        setTimeout(() => {
+          btn.innerText = originalText;
+          btn.classList.remove('text-emerald-400');
+        }, 2000);
+      }
+    }
+
+    function setCategory(cat) {
+      currentCategory = cat;
+      
+      // Update UI state for category buttons
+      document.querySelectorAll('.cat-btn').forEach(btn => {
+        if (btn.getAttribute('onclick').includes(`'${cat}'`)) {
+          btn.className = 'cat-btn w-full text-left px-2.5 py-1.5 rounded bg-cyan-950/60 text-cyan-400 border border-cyan-800/50 transition-colors';
+        } else {
+          btn.className = 'cat-btn w-full text-left px-2.5 py-1.5 rounded text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-colors';
+        }
+      });
+      
+      filterCards();
+    }
+
+    function setDifficulty(diff) {
+      currentDifficulty = diff;
+
+      // Update UI state for difficulty buttons
+      document.querySelectorAll('.diff-btn').forEach(btn => {
+        if (btn.getAttribute('onclick').includes(`'${diff}'`)) {
+          btn.classList.add('bg-slate-700', 'text-white');
+        } else {
+          btn.classList.remove('bg-slate-700', 'text-white');
+        }
+      });
+
+      filterCards();
+    }
+
+    function filterCards() {
+      const searchVal = document.getElementById('searchInput').value.toLowerCase();
+      const cards = document.querySelectorAll('.module-card');
+      let visibleCount = 0;
+
+      cards.forEach(card => {
+        const cardCategory = card.getAttribute('data-category');
+        const cardDifficulty = card.getAttribute('data-difficulty');
+        const cardText = card.innerText.toLowerCase();
+
+        const matchesCategory = (currentCategory === 'ALL' || cardCategory === currentCategory);
+        const matchesDifficulty = (currentDifficulty === 'ALL' || cardDifficulty === currentDifficulty);
+        const matchesSearch = cardText.includes(searchVal);
+
+        if (matchesCategory && matchesDifficulty && matchesSearch) {
+          card.classList.remove('hidden');
+          visibleCount++;
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+
+      document.getElementById('activeCount').innerText = `${visibleCount} / ${cards.length}`;
+    }
+  </script>
+</body>
+</html>
