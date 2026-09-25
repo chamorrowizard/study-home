@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CTF.FieldGuide // Scanning & Reconnaissance</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-950 text-slate-200 font-sans antialiased min-h-screen">
+
+  <!-- Main Container -->
+  <div class="max-w-7xl mx-auto px-4 py-6">
+    
+    <!-- Header Bar -->
+    <header class="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-6 mb-6 border-b border-slate-800 gap-4">
+      <div class="flex items-center gap-3">
+        <h1 class="text-xl font-mono font-bold text-slate-100 flex items-center gap-2">
+          <span class="text-cyan-400">&gt;_</span> CTF.FIELD_GUIDE
+        </h1>
+        <span class="px-2 py-0.5 text-xs font-mono bg-cyan-950 text-cyan-400 border border-cyan-800/50 rounded">v1.0</span>
+      </div>
+
+      <div class="flex items-center gap-3 font-mono text-xs">
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-emerald-950/80 text-emerald-400 border border-emerald-800/50">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          READY_FOR_COMPETITION
+        </span>
+        <a href="https://gchq.github.io/CyberChef/" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1 px-3 py-1 bg-slate-900 border border-slate-800 hover:border-cyan-500/50 text-slate-300 hover:text-cyan-400 rounded transition-all">
+          <i data-lucide="external-link" class="w-3.5 h-3.5"></i> CyberChef
+        </a>
+      </div>
+    </header>
+
+    <!-- Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      
+      <!-- Sidebar Controls -->
+      <aside class="lg:col-span-1 space-y-6">
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-5">
+          
+          <!-- Search Bar -->
+          <div>
+            <label class="text-xs font-mono font-bold text-slate-400 uppercase block mb-2 flex items-center gap-1.5">
+              <i data-lucide="search" class="w-3.5 h-3.5"></i> Search Modules
+            </label>
+            <input type="text" id="searchInput" oninput="filterCards()" placeholder="Search flags, tools, commands..." class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-cyan-500 font-mono transition-colors">
+          </div>
+
+          <!-- Category Nav -->
+          <div>
+            <label class="text-xs font-mono font-bold text-slate-400 uppercase block mb-2 flex items-center gap-1.5">
+              <i data-lucide="folder" class="w-3.5 h-3.5"></i> Categories
+            </label>
+            <div class="space-y-1 font-mono text-xs">
+              <button onclick="setCategory('ALL')" class="category-btn w-full text-left px-2.5 py-1.5 rounded bg-cyan-950/60 text-cyan-400 border border-cyan-800/50 font-semibold" data-category="ALL">[+] ALL MODULES</button>
+              <button onclick="setCategory('DNS')" class="category-btn w-full text-left px-2.5 py-1.5 rounded text-slate-400 hover:bg-slate-800/60 hover:text-slate-200 transition-colors" data-category="DNS">[&nbsp;] DNS & Dig</button>
+              <button onclick="setCategory('NMAP')" class="category-btn w-full text-left px-2.5 py-1.5 rounded text-slate-400 hover:bg-slate-800/60 hover:text-slate-200 transition-colors" data-category="NMAP">[&nbsp;] Nmap Port Scanning</button>
+              <button onclick="setCategory('GIT')" class="category-btn w-full text-left px-2.5 py-1.5 rounded text-slate-400 hover:bg-slate-800/60 hover:text-slate-200 transition-colors" data-category="GIT">[&nbsp;] Git Enumeration</button>
+              <button onclick="setCategory('NET')" class="category-btn w-full text-left px-2.5 py-1.5 rounded text-slate-400 hover:bg-slate-800/60 hover:text-slate-200 transition-colors" data-category="NET">[&nbsp;] Net Track & Netcat</button>
+              <button onclick="setCategory('CLOUD')" class="category-btn w-full text-left px-2.5 py-1.5 rounded text-slate-400 hover:bg-slate-800/60 hover:text-slate-200 transition-colors" data-category="CLOUD">[&nbsp;] Cloud Metadata (IMDS)</button>
+            </div>
+          </div>
+
+          <!-- Difficulty Filters -->
+          <div>
+            <label class="text-xs font-mono font-bold text-slate-400 uppercase block mb-2 flex items-center gap-1.5">
+              <i data-lucide="sliders" class="w-3.5 h-3.5"></i> Difficulty Level
+            </label>
+            <div class="grid grid-cols-2 gap-1.5 font-mono text-xs">
+              <button onclick="setDifficulty('ANY')" class="diff-btn px-2 py-1 rounded bg-slate-800 text-slate-200 font-bold border border-slate-700 text-center" data-diff="ANY">ANY</button>
+              <button onclick="setDifficulty('EASY')" class="diff-btn px-2 py-1 rounded bg-slate-950 text-emerald-400 border border-slate-800 hover:border-emerald-800 text-center" data-diff="EASY">EASY</button>
+              <button onclick="setDifficulty('MEDIUM')" class="diff-btn px-2 py-1 rounded bg-slate-950 text-amber-400 border border-slate-800 hover:border-amber-800 text-center" data-diff="MEDIUM">MEDIUM</button>
+              <button onclick="setDifficulty('HARD')" class="diff-btn px-2 py-1 rounded bg-slate-950 text-rose-400 border border-slate-800 hover:border-rose-800 text-center" data-diff="HARD">HARD</button>
+            </div>
+          </div>
+
+          <!-- Active View Summary Panel -->
+          <div class="pt-3 border-t border-slate-800/80 font-mono text-xs text-slate-400 flex items-center justify-between">
+            <span>// ACTIVE MODULES:</span>
+            <span id="activeCount" class="text-cyan-400 font-bold">5 / 5</span>
+          </div>
+
+        </div>
+      </aside>
+
+      <!-- Main Cards Column -->
+      <main class="lg:col-span-3 space-y-6" id="cardsGrid">
+        
+        <!-- CARD 1: DIG / DNS -->
+        <article class="module-card w-full min-w-0 bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl text-slate-200 transition-all duration-200 hover:border-slate-700" data-category="DNS" data-difficulty="EASY">
+          <div class="flex items-center justify-between mb-4 gap-2">
+            <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-cyan-950/80 text-cyan-400 border border-cyan-800/50 uppercase tracking-wider font-mono">
+              DNS RECON
+            </span>
+            <span class="px-2.5 py-1 text-xs font-bold rounded bg-emerald-950/80 text-emerald-400 border border-emerald-800/50 font-mono">
+              EASY
+            </span>
+          </div>
+
+          <h2 class="text-xl font-bold text-slate-100 mb-2 font-mono flex items-center gap-2">
+            <span class="text-emerald-400">&gt;</span> Domain Name Auditing with Dig
+          </h2>
+          <p class="text-sm text-slate-400 mb-6 leading-relaxed">
+            Query specific DNS resource records (<code class="text-emerald-400 font-mono bg-slate-950 px-1 py-0.5 rounded">A</code>, <code class="text-emerald-400 font-mono bg-slate-950 px-1 py-0.5 rounded">MX</code>, <code class="text-emerald-400 font-mono bg-slate-950 px-1 py-0.5 rounded">NS</code>, <code class="text-emerald-400 font-mono bg-slate-950 px-1 py-0.5 rounded">TXT</code>, <code class="text-emerald-400 font-mono bg-slate-950 px-1 py-0.5 rounded">RP</code>) against designated resolvers to discover mail priority, administrator identities, and obfuscated text flags.
+          </p>
+
+          <!-- Context Panel -->
+          <div class="mb-6 bg-slate-950/60 rounded-lg p-4 border border-slate-800/80 space-y-4">
+            <div>
+              <h3 class="text-xs font-mono font-bold text-amber-400 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
+                <i data-lucide="help-circle" class="w-3.5 h-3.5"></i> // When to Use This Technique
+              </h3>
+              <ul class="text-xs text-slate-300 space-y-1 list-disc list-inside">
+                <li>Auditing domain zone records during initial OSINT or network recon phases.</li>
+                <li>Targeting specific internal or non-standard resolvers (e.g., <code class="text-cyan-400 font-mono">@resolver</code>).</li>
+                <li>Extracting system contacts or flag payloads embedded inside DNS <code class="text-cyan-400 font-mono">TXT</code> or <code class="text-cyan-400 font-mono">RP</code> records.</li>
+              </ul>
+            </div>
+            <div>
+              <h3 class="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
+                <i data-lucide="info" class="w-3.5 h-3.5"></i> // Why This Specific Approach Works
+              </h3>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                <code class="text-emerald-400 font-mono">dig</code> sends raw DNS queries directly to the server specified after the <code class="text-emerald-400 font-mono">@</code> symbol, bypassing local system caching. Querying record types sequentially reveals hidden infrastructure details without relying on noisy web crawlers.
+              </p>
+            </div>
+          </div>
+
+          <!-- Step-by-Step Commands -->
+          <div class="mb-6 space-y-3 min-w-0">
+            <h3 class="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wide flex items-center gap-1.5">
+              <i data-lucide="terminal" class="w-3.5 h-3.5"></i> // Key Commands & Workflow
+            </h3>
+            
+            <div class="space-y-2">
+              <span class="text-xs font-mono text-slate-400 block">1. Query IPv4 Address (A) & Mail Servers (MX):</span>
+              <div class="bg-slate-950 p-2.5 rounded border border-slate-800 font-mono text-xs text-emerald-400 flex items-center justify-between min-w-0 gap-2">
+                <div class="overflow-x-auto py-1 pr-1">
+                  <code class="whitespace-nowrap">dig @resolver A fortaigan.net +short & dig @resolver MX fortaigan.net</code>
+                </div>
+                <button onclick="copyCode(this)" class="shrink-0 text-slate-400 hover:text-white text-[10px] bg-slate-800 px-2 py-0.5 rounded transition-colors">Copy</button>
+              </div>
+
+              <span class="text-xs font-mono text-slate-400 block">2. Query Responsible Person (RP) & TXT Records for Flags:</span>
+              <div class="bg-slate-950 p-2.5 rounded border border-slate-800 font-mono text-xs text-emerald-400 flex items-center justify-between min-w-0 gap-2">
+                <div class="overflow-x-auto py-1 pr-1">
+                  <code class="whitespace-nowrap">dig @resolver RP fortaigan.net && dig @resolver TXT fortaigan.net</code>
+                </div>
+                <button onclick="copyCode(this)" class="shrink-0 text-slate-400 hover:text-white text-[10px] bg-slate-800 px-2 py-0.5 rounded transition-colors">Copy</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tips & Gotchas -->
+          <div class="mb-6 bg-amber-950/30 border border-amber-800/40 rounded-lg p-3 text-xs text-amber-200/90 font-sans flex items-start gap-2">
+            <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-400 shrink-0 mt-0.5"></i>
+            <div>
+              <strong class="font-mono text-amber-400">GOTCHA:</strong> Mail Server Priority is defined by the lowest preference number in MX records (e.g., <code class="font-mono bg-amber-950 px-1">10 mail.target.com</code> takes priority over <code class="font-mono bg-amber-950 px-1">20 mail2.target.com</code>). In TXT outputs, remove surrounding quotes and escaped backslashes (<code class="font-mono bg-amber-950 px-1">\"</code>) when submitting CTF flags.
+            </div>
+          </div>
+
+          <!-- Card Footer -->
+          <div class="pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono">
+            <span class="text-slate-500">// Reference Documentation</span>
+            <a href="https://trove.cyberskyline.com/32778798f2f680bbbefbe257d7955ee4" target="_blank" rel="noopener noreferrer" class="text-cyan-400 hover:underline flex items-center gap-1">
+              [Dig Walkthrough] &rarr;
+            </a>
+          </div>
+        </article>
+
+
+        <!-- CARD 2: NMAP -->
+        <article class="module-card w-full min-w-0 bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl text-slate-200 transition-all duration-200 hover:border-slate-700" data-category="NMAP" data-difficulty="EASY">
+          <div class="flex items-center justify-between mb-4 gap-2">
+            <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-cyan-950/80 text-cyan-400 border border-cyan-800/50 uppercase tracking-wider font-mono">
+              PORT SCANNING
+            </span>
+            <span class="px-2.5 py-1 text-xs font-bold rounded bg-emerald-950/80 text-emerald-400 border border-emerald-800/50 font-mono">
+              EASY
+            </span>
+          </div>
+
+          <h2 class="text-xl font-bold text-slate-100 mb-2 font-mono flex items-center gap-2">
+            <span class="text-emerald-400">&gt;</span> Nmap Stealth & Service Enumeration
+          </h2>
+          <p class="text-sm text-slate-400 mb-6 leading-relaxed">
+            Execute targeted TCP and UDP port discovery across custom port ranges while bypassing ICMP blocks using <code class="text-emerald-400 font-mono bg-slate-950 px-1 py-0.5 rounded">-Pn</code> and identifying software versions with <code class="text-emerald-400 font-mono bg-slate-950 px-1 py-0.5 rounded">-sV</code>.
+          </p>
+
+          <!-- Context Panel -->
+          <div class="mb-6 bg-slate-950/60 rounded-lg p-4 border border-slate-800/80 space-y-4">
+            <div>
+              <h3 class="text-xs font-mono font-bold text-amber-400 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
+                <i data-lucide="help-circle" class="w-3.5 h-3.5"></i> // When to Use This Technique
+              </h3>
+              <ul class="text-xs text-slate-300 space-y-1 list-disc list-inside">
+                <li>Initial host discovery on targets where ping responses (ICMP) are filtered or blocked.</li>
+                <li>Identifying actual banner software names vs. standard port defaults (e.g., HTTP running on non-80 ports).</li>
+                <li>Auditing stateless UDP services like DNS (53), SNMP (161), or NTP (123).</li>
+              </ul>
+            </div>
+            <div>
+              <h3 class="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
+                <i data-lucide="info" class="w-3.5 h-3.5"></i> // Why This Specific Approach Works
+              </h3>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                By default, Nmap only scans the top 1,000 TCP ports and skips unreachable hosts if ping fails. Explicitly passing <code class="text-emerald-400 font-mono">-Pn</code> treats the target as online, while <code class="text-emerald-400 font-mono">-p 1-500</code> restricts scan bounds to minimize detection and speed up response times.
+              </p>
+            </div>
+          </div>
+
+          <!-- Step-by-Step Commands -->
+          <div class="mb-6 space-y-3 min-w-0">
+            <h3 class="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wide flex items-center gap-1.5">
+              <i data-lucide="terminal" class="w-3.5 h-3.5"></i> // Key Commands & Workflow
+            </h3>
+            
+            <div class="space-y-2">
+              <span class="text-xs font-mono text-slate-400 block">1. Scan Specific TCP Range without Ping Probe:</span>
+              <div class="bg-slate-950 p-2.5 rounded border border-slate-800 font-mono text-xs text-emerald-400 flex items-center justify-between min-w-0 gap-2">
+                <div class="overflow-x-auto py-1 pr-1">
+                  <code class="whitespace-nowrap">nmap -Pn -p 1-500 ports.cityinthe.cloud</code>
+                </div>
+                <button onclick="copyCode(this)" class="shrink-0 text-slate-400 hover:text-white text-[10px] bg-slate-800 px-2 py-0.5 rounded transition-colors">Copy</button>
+              </div>
+
+              <span class="text-xs font-mono text-slate-400 block">2. Perform UDP Scan & Service Version Detection:</span>
+              <div class="bg-slate-950 p-2.5 rounded border border-slate-800 font-mono text-xs text-emerald-400 flex items-center justify-between min-w-0 gap-2">
+                <div class="overflow-x-auto py-1 pr-1">
+                  <code class="whitespace-nowrap">nmap -Pn -sU -sV -p 1-100 ports.cityinthe.cloud</code>
+                </div>
+                <button onclick="copyCode(this)" class="shrink-0 text-slate-400 hover:text-white text-[10px] bg-slate-800 px-2 py-0.5 rounded transition-colors">Copy</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tips & Gotchas -->
+          <div class="mb-6 bg-amber-950/30 border border-amber-800/40 rounded-lg p-3 text-xs text-amber-200/90 font-sans flex items-start gap-2">
+            <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-400 shrink-0 mt-0.5"></i>
+            <div>
+              <strong class="font-mono text-amber-400">GOTCHA:</strong> Scanning without <code class="font-mono bg-amber-950 px-1">-sV</code> only reports assigned default service names from <code class="font-mono bg-amber-950 px-1">/etc/services</code>, not actual running binaries. Note that UDP scans take significantly longer because non-responsive ports are classified as <code class="font-mono bg-amber-950 px-1">open|filtered</code> due to packet dropping.
+            </div>
+          </div>
+
+          <!-- Card Footer -->
+          <div class="pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono">
+            <span class="text-slate-500">// Reference Documentation</span>
+            <a href="https://trove.cyberskyline.com/a92ccb5089604e069f30e7436394efb3" target="_blank" rel="noopener noreferrer" class="text-cyan-400 hover:underline flex items-center gap-1">
+              [Nmap Walkthrough] &rarr;
+            </a>
+          </div>
+        </article>
+
+
+        <!-- CARD 3: GIT -->
+        <article class="module-card w-full min-w-0 bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl text-slate-200 transition-all duration-200 hover:border-slate-700" data-category="GIT" data-difficulty="EASY">
+          <div class="flex items-center justify-between mb-4 gap-2">
+            <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-cyan-950/80 text-cyan-400 border border-cyan-800/50 uppercase tracking-wider font-mono">
+              SOURCE ANALYSIS
+            </span>
+            <span class="px-2.5 py-1 text-xs font-bold rounded bg-emerald-950/80 text-emerald-400 border border-emerald-800/50 font-mono">
+              EASY
+            </span>
+          </div>
+
+          <h2 class="text-xl font-bold text-slate-100 mb-2 font-mono flex items-center gap-2">
+            <span class="text-emerald-400">&gt;</span> Git Commit History & Object Forensics
+          </h2>
+          <p class="text-sm text-slate-400 mb-6 leading-relaxed">
+            Investigate exposed Git version control repositories to recover deleted files, inspect branch histories (<code class="text-emerald-400 font-mono bg-slate-950 px-1 py-0.5 rounded">git branch</code>), extract short commit hashes, and uncover redacted secrets using <code class="text-emerald-400 font-mono bg-slate-950 px-1 py-0.5 rounded">git log</code> and <code class="text-emerald-400 font-mono bg-slate-950 px-1 py-0.5 rounded">git show</code>.
+          </p>
+
+          <!-- Context Panel -->
+          <div class="mb-6 bg-slate-950/60 rounded-lg p-4 border border-slate-800/80 space-y-4">
+            <div>
+              <h3 class="text-xs font-mono font-bold text-amber-400 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
+                <i data-lucide="help-circle" class="w-3.5 h-3.5"></i> // When to Use This Technique
+              </h3>
+              <ul class="text-xs text-slate-300 space-y-1 list-disc list-inside">
+                <li>Analyzing cloned git repositories or exposed web <code class="text-cyan-400 font-mono">.git</code> directories.</li>
+                <li>Tracking down initial commit hashes, author metadata, or modified commit messages.</li>
+                <li>Retrieving historical flags or API tokens wiped in recent commits.</li>
+              </ul>
+            </div>
+            <div>
+              <h3 class="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
+                <i data-lucide="info" class="w-3.5 h-3.5"></i> // Why This Specific Approach Works
+              </h3>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                Git never permanently deletes historical commits during simple file updates; changes are saved in compressed object trees. Traversing commit parent nodes via <code class="text-emerald-400 font-mono">git log</code> exposes every delta in repository history.
+              </p>
+            </div>
+          </div>
+
+          <!-- Step-by-Step Commands -->
+          <div class="mb-6 space-y-3 min-w-0">
+            <h3 class="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wide flex items-center gap-1.5">
+              <i data-lucide="terminal" class="w-3.5 h-3.5"></i> // Key Commands & Workflow
+            </h3>
+            
+            <div class="space-y-2">
+              <span class="text-xs font-mono text-slate-400 block">1. Clone & Inspect Full History Log:</span>
+              <div class="bg-slate-950 p-2.5 rounded border border-slate-800 font-mono text-xs text-emerald-400 flex items-center justify-between min-w-0 gap-2">
+                <div class="overflow-x-auto py-1 pr-1">
+                  <code class="whitespace-nowrap">git clone &lt;repo_url&gt; && cd repo && git log --oneline --all</code>
+                </div>
+                <button onclick="copyCode(this)" class="shrink-0 text-slate-400 hover:text-white text-[10px] bg-slate-800 px-2 py-0.5 rounded transition-colors">Copy</button>
+              </div>
+
+              <span class="text-xs font-mono text-slate-400 block">2. Inspect Specific Commit Diff & List Branches:</span>
+              <div class="bg-slate-950 p-2.5 rounded border border-slate-800 font-mono text-xs text-emerald-400 flex items-center justify-between min-w-0 gap-2">
+                <div class="overflow-x-auto py-1 pr-1">
+                  <code class="whitespace-nowrap">git branch -a && git show &lt;commit_hash_8_chars&gt;</code>
+                </div>
+                <button onclick="copyCode(this)" class="shrink-0 text-slate-400 hover:text-white text-[10px] bg-slate-800 px-2 py-0.5 rounded transition-colors">Copy</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tips & Gotchas -->
+          <div class="mb-6 bg-amber-950/30 border border-amber-800/40 rounded-lg p-3 text-xs text-amber-200/90 font-sans flex items-start gap-2">
+            <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-400 shrink-0 mt-0.5"></i>
+            <div>
+              <strong class="font-mono text-amber-400">GOTCHA:</strong> CTF questions asking for "short commit hash" usually require only the first <strong>8 characters</strong> of the 40-character SHA-1 digest. If web cloning is blocked, convert SSH repository URLs (<code class="font-mono bg-amber-950 px-1">git@host:user/repo.git</code>) to HTTPS format (<code class="font-mono bg-amber-950 px-1">https://host/user/repo</code>).
+            </div>
+          </div>
+
+          <!-- Card Footer -->
+          <div class="pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono">
+            <span class="text-slate-500">// Reference Documentation</span>
+            <a href="https://trove.cyberskyline.com/af24b32b47d24779874208904df5128d" target="_blank" rel="noopener noreferrer" class="text-cyan-400 hover:underline flex items-center gap-1">
+              [Git Walkthrough] &rarr;
+            </a>
+          </div>
+        </article>
+
+
+        <!-- CARD 4: NET TRACK -->
+        <article class="module-card w-full min-w-0 bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl text-slate-200 transition-all duration-200 hover:border-slate-700" data-category="NET" data-difficulty="MEDIUM">
+          <div class="flex items-center justify-between mb-4 gap-2">
+            <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-cyan-950/80 text-cyan-400 border border-cyan-800/50 uppercase tracking-wider font-mono">
+              SERVICE PROBING
+            </span>
+            <span class="px-2.5 py-1 text-xs font-bold rounded bg-amber-950/80 text-amber-400 border border-amber-800/50 font-mono">
+              MEDIUM
+            </span>
+          </div>
+
+          <h2 class="text-xl font-bold text-slate-100 mb-2 font-mono flex items-center gap-2">
+            <span class="text-emerald-400">&gt;</span> Custom Banner Interaction & Netcat Probing
+          </h2>
+          <p class="text-sm text-slate-400 mb-6 leading-relaxed">
+            Interact with non-standard socket listeners that spoof or close connections on active Nmap <code class="text-emerald-400 font-mono bg-slate-950 px-1 py-0.5 rounded">-sV</code> scans. Establish raw TCP streams via <code class="text-emerald-400 font-mono bg-slate-950 px-1 py-0.5 rounded">nc</code> to issue interactive service commands.
+          </p>
+
+          <!-- Context Panel -->
+          <div class="mb-6 bg-slate-950/60 rounded-lg p-4 border border-slate-800/80 space-y-4">
+            <div>
+              <h3 class="text-xs font-mono font-bold text-amber-400 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
+                <i data-lucide="help-circle" class="w-3.5 h-3.5"></i> // When to Use This Technique
+              </h3>
+              <ul class="text-xs text-slate-300 space-y-1 list-disc list-inside">
+                <li>Nmap basic scan reports a port <code class="text-cyan-400 font-mono">open</code>, but service scan (<code class="text-cyan-400 font-mono">-sV</code>) reports <code class="text-cyan-400 font-mono">closed</code> or generates complex fingerprint payloads.</li>
+                <li>Connecting to custom shell-like interfaces or unknown daemons on ports like 8090.</li>
+                <li>Sending manual command strings (<code class="text-cyan-400 font-mono">help</code>, <code class="text-cyan-400 font-mono">version</code>, <code class="text-cyan-400 font-mono">list</code>, <code class="text-cyan-400 font-mono">get</code>).</li>
+              </ul>
+            </div>
+            <div>
+              <h3 class="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
+                <i data-lucide="info" class="w-3.5 h-3.5"></i> // Why This Specific Approach Works
+              </h3>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                Nmap <code class="text-emerald-400 font-mono">-sV</code> sends specific probe buffers that aggressive service listeners reject (resetting TCP connection). A raw Netcat (<code class="text-emerald-400 font-mono">nc</code>) connection completes the 3-way handshake cleanly without sending unexpected automated probe probes.
+              </p>
+            </div>
+          </div>
+
+          <!-- Step-by-Step Commands -->
+          <div class="mb-6 space-y-3 min-w-0">
+            <h3 class="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wide flex items-center gap-1.5">
+              <i data-lucide="terminal" class="w-3.5 h-3.5"></i> // Key Commands & Workflow
+            </h3>
+            
+            <div class="space-y-2">
+              <span class="text-xs font-mono text-slate-400 block">1. Connect via Netcat & Issue Interactive Commands:</span>
+              <div class="bg-slate-950 p-2.5 rounded border border-slate-800 font-mono text-xs text-emerald-400 flex items-center justify-between min-w-0 gap-2">
+                <div class="overflow-x-auto py-1 pr-1">
+                  <code class="whitespace-nowrap">nc nettrack.cityinthe.cloud 8090</code>
+                </div>
+                <button onclick="copyCode(this)" class="shrink-0 text-slate-400 hover:text-white text-[10px] bg-slate-800 px-2 py-0.5 rounded transition-colors">Copy</button>
+              </div>
+
+              <span class="text-xs font-mono text-slate-400 block">2. In-Session Interaction Protocol:</span>
+              <div class="bg-slate-950 p-2 rounded border border-slate-800 font-mono text-xs text-slate-300">
+                <pre class="text-[11px] leading-tight text-emerald-400">
+# After connection appears to hung, type:
+help
+# Expected response lists: version, list, get, help
+version
+list</pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tips & Gotchas -->
+          <div class="mb-6 bg-amber-950/30 border border-amber-800/40 rounded-lg p-3 text-xs text-amber-200/90 font-sans flex items-start gap-2">
+            <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-400 shrink-0 mt-0.5"></i>
+            <div>
+              <strong class="font-mono text-amber-400">GOTCHA:</strong> Netcat connections to silent services often present a completely blank, hung cursor upon connecting. Do NOT press Ctrl+C immediately—type <code class="font-mono bg-amber-950 px-1">help</code> or hit Enter to trigger prompt responses. Use <code class="font-mono bg-amber-950 px-1">nmap --reason</code> to diagnose TCP state details.
+            </div>
+          </div>
+
+          <!-- Card Footer -->
+          <div class="pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono">
+            <span class="text-slate-500">// Reference Documentation</span>
+            <a href="https://trove.cyberskyline.com/d09ab76145a04a288729a0b87013b6c7" target="_blank" rel="noopener noreferrer" class="text-cyan-400 hover:underline flex items-center gap-1">
+              [Net Track Walkthrough] &rarr;
+            </a>
+          </div>
+        </article>
+
+
+        <!-- CARD 5: AWS METADATA (IMDS) -->
+        <article class="module-card w-full min-w-0 bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl text-slate-200 transition-all duration-200 hover:border-slate-700" data-category="CLOUD" data-difficulty="HARD">
+          <div class="flex items-center justify-between mb-4 gap-2">
+            <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-cyan-950/80 text-cyan-400 border border-cyan-800/50 uppercase tracking-wider font-mono">
+              CLOUD RECON
+            </span>
+            <span class="px-2.5 py-1 text-xs font-bold rounded bg-rose-950/80 text-rose-400 border border-rose-800/50 font-mono">
+              HARD
+            </span>
+          </div>
+
+          <h2 class="text-xl font-bold text-slate-100 mb-2 font-mono flex items-center gap-2">
+            <span class="text-emerald-400">&gt;</span> AWS Cloud Instance Metadata Service (IMDS) Recon
+          </h2>
+          <p class="text-sm text-slate-400 mb-6 leading-relaxed">
+            Query cloud HTTP metadata endpoints (<code class="text-emerald-400 font-mono bg-slate-950 px-1 py-0.5 rounded">/latest/meta-data/</code>) across non-standard port proxies (e.g., port 1338) to enumerate Availability Zones, IAM Security Roles, EC2 Instance Types, OS release data, and hidden environment flags.
+          </p>
+
+          <!-- Context Panel -->
+          <div class="mb-6 bg-slate-950/60 rounded-lg p-4 border border-slate-800/80 space-y-4">
+            <div>
+              <h3 class="text-xs font-mono font-bold text-amber-400 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
+                <i data-lucide="help-circle" class="w-3.5 h-3.5"></i> // When to Use This Technique
+              </h3>
+              <ul class="text-xs text-slate-300 space-y-1 list-disc list-inside">
+                <li>Discovering an HTTP service exposing endpoints returning strings like <code class="text-cyan-400 font-mono">latest</code>.</li>
+                <li>Performing SSRF or direct proxy reconnaissance on internal host metadata endpoints.</li>
+                <li>Retrieving temporary AWS IAM security credentials (<code class="text-cyan-400 font-mono">/meta-data/iam/security-credentials/&lt;role&gt;</code>).</li>
+              </ul>
+            </div>
+            <div>
+              <h3 class="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
+                <i data-lucide="info" class="w-3.5 h-3.5"></i> // Why This Specific Approach Works
+              </h3>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                AWS EC2 virtual machines host a local HTTP service at <code class="text-emerald-400 font-mono">169.254.169.254</code> (or mirror proxies). Appending sub-paths acts as a directory traversal through system properties without needing authentication in IMDSv1.
+              </p>
+            </div>
+          </div>
+
+          <!-- Step-by-Step Commands -->
+          <div class="mb-6 space-y-3 min-w-0">
+            <h3 class="text-xs font-mono font-bold text-cyan-400 uppercase tracking-wide flex items-center gap-1.5">
+              <i data-lucide="terminal" class="w-3.5 h-3.5"></i> // Key Commands & Workflow
+            </h3>
+            
+            <div class="space-y-2">
+              <span class="text-xs font-mono text-slate-400 block">1. Fetch Availability Zone & Instance Type:</span>
+              <div class="bg-slate-950 p-2.5 rounded border border-slate-800 font-mono text-xs text-emerald-400 flex items-center justify-between min-w-0 gap-2">
+                <div class="overflow-x-auto py-1 pr-1">
+                  <code class="whitespace-nowrap">curl -s http://metadata.services.cityinthe.cloud:1338/latest/meta-data/placement/availability-zone</code>
+                </div>
+                <button onclick="copyCode(this)" class="shrink-0 text-slate-400 hover:text-white text-[10px] bg-slate-800 px-2 py-0.5 rounded transition-colors">Copy</button>
+              </div>
+
+              <span class="text-xs font-mono text-slate-400 block">2. Enumerate IAM Role & Security Credentials / Flag:</span>
+              <div class="bg-slate-950 p-2.5 rounded border border-slate-800 font-mono text-xs text-emerald-400 flex items-center justify-between min-w-0 gap-2">
+                <div class="overflow-x-auto py-1 pr-1">
+                  <code class="whitespace-nowrap">curl -s http://metadata.services.cityinthe.cloud:1338/latest/meta-data/iam/security-credentials/</code>
+                </div>
+                <button onclick="copyCode(this)" class="shrink-0 text-slate-400 hover:text-white text-[10px] bg-slate-800 px-2 py-0.5 rounded transition-colors">Copy</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tips & Gotchas -->
+          <div class="mb-6 bg-amber-950/30 border border-amber-800/40 rounded-lg p-3 text-xs text-amber-200/90 font-sans flex items-start gap-2">
+            <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-400 shrink-0 mt-0.5"></i>
+            <div>
+              <strong class="font-mono text-amber-400">GOTCHA:</strong> Ensure you include trailing slashes when querying directories like <code class="font-mono bg-amber-950 px-1">/iam/security-credentials/</code> to view role names rather than getting empty output. Port scanning tools (Nmap) are unnecessary for this challenge and may trigger SOC alerts.
+            </div>
+          </div>
+
+          <!-- Card Footer -->
+          <div class="pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono">
+            <span class="text-slate-500">// Reference Documentation</span>
+            <a href="https://trove.cyberskyline.com/cb7a68906cbf4ffdaacbcfbcf54c2164" target="_blank" rel="noopener noreferrer" class="text-cyan-400 hover:underline flex items-center gap-1">
+              [Metadata Walkthrough] &rarr;
+            </a>
+          </div>
+        </article>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Interactive Filtering Logic -->
+  <script>
+    lucide.createIcons();
+
+    let currentCategory = 'ALL';
+    let currentDifficulty = 'ANY';
+
+    function copyCode(btn) {
+      const codeContainer = btn.previousElementSibling.querySelector('code');
+      const codeText = codeContainer ? codeContainer.innerText : btn.previousElementSibling.innerText;
+      navigator.clipboard.writeText(codeText);
+      const originalText = btn.innerText;
+      btn.innerText = 'Copied!';
+      btn.classList.add('bg-emerald-800', 'text-white');
+      setTimeout(() => {
+        btn.innerText = originalText;
+        btn.classList.remove('bg-emerald-800', 'text-white');
+      }, 2000);
+    }
+
+    function setCategory(cat) {
+      currentCategory = cat;
+      document.querySelectorAll('.category-btn').forEach(btn => {
+        if (btn.dataset.category === cat) {
+          btn.className = 'category-btn w-full text-left px-2.5 py-1.5 rounded bg-cyan-950/60 text-cyan-400 border border-cyan-800/50 font-semibold';
+        } else {
+          btn.className = 'category-btn w-full text-left px-2.5 py-1.5 rounded text-slate-400 hover:bg-slate-800/60 hover:text-slate-200 transition-colors';
+        }
+      });
+      filterCards();
+    }
+
+    function setDifficulty(diff) {
+      currentDifficulty = diff;
+      document.querySelectorAll('.diff-btn').forEach(btn => {
+        if (btn.dataset.diff === diff) {
+          btn.className = 'diff-btn px-2 py-1 rounded bg-slate-800 text-slate-200 font-bold border border-slate-700 text-center';
+        } else {
+          btn.className = 'diff-btn px-2 py-1 rounded bg-slate-950 text-slate-400 border border-slate-800 hover:border-slate-700 text-center';
+        }
+      });
+      filterCards();
+    }
+
+    function filterCards() {
+      const query = document.getElementById('searchInput').value.toLowerCase();
+      const cards = document.querySelectorAll('.module-card');
+      let visibleCount = 0;
+
+      cards.forEach(card => {
+        const catMatch = currentCategory === 'ALL' || card.dataset.category === currentCategory;
+        const diffMatch = currentDifficulty === 'ANY' || card.dataset.difficulty === currentDifficulty;
+        const textMatch = card.innerText.toLowerCase().includes(query);
+
+        if (catMatch && diffMatch && textMatch) {
+          card.style.display = 'block';
+          visibleCount++;
+        } else {
+          card.style.display = 'none';
+        }
+      });
+
+      document.getElementById('activeCount').innerText = `${visibleCount} / ${cards.length}`;
+    }
+  </script>
+</body>
+</html>
