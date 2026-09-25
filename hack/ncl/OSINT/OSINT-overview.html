@@ -113,7 +113,7 @@
       <nav class="space-y-1 font-mono text-xs" id="category-nav">
         <button onclick="filterCategory('all')" class="category-btn nav-active w-full flex items-center justify-between px-3 py-2.5 rounded-md text-left transition">
           <span class="flex items-center gap-2"><i data-lucide="layers" class="w-4 h-4"></i> ALL_MODULES</span>
-          <span class="bg-slate-800 px-1.5 py-0.5 rounded text-[10px] text-slate-400" id="count-all">8</span>
+          <span class="bg-slate-800 px-1.5 py-0.5 rounded text-[10px] text-slate-400" id="count-all">9</span>
         </button>
         <button onclick="filterCategory('recon')" class="category-btn w-full flex items-center justify-between px-3 py-2.5 rounded-md text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 text-left transition">
           <span class="flex items-center gap-2"><i data-lucide="globe" class="w-4 h-4"></i> RECON & DNS</span>
@@ -125,7 +125,7 @@
         </button>
         <button onclick="filterCategory('forensics')" class="category-btn w-full flex items-center justify-between px-3 py-2.5 rounded-md text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 text-left transition">
           <span class="flex items-center gap-2"><i data-lucide="file-search" class="w-4 h-4"></i> FORENSICS & DATA</span>
-          <span class="bg-slate-800 px-1.5 py-0.5 rounded text-[10px] text-slate-400">3</span>
+          <span class="bg-slate-800 px-1.5 py-0.5 rounded text-[10px] text-slate-400">4</span>
         </button>
       </nav>
     </div>
@@ -165,180 +165,310 @@
     <!-- MODULE CARDS GRID -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="module-grid">
 
-      <!-- CARD 1: OWASP & Archive Analysis -->
-      <article class="module-card bg-slate-900 rounded-xl p-5 flex flex-col justify-between" data-category="recon" data-tags="owasp wayback archive web top10">
-        <div>
-          <div class="flex items-center justify-between mb-3">
-            <span class="px-2.5 py-1 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 rounded text-[10px] font-mono font-semibold uppercase">Recon / Web</span>
-            <span class="text-xs font-mono text-slate-500">HARD</span>
-          </div>
-          <h3 class="text-base font-bold text-slate-100 mb-2">OWASP & Web Archiving</h3>
-          <p class="text-xs text-slate-400 mb-4 leading-relaxed">
-            Historical footprinting of web targets, analyzing OWASP Top 10 naming conventions, and extracting legacy documents via Wayback Machine.
-          </p>
-          <div class="bg-slate-950 rounded-lg p-3 border border-slate-800 mb-4 font-mono text-xs text-slate-300 space-y-2">
-            <div class="text-slate-500 text-[10px] uppercase font-bold">// Essential Tools</div>
-            <div class="text-emerald-400">web.archive.org</div>
-            <div class="text-slate-400">web.archive.org/web/*/[target-url]</div>
-          </div>
-        </div>
-        <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-400">
-          <span class="flex items-center gap-1"><i data-lucide="clock" class="w-3.5 h-3.5"></i> Historic Audit</span>
-          <span class="text-emerald-400 hover:underline cursor-pointer" onclick="alert('Viewing OWASP Notes')">Details &rarr;</span>
-        </div>
-      </article>
-
-      <!-- CARD 2: WHOIS Domain Recon -->
-      <article class="module-card bg-slate-900 rounded-xl p-5 flex flex-col justify-between" data-category="recon" data-tags="whois dns domain icann tld">
-        <div>
-          <div class="flex items-center justify-between mb-3">
-            <span class="px-2.5 py-1 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 rounded text-[10px] font-mono font-semibold uppercase">Recon / DNS</span>
-            <span class="text-xs font-mono text-slate-500">EASY</span>
-          </div>
-          <h3 class="text-base font-bold text-slate-100 mb-2">WHOIS & Registrant Lookup</h3>
-          <p class="text-xs text-slate-400 mb-4 leading-relaxed">
-            Extracting registrar details, TLD delegation info, contact metadata, and domain hierarchy (SLD vs TLD).
-          </p>
-          <div class="bg-slate-950 rounded-lg p-3 border border-slate-800 mb-4 font-mono text-xs text-slate-300 space-y-1">
-            <div class="text-slate-500 text-[10px] uppercase font-bold">// Terminal Command</div>
-            <div class="text-emerald-400">$ whois [target-domain]</div>
-          </div>
-        </div>
-        <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-400">
-          <span class="flex items-center gap-1"><i data-lucide="globe" class="w-3.5 h-3.5"></i> ICANN Registry</span>
-          <span class="text-emerald-400 hover:underline cursor-pointer">Details &rarr;</span>
-        </div>
-      </article>
-
-      <!-- CARD 3: DNS Record Parsing -->
-      <article class="module-card bg-slate-900 rounded-xl p-5 flex flex-col justify-between" data-category="recon" data-tags="dns rfc dig ns nssec ipv6 cname mx">
-        <div>
-          <div class="flex items-center justify-between mb-3">
-            <span class="px-2.5 py-1 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 rounded text-[10px] font-mono font-semibold uppercase">Recon / DNS</span>
-            <span class="text-xs font-mono text-slate-500">EASY</span>
-          </div>
-          <h3 class="text-base font-bold text-slate-100 mb-2">DNS Record Specification</h3>
-          <p class="text-xs text-slate-400 mb-4 leading-relaxed">
-            Identification of authoritative record types via RFC specifications (NS zone delegation, AAAA IPv6, DNSSEC RFC 4034).
-          </p>
-          <div class="bg-slate-950 rounded-lg p-3 border border-slate-800 mb-4 font-mono text-xs text-slate-300 space-y-1">
-            <div class="text-slate-500 text-[10px] uppercase font-bold">// Lookup Utility</div>
-            <div class="text-emerald-400">$ dig ANY +noall +answer [domain]</div>
-          </div>
-        </div>
-        <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-400">
-          <span class="flex items-center gap-1"><i data-lucide="server" class="w-3.5 h-3.5"></i> RFC Standards</span>
-          <span class="text-emerald-400 hover:underline cursor-pointer">Details &rarr;</span>
-        </div>
-      </article>
-
-      <!-- CARD 4: SSL Certificate Analysis -->
-      <article class="module-card bg-slate-900 rounded-xl p-5 flex flex-col justify-between" data-category="crypto" data-tags="ssl tls certificate chain key bits issuer cert">
-        <div>
-          <div class="flex items-center justify-between mb-3">
-            <span class="px-2.5 py-1 bg-purple-500/10 border border-purple-500/20 text-purple-400 rounded text-[10px] font-mono font-semibold uppercase">Crypto / TLS</span>
-            <span class="text-xs font-mono text-slate-500">MEDIUM</span>
-          </div>
-          <h3 class="text-base font-bold text-slate-100 mb-2">SSL/TLS Chain Analysis</h3>
-          <p class="text-xs text-slate-400 mb-4 leading-relaxed">
-            Inspecting public key bit lengths, issuer Common Names (CN), certificate validity windows, and complete trust chains.
-          </p>
-          <div class="bg-slate-950 rounded-lg p-3 border border-slate-800 mb-4 font-mono text-xs text-slate-300 space-y-1">
-            <div class="text-slate-500 text-[10px] uppercase font-bold">// OpenSSL CLI</div>
-            <div class="text-emerald-400">$ openssl s_client -connect [host]:443</div>
-          </div>
-        </div>
-        <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-400">
-          <span class="flex items-center gap-1"><i data-lucide="lock" class="w-3.5 h-3.5"></i> Cert Audit</span>
-          <span class="text-emerald-400 hover:underline cursor-pointer">Details &rarr;</span>
-        </div>
-      </article>
-
-      <!-- CARD 5: PGP Public Keyserver Lookup -->
-      <article class="module-card bg-slate-900 rounded-xl p-5 flex flex-col justify-between" data-category="crypto" data-tags="pgp gpg key fingerprint uid email server ubuntu mit">
-        <div>
-          <div class="flex items-center justify-between mb-3">
-            <span class="px-2.5 py-1 bg-purple-500/10 border border-purple-500/20 text-purple-400 rounded text-[10px] font-mono font-semibold uppercase">Crypto / Identity</span>
-            <span class="text-xs font-mono text-slate-500">EASY</span>
-          </div>
-          <h3 class="text-base font-bold text-slate-100 mb-2">PGP Keyserver Intelligence</h3>
-          <p class="text-xs text-slate-400 mb-4 leading-relaxed">
-            Querying public PGP keyservers (Ubuntu, MIT, OpenPGP) to extract hex fingerprints, UID emails, and key expiration dates.
-          </p>
-          <div class="bg-slate-950 rounded-lg p-3 border border-slate-800 mb-4 font-mono text-xs text-slate-300 space-y-1">
-            <div class="text-slate-500 text-[10px] uppercase font-bold">// Keyservers</div>
-            <div class="text-emerald-400">keyserver.ubuntu.com</div>
-          </div>
-        </div>
-        <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-400">
-          <span class="flex items-center gap-1"><i data-lucide="key" class="w-3.5 h-3.5"></i> GPG Infrastructure</span>
-          <span class="text-emerald-400 hover:underline cursor-pointer">Details &rarr;</span>
-        </div>
-      </article>
-
-      <!-- CARD 6: EXIF Metadata Extraction -->
-      <article class="module-card bg-slate-900 rounded-xl p-5 flex flex-col justify-between" data-category="forensics" data-tags="meta metadata exif exiftool gps camera image geotag">
+      <!-- MODULE 1: EXIF Metadata Extraction -->
+      <article class="module-card bg-slate-900 rounded-xl p-5 flex flex-col justify-between" data-category="forensics" data-tags="meta metadata exif exiftool gps camera image geotag dms decimal coordinates timestamp make model exposure">
         <div>
           <div class="flex items-center justify-between mb-3">
             <span class="px-2.5 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded text-[10px] font-mono font-semibold uppercase">Forensics / Image</span>
             <span class="text-xs font-mono text-slate-500">EASY</span>
           </div>
-          <h3 class="text-base font-bold text-slate-100 mb-2">EXIF Photo Metadata Extraction</h3>
+          <h3 class="text-base font-bold text-slate-100 mb-2">EXIF Photo Metadata Analysis</h3>
           <p class="text-xs text-slate-400 mb-4 leading-relaxed">
-            Parsing camera make/model, exposure time, original timestamp, resolution, and converting DMS GPS coordinates to decimal.
+            Extract raw hardware, camera parameters, and spatial geolocation data directly embedded inside image headers (JPEG, TIFF, PNG).
           </p>
-          <div class="bg-slate-950 rounded-lg p-3 border border-slate-800 mb-4 font-mono text-xs text-slate-300 space-y-1">
-            <div class="text-slate-500 text-[10px] uppercase font-bold">// ExifTool CLI</div>
-            <div class="text-emerald-400">$ exiftool -gpsposition target.jpg</div>
+          <div class="bg-slate-950 rounded-lg p-3 border border-slate-800 mb-3 font-mono text-xs space-y-1">
+            <div class="text-slate-500 text-[10px] uppercase font-bold">// When to Use</div>
+            <div class="text-slate-300">When inspecting HTTPS connections, validating encryption strength, or checking issuer CAs in browser viewers.</div>
+          </div>
+          <div class="bg-slate-950 rounded-lg p-3 border border-slate-800 mb-3 font-mono text-xs space-y-1">
+            <div class="text-slate-500 text-[10px] uppercase font-bold">// When to Use</div>
+            <div class="text-slate-300">Whenever given raw media files, cropped photos, or downloaded profile pictures during an investigation.</div>
+          </div>
+          <div class="bg-slate-950 rounded-lg p-3 border border-slate-800 mb-4 font-mono text-xs text-slate-300 space-y-2">
+            <div class="text-slate-500 text-[10px] uppercase font-bold">// Essential Header Fields</div>
+            <div><span class="text-emerald-400">Timestamp:</span> Field <code class="text-slate-200">Create Date</code> (round down to nearest min).</div>
+            <div><span class="text-emerald-400">Dimensions:</span> Field <code class="text-slate-200">Image Size</code> (format: <code class="text-slate-200">800x600</code>).</div>
+            <div><span class="text-emerald-400">Hardware:</span> Fields <code class="text-slate-200">Make</code> (brand) &amp; <code class="text-slate-200">Model</code> (camera ID).</div>
+            <div><span class="text-emerald-400">Exposure:</span> Field <code class="text-slate-200">Exposure Time</code> (e.g. <code class="text-slate-200">1/200</code>).</div>
+            <div><span class="text-emerald-400">GPS Position:</span> Convert DMS (Degrees Minutes Seconds) to Decimal format.</div>
+            <div class="text-emerald-400 border-t border-slate-900 pt-2 mt-1">$ exiftool -CreateDate -ImageSize -Make -Model -GPSPosition target.jpg</div>
+          </div>
+          <div class="bg-slate-950/60 rounded-lg p-3 border border-slate-800/80 mb-4 font-mono text-[11px] space-y-1 text-slate-400">
+            <div class="text-amber-400 text-[10px] font-bold uppercase">// Tips &amp; Gotchas</div>
+            <div>Most social platforms strip EXIF data on upload; rely on raw downloaded files.</div>
+            <div>Watch time zone offsets (<code class="text-slate-200">OffsetTimeOriginal</code>) when calculating local creation times.</div>
           </div>
         </div>
         <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-400">
-          <span class="flex items-center gap-1"><i data-lucide="image" class="w-3.5 h-3.5"></i> Spatial Analysis</span>
-          <span class="text-emerald-400 hover:underline cursor-pointer">Details &rarr;</span>
+          <span class="flex items-center gap-1"><i data-lucide="image" class="w-3.5 h-3.5"></i> Metadata Tools</span>
+          <div class="flex items-center gap-2"><a href="https://exif.tools/" target="_blank" class="text-emerald-400 hover:underline">exif.tools &rarr;</a><a href="https://www.metadata2go.com/" target="_blank" class="text-emerald-400 hover:underline">Metadata2Go &rarr;</a></div>
         </div>
       </article>
 
-      <!-- CARD 7: HTTP Header Audit -->
-      <article class="module-card bg-slate-900 rounded-xl p-5 flex flex-col justify-between" data-category="forensics" data-tags="http headers referer user-agent accept browser server">
+      <!-- MODULE 2: DNS Specification Lookup -->
+      <article class="module-card bg-slate-900 rounded-xl p-5 flex flex-col justify-between" data-category="recon" data-tags="dns rfc dig ns dnssec ipv6 cname mx aaaa dnskey ietf delegation 4034 3596 1035">
         <div>
           <div class="flex items-center justify-between mb-3">
-            <span class="px-2.5 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded text-[10px] font-mono font-semibold uppercase">Forensics / Web</span>
+            <span class="px-2.5 py-1 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 rounded text-[10px] font-mono font-semibold uppercase">Recon / DNS</span>
             <span class="text-xs font-mono text-slate-500">EASY</span>
           </div>
-          <h3 class="text-base font-bold text-slate-100 mb-2">HTTP Header Field Analysis</h3>
+          <h3 class="text-base font-bold text-slate-100 mb-2">DNS Record Specification &amp; RFCs</h3>
           <p class="text-xs text-slate-400 mb-4 leading-relaxed">
-            Audit request/response headers including standard misspelling exceptions (e.g., Referer vs Referrer) and User-Agent identification.
+            Verify authoritative Domain Name System record types using primary IETF specification standards instead of secondary third-party summaries.
           </p>
-          <div class="bg-slate-950 rounded-lg p-3 border border-slate-800 mb-4 font-mono text-xs text-slate-300 space-y-1">
-            <div class="text-slate-500 text-[10px] uppercase font-bold">// cURL Command</div>
-            <div class="text-emerald-400">$ curl -I https://target.site</div>
+          <div class="bg-slate-950 rounded-lg p-3 border border-slate-800 mb-3 font-mono text-xs space-y-1">
+            <div class="text-slate-500 text-[10px] uppercase font-bold">// When to Use</div>
+            <div class="text-slate-300">When auditing domain infrastructure, tracing mail servers, or verifying cryptographic domain security.</div>
+          </div>
+          <div class="bg-slate-950 rounded-lg p-3 border border-slate-800 mb-4 font-mono text-xs text-slate-300 space-y-2">
+            <div class="text-slate-500 text-[10px] uppercase font-bold">// Authoritative Record Map</div>
+            <div><span class="text-emerald-400">DNSSEC Public Key:</span> <code class="text-slate-200">DNSKEY</code> Record (Section 2 of <a href="https://datatracker.ietf.org/doc/html/rfc4034" target="_blank" class="text-cyan-400 underline">RFC 4034</a>).</div>
+            <div><span class="text-emerald-400">IPv6 Address Mapping:</span> <code class="text-slate-200">AAAA</code> Record (Section 2 of <a href="https://datatracker.ietf.org/doc/html/rfc3596" target="_blank" class="text-cyan-400 underline">RFC 3596</a>).</div>
+            <div><span class="text-emerald-400">Zone Delegation:</span> <code class="text-slate-200">NS</code> Record (<a href="https://datatracker.ietf.org/doc/html/rfc1035" target="_blank" class="text-cyan-400 underline">RFC 1035</a>).</div>
+            <div><span class="text-emerald-400">Canonical Alias:</span> <code class="text-slate-200">CNAME</code> Record.</div>
+            <div class="text-emerald-400 border-t border-slate-900 pt-2 mt-1">$ dig +nocmd target.com ANY +multiline +noall +answer</div>
+          </div>
+          <div class="bg-slate-950/60 rounded-lg p-3 border border-slate-800/80 mb-4 font-mono text-[11px] space-y-1 text-slate-400">
+            <div class="text-amber-400 text-[10px] font-bold uppercase">// Tips &amp; Gotchas</div>
+            <div>Some DNS servers block <code class="text-slate-200">ANY</code>; query specific types individually, such as <code class="text-slate-200">dig target.com AAAA</code>.</div>
+            <div>Do not confuse <code class="text-slate-200">CNAME</code> aliases with <code class="text-slate-200">A</code> or <code class="text-slate-200">AAAA</code> direct mappings.</div>
           </div>
         </div>
         <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-400">
-          <span class="flex items-center gap-1"><i data-lucide="arrow-left-right" class="w-3.5 h-3.5"></i> Protocol Inspection</span>
-          <span class="text-emerald-400 hover:underline cursor-pointer">Details &rarr;</span>
+          <span class="flex items-center gap-1"><i data-lucide="server" class="w-3.5 h-3.5"></i> Protocol Docs</span>
+          <a href="https://datatracker.ietf.org/" target="_blank" class="text-emerald-400 hover:underline">IETF RFC DB &rarr;</a>
         </div>
       </article>
 
-      <!-- CARD 8: Threat Intel & Vulnerability Research -->
-      <article class="module-card bg-slate-900 rounded-xl p-5 flex flex-col justify-between" data-category="forensics" data-tags="cve threat intel poodle openssl vsftpd vulnerability backdoor">
+      <!-- MODULE 3: CVE Threat Intelligence -->
+      <article class="module-card bg-slate-900 rounded-xl p-5 flex flex-col justify-between" data-category="forensics" data-tags="cve threat intel poodle openssl vsftpd backdoor vulnerability heartbleed rfc telnet 854 15 2014-3566">
         <div>
           <div class="flex items-center justify-between mb-3">
             <span class="px-2.5 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded text-[10px] font-mono font-semibold uppercase">Threat Intel</span>
             <span class="text-xs font-mono text-slate-500">EASY</span>
           </div>
-          <h3 class="text-base font-bold text-slate-100 mb-2">Vulnerability & CVE Research</h3>
+          <h3 class="text-base font-bold text-slate-100 mb-2">Threat Intel &amp; Vulnerability Research</h3>
           <p class="text-xs text-slate-400 mb-4 leading-relaxed">
-            Mapping historical exploits, backdoor revisions (e.g., vsftpd 2.3.4), CVE designations (POODLE), and patch revisions.
+            Cross-reference software exploits, supply-chain backdoors, and legacy network specifications against National Vulnerability Databases.
           </p>
-          <div class="bg-slate-950 rounded-lg p-3 border border-slate-800 mb-4 font-mono text-xs text-slate-300 space-y-1">
-            <div class="text-slate-500 text-[10px] uppercase font-bold">// Reference Databases</div>
-            <div class="text-emerald-400">cve.mitre.org / NVD</div>
+          <div class="bg-slate-950 rounded-lg p-3 border border-slate-800 mb-3 font-mono text-xs space-y-1">
+            <div class="text-slate-500 text-[10px] uppercase font-bold">// When to Use</div>
+            <div class="text-slate-300">When given server banner outputs, outdated version numbers, or named vulnerability references.</div>
+          </div>
+          <div class="bg-slate-950 rounded-lg p-3 border border-slate-800 mb-4 font-mono text-xs text-slate-300 space-y-2">
+            <div class="text-slate-500 text-[10px] uppercase font-bold">// Common Exploit Database References</div>
+            <div><span class="text-emerald-400">POODLE Attack CVE:</span> <code class="text-slate-200">CVE-2014-3566</code> (SSLv3 CBC vulnerability).</div>
+            <div><span class="text-emerald-400">vsftpd Backdoor:</span> Version <code class="text-slate-200">2.3.4</code> (bind shell on port 6200 when triggered by <code class="text-slate-200">:)</code>).</div>
+            <div><span class="text-emerald-400">Heartbleed Patch:</span> OpenSSL version <code class="text-slate-200">1.0.1g</code> (fixed memory leakage).</div>
+            <div><span class="text-emerald-400">Telnet Protocol:</span> Current <a href="https://datatracker.ietf.org/doc/html/rfc854" target="_blank" class="text-cyan-400 underline">RFC 854</a> (Original: <a href="https://datatracker.ietf.org/doc/html/rfc15" target="_blank" class="text-cyan-400 underline">RFC 15</a>).</div>
+          </div>
+          <div class="bg-slate-950/60 rounded-lg p-3 border border-slate-800/80 mb-4 font-mono text-[11px] space-y-1 text-slate-400">
+            <div class="text-amber-400 text-[10px] font-bold uppercase">// Tips &amp; Gotchas</div>
+            <div>Always match exact version tags; patch numbers such as <code class="text-slate-200">1.0.1g</code> determine vulnerability status.</div>
+            <div>Distinguish between the protocol specification (RFC) and the software implementation (CVE).</div>
           </div>
         </div>
         <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-400">
-          <span class="flex items-center gap-1"><i data-lucide="shield-alert" class="w-3.5 h-3.5"></i> Exploit DB</span>
-          <span class="text-emerald-400 hover:underline cursor-pointer">Details &rarr;</span>
+          <span class="flex items-center gap-1"><i data-lucide="shield-alert" class="w-3.5 h-3.5"></i> CVE Databases</span>
+          <div class="flex items-center gap-2"><a href="https://cve.mitre.org/" target="_blank" class="text-emerald-400 hover:underline">MITRE CVE &rarr;</a><a href="https://nvd.nist.gov/" target="_blank" class="text-emerald-400 hover:underline">NIST NVD &rarr;</a></div>
+        </div>
+      </article>
+
+      <!-- MODULE 4: HTTP Header Field Audit -->
+      <article class="module-card bg-slate-900 rounded-xl p-5 flex flex-col justify-between" data-category="forensics" data-tags="http headers referer user-agent accept browser request response header mime rfc7231">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="px-2.5 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded text-[10px] font-mono font-semibold uppercase">Forensics / Web</span>
+            <span class="text-xs font-mono text-slate-500">EASY</span>
+          </div>
+          <h3 class="text-base font-bold text-slate-100 mb-2">HTTP Header Field Audit</h3>
+          <p class="text-xs text-slate-400 mb-4 leading-relaxed">
+            Inspect client-server communications metadata to identify original referrers, client signatures, and negotiated file types.
+          </p>
+          <div class="bg-slate-950 rounded-lg p-3 border border-slate-800 mb-3 font-mono text-xs space-y-1">
+            <div class="text-slate-500 text-[10px] uppercase font-bold">// When to Use</div>
+            <div class="text-slate-300">When analyzing PCAP web traffic captures, cURL responses, or browser developer logs.</div>
+          </div>
+          <div class="bg-slate-950 rounded-lg p-3 border border-slate-800 mb-4 font-mono text-xs text-slate-300 space-y-2">
+            <div class="text-slate-500 text-[10px] uppercase font-bold">// Standard Field Definitions &amp; Typo Standard</div>
+            <div><span class="text-emerald-400">Linked Origin:</span> <code class="text-slate-200">Referer</code> (official standard misspelling with one 'r').</div>
+            <div><span class="text-emerald-400">Client Signature:</span> <code class="text-slate-200">User-Agent</code> (Browser/OS software version string).</div>
+            <div><span class="text-emerald-400">MIME Types:</span> <code class="text-slate-200">Accept</code> (Acceptable response media formats).</div>
+            <div class="text-emerald-400 border-t border-slate-900 pt-2 mt-1">$ curl -I -H "Referer: https://source.site" https://target.site</div>
+          </div>
+          <div class="bg-slate-950/60 rounded-lg p-3 border border-slate-800/80 mb-4 font-mono text-[11px] space-y-1 text-slate-400">
+            <div class="text-amber-400 text-[10px] font-bold uppercase">// Tips &amp; Gotchas</div>
+            <div>Competitions often test the intentional standard typo: <code class="text-slate-200">Referer</code> instead of Referrer.</div>
+            <div>Use <code class="text-slate-200">curl -I</code> to fetch headers only without downloading body content.</div>
+          </div>
+        </div>
+        <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-400">
+          <span class="flex items-center gap-1"><i data-lucide="arrow-left-right" class="w-3.5 h-3.5"></i> Protocol Specs</span>
+          <a href="https://en.wikipedia.org/wiki/List_of_HTTP_header_fields" target="_blank" class="text-emerald-400 hover:underline">Wikipedia Header List &rarr;</a>
+        </div>
+      </article>
+
+      <!-- MODULE 5: WHOIS & Domain Registry Recon -->
+      <article class="module-card bg-slate-900 rounded-xl p-5 flex flex-col justify-between" data-category="recon" data-tags="whois domain tld sld icann registry cloud aruba delegation registrar cityinthe">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="px-2.5 py-1 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 rounded text-[10px] font-mono font-semibold uppercase">Recon / Domain</span>
+            <span class="text-xs font-mono text-slate-500">EASY</span>
+          </div>
+          <h3 class="text-base font-bold text-slate-100 mb-2">WHOIS &amp; Domain Delegation</h3>
+          <p class="text-xs text-slate-400 mb-4 leading-relaxed">
+            Investigate domain ownership, registrar information, registration dates, and top-level domain managing organizations.
+          </p>
+          <div class="bg-slate-950 rounded-lg p-3 border border-slate-800 mb-3 font-mono text-xs space-y-1">
+            <div class="text-slate-500 text-[10px] uppercase font-bold">// When to Use</div>
+            <div class="text-slate-300">When mapping parent entities, tracking domain creation/expiry dates, or identifying registrars.</div>
+          </div>
+          <div class="bg-slate-950 rounded-lg p-3 border border-slate-800 mb-4 font-mono text-xs text-slate-300 space-y-2">
+            <div class="text-slate-500 text-[10px] uppercase font-bold">// Structural Breakdown &amp; Authority</div>
+            <div><span class="text-emerald-400">Hierarchy:</span> Right-to-Left precedence (<code class="text-slate-200">SLD.TLD</code>).</div>
+            <div><span class="text-emerald-400">Example Target:</span> <code class="text-slate-200">cityinthe.cloud</code> (SLD: cityinthe | TLD: .cloud).</div>
+            <div><span class="text-emerald-400">TLD Authority:</span> <code class="text-slate-200">.cloud</code> is delegated by ICANN and managed by <code class="text-slate-200">Aruba S.p.A.</code></div>
+            <div class="text-emerald-400 border-t border-slate-900 pt-2 mt-1">$ whois cityinthe.cloud</div>
+          </div>
+          <div class="bg-slate-950/60 rounded-lg p-3 border border-slate-800/80 mb-4 font-mono text-[11px] space-y-1 text-slate-400">
+            <div class="text-amber-400 text-[10px] font-bold uppercase">// Tips &amp; Gotchas</div>
+            <div>Privacy redaction tools may hide personal contacts; inspect Registrar and Name Server records instead.</div>
+            <div>Differentiate the domain registrar from the TLD managing entity, such as Aruba S.p.A.</div>
+          </div>
+        </div>
+        <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-400">
+          <span class="flex items-center gap-1"><i data-lucide="globe" class="w-3.5 h-3.5"></i> Registration DB</span>
+          <a href="https://lookup.icann.org/" target="_blank" class="text-emerald-400 hover:underline">ICANN Lookup &rarr;</a>
+        </div>
+      </article>
+
+      <!-- MODULE 6: PGP Keyserver Intelligence -->
+      <article class="module-card bg-slate-900 rounded-xl p-5 flex flex-col justify-between" data-category="crypto" data-tags="pgp gpg key fingerprint uid email server ubuntu mit openpgp expiration search rsa4096">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="px-2.5 py-1 bg-purple-500/10 border border-purple-500/20 text-purple-400 rounded text-[10px] font-mono font-semibold uppercase">Crypto / Identity</span>
+            <span class="text-xs font-mono text-slate-500">EASY</span>
+          </div>
+          <h3 class="text-base font-bold text-slate-100 mb-2">PGP Keyserver Infrastructure</h3>
+          <p class="text-xs text-slate-400 mb-4 leading-relaxed">
+            Query public key distribution networks to extract public key blocks, hexadecimal fingerprints, associated identity UIDs, and expiration dates.
+          </p>
+          <div class="bg-slate-950 rounded-lg p-3 border border-slate-800 mb-3 font-mono text-xs space-y-1">
+            <div class="text-slate-500 text-[10px] uppercase font-bold">// When to Use</div>
+            <div class="text-slate-300">When investigating target email addresses, verifying key fingerprints, or checking key validity dates.</div>
+          </div>
+          <div class="bg-slate-950 rounded-lg p-3 border border-slate-800 mb-4 font-mono text-xs text-slate-300 space-y-2">
+            <div class="text-slate-500 text-[10px] uppercase font-bold">// Data Field Identification</div>
+            <div><span class="text-emerald-400">Fingerprint:</span> Hexadecimal string following <code class="text-slate-200">rsa4096/</code>.</div>
+            <div><span class="text-emerald-400">User Identity:</span> Email address listed directly right of <code class="text-slate-200">uid</code>.</div>
+            <div><span class="text-emerald-400">Expiration:</span> Listed under <code class="text-slate-200">key expir</code>; do not confuse with <code class="text-slate-200">cr. time</code>.</div>
+            <div class="text-emerald-400 border-t border-slate-900 pt-2 mt-1">$ gpg --keyserver keyserver.ubuntu.com --search-keys "target@email.com"</div>
+          </div>
+          <div class="bg-slate-950/60 rounded-lg p-3 border border-slate-800/80 mb-4 font-mono text-[11px] space-y-1 text-slate-400">
+            <div class="text-amber-400 text-[10px] font-bold uppercase">// Tips &amp; Gotchas</div>
+            <div>If a key server is unreachable, switch to an alternative host such as <code class="text-slate-200">keys.openpgp.org</code>.</div>
+            <div>Separate creation date (<code class="text-slate-200">cr. time</code>) from expiration date (<code class="text-slate-200">key expir</code>).</div>
+          </div>
+        </div>
+        <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-400">
+          <span class="flex items-center gap-1"><i data-lucide="key" class="w-3.5 h-3.5"></i> Keyservers</span>
+          <div class="flex items-center gap-2"><a href="https://keyserver.ubuntu.com/" target="_blank" class="text-emerald-400 hover:underline">Ubuntu &rarr;</a><a href="https://keys.openpgp.org/" target="_blank" class="text-emerald-400 hover:underline">OpenPGP &rarr;</a><a href="https://pgp.mit.edu/" target="_blank" class="text-emerald-400 hover:underline">MIT &rarr;</a></div>
+        </div>
+      </article>
+
+      <!-- MODULE 7: SSL/TLS Chain & Certificate Analysis -->
+      <article class="module-card bg-slate-900 rounded-xl p-5 flex flex-col justify-between" data-category="crypto" data-tags="ssl tls certificate chain key bits issuer cert subject hierarchy common name bitlength x509 openssl">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="px-2.5 py-1 bg-purple-500/10 border border-purple-500/20 text-purple-400 rounded text-[10px] font-mono font-semibold uppercase">Crypto / TLS</span>
+            <span class="text-xs font-mono text-slate-500">MEDIUM</span>
+          </div>
+          <h3 class="text-base font-bold text-slate-100 mb-2">SSL/TLS Certificate Inspection</h3>
+          <p class="text-xs text-slate-400 mb-4 leading-relaxed">
+            Audit x509 public key certificates to verify public key bit lengths, issuer Certificate Authority (CA) identity, and trust chain count.
+          </p>
+          <div class="bg-slate-950 rounded-lg p-3 border border-slate-800 mb-4 font-mono text-xs text-slate-300 space-y-2">
+            <div class="text-slate-500 text-[10px] uppercase font-bold">// Browser Certificate Viewer Paths</div>
+            <div><span class="text-emerald-400">Issuer Common Name:</span> <code class="text-slate-200">General Tab &rarr; Issued By &rarr; Common Name (CN)</code>.</div>
+            <div><span class="text-emerald-400">Key Length (Bits):</span> <code class="text-slate-200">Details Tab &rarr; Certificate Fields &rarr; Subject Public Key Info</code>.</div>
+            <div><span class="text-emerald-400">Chain Count:</span> Count total certificates listed in <code class="text-slate-200">Certificate Hierarchy</code>.</div>
+            <div class="text-emerald-400 border-t border-slate-900 pt-2 mt-1">$ openssl s_client -connect target.com:443 -showcerts</div>
+          </div>
+          <div class="bg-slate-950/60 rounded-lg p-3 border border-slate-800/80 mb-4 font-mono text-[11px] space-y-1 text-slate-400">
+            <div class="text-amber-400 text-[10px] font-bold uppercase">// Tips &amp; Gotchas</div>
+            <div>Distinguish the Subject, who the certificate was issued to, from the Issuer, the CA that signed it.</div>
+            <div>Bit lengths are usually powers of two, such as <code class="text-slate-200">2048</code> or <code class="text-slate-200">4096</code>.</div>
+          </div>
+        </div>
+        <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-400">
+          <span class="flex items-center gap-1"><i data-lucide="lock" class="w-3.5 h-3.5"></i> Security Audit</span>
+          <a href="https://www.ssllabs.com/ssltest/" target="_blank" class="text-emerald-400 hover:underline">SSL Labs Test &rarr;</a>
+        </div>
+      </article>
+
+      <!-- MODULE 8: Barcode Decoding -->
+      <article class="module-card bg-slate-900 rounded-xl p-5 flex flex-col justify-between" data-category="forensics" data-tags="barcode format decoder ean upc code128 scanner image gif zbarimg inliteresearch type symbology">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="px-2.5 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded text-[10px] font-mono font-semibold uppercase">Forensics / Signal</span>
+            <span class="text-xs font-mono text-slate-500">MEDIUM</span>
+          </div>
+          <h3 class="text-base font-bold text-slate-100 mb-2">1D &amp; 2D Barcode Data Extraction</h3>
+          <p class="text-xs text-slate-400 mb-4 leading-relaxed">
+            Decode visual symbology formats embedded inside intercepted graphic files (.GIF, .PNG) to uncover hidden flags and identifiers.
+          </p>
+          <div class="bg-slate-950 rounded-lg p-3 border border-slate-800 mb-3 font-mono text-xs space-y-1">
+            <div class="text-slate-500 text-[10px] uppercase font-bold">// When to Use</div>
+            <div class="text-slate-300">When provided graphic files containing optical bar patterns, QR codes, or product labels.</div>
+          </div>
+          <div class="bg-slate-950 rounded-lg p-3 border border-slate-800 mb-4 font-mono text-xs text-slate-300 space-y-2">
+            <div class="text-slate-500 text-[10px] uppercase font-bold">// Verification Steps</div>
+            <div><span class="text-emerald-400">Symbology Format:</span> Look under the output <code class="text-slate-200">Type</code> field (e.g. Code 128, UPC-A, EAN-13).</div>
+            <div><span class="text-emerald-400">Extracted Payload:</span> Read raw text value under decoded text fields.</div>
+            <div class="text-emerald-400 border-t border-slate-900 pt-2 mt-1">$ zbarimg --raw barcode_target.gif</div>
+          </div>
+          <div class="bg-slate-950/60 rounded-lg p-3 border border-slate-800/80 mb-4 font-mono text-[11px] space-y-1 text-slate-400">
+            <div class="text-amber-400 text-[10px] font-bold uppercase">// Tips &amp; Gotchas</div>
+            <div>Low-resolution or skewed images can cause scanner failures; crop tightly around the barcode first.</div>
+            <div>Questions may ask for the symbology type, such as <code class="text-slate-200">Code 128</code>, rather than only the payload.</div>
+          </div>
+        </div>
+        <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-400">
+          <span class="flex items-center gap-1"><i data-lucide="scan" class="w-3.5 h-3.5"></i> Visual Decoding</span>
+          <a href="https://online-barcode-reader.inliteresearch.com/" target="_blank" class="text-emerald-400 hover:underline">Online Barcode Reader &rarr;</a>
+        </div>
+      </article>
+
+      <!-- MODULE 9: Web Archiving & OWASP Audit -->
+      <article class="module-card bg-slate-900 rounded-xl p-5 flex flex-col justify-between" data-category="recon" data-tags="owasp wayback archive web top10 internet archive history waspy timeline blue green dots directory WASPY lab code analysis report">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="px-2.5 py-1 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 rounded text-[10px] font-mono font-semibold uppercase">Recon / Web</span>
+            <span class="text-xs font-mono text-slate-500">HARD</span>
+          </div>
+          <h3 class="text-base font-bold text-slate-100 mb-2">OWASP &amp; Internet Wayback Machine</h3>
+          <p class="text-xs text-slate-400 mb-3 leading-relaxed">
+            Perform deep historical web footprinting using web.archive.org to recover defunct directory structures and archived reports.
+          </p>
+          <div class="bg-slate-950 rounded-lg p-3 border border-slate-800 mb-3 font-mono text-xs space-y-1">
+            <div class="text-slate-500 text-[10px] uppercase font-bold">// When to Use</div>
+            <div class="text-slate-300">When investigating missing web pages, defunct projects, historical meeting notes, or legacy PDF reports.</div>
+          </div>
+          <div class="bg-slate-950 rounded-lg p-3 border border-slate-800 mb-4 font-mono text-xs space-y-2">
+            <div class="text-slate-500 text-[10px] uppercase font-bold">// Archive Navigation Rules</div>
+            <div><span class="text-emerald-400">Calendar Indicators:</span> <span class="text-cyan-400">Blue dots</span> = successful capture | <span class="text-emerald-400">Green dots</span> = page redirects.</div>
+            <div><span class="text-emerald-400">URL Pattern:</span> <code class="text-slate-200">web.archive.org/web/[timestamp]/[target-url]</code></div>
+            <div><span class="text-emerald-400">Directory Navigation:</span> Browse archived side menus or directory indexes; search using <kbd class="bg-slate-800 px-1 rounded text-slate-300">Ctrl + F</kbd> for target report titles.</div>
+          </div>
+          <div class="bg-slate-950/60 rounded-lg p-3 border border-slate-800/80 mb-4 font-mono text-[11px] space-y-1 text-slate-400">
+            <div class="text-amber-400 text-[10px] font-bold uppercase">// Tips &amp; Gotchas</div>
+            <div>Green dots indicate HTTP redirects (301/302); follow the redirect to reach the final archived destination.</div>
+            <div>If a snapshot is blank, click nearby capture timestamps on the calendar timeline.</div>
+          </div>
+        </div>
+        <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-400">
+          <span class="flex items-center gap-1"><i data-lucide="clock" class="w-3.5 h-3.5"></i> Digital Archive</span>
+          <a href="https://web.archive.org/" target="_blank" class="text-emerald-400 hover:underline">Wayback Machine &rarr;</a>
         </div>
       </article>
 
