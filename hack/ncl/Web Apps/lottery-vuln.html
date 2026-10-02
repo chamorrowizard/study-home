@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Skyline // Metro Lottery Lab</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    },
+                    colors: {
+                        cyber: {
+                            bg: '#0a0f1d',
+                            panel: '#111827',
+                            border: '#1e293b',
+                            accent: '#06b6d4', // Cyan
+                            glow: '#22d3ee',
+                            success: '#10b981', // Emerald
+                            warning: '#f59e0b',
+                            danger: '#ef4444'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-cyber-bg text-slate-300 font-sans min-h-screen selection:bg-cyber-accent selection:text-black">
+
+    <!-- Header / Navbar -->
+    <header class="border-b border-cyber-border bg-cyber-panel/80 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="p-2 bg-cyber-accent/10 border border-cyber-accent/30 rounded-lg text-cyber-accent">
+                    <i data-lucide="terminal" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="font-mono font-bold text-lg text-white tracking-wider flex items-center gap-2">
+                        METRO LOTTERY <span class="text-xs px-2 py-0.5 rounded bg-cyber-accent/20 text-cyber-accent border border-cyber-accent/30">LAB v2.4</span>
+                    </h1>
+                    <p class="text-xs text-slate-400 font-mono">Insecure Client-Side Price & Parameter Validation</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="hidden sm:flex items-center space-x-2 text-xs font-mono bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="text-slate-400">STATUS:</span>
+                    <span class="text-emerald-400">READY FOR EXPLOIT</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace Layout (Side-by-Side on Desktop, Stacked on Mobile) -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+            <!-- LEFT COLUMN: Extensible Step-by-Step Guide & Educational Breakdown (5 Cols) -->
+            <section class="lg:col-span-5 flex flex-col space-y-6">
+                <!-- Guide Header Card -->
+                <div class="bg-cyber-panel border border-cyber-border rounded-xl p-6 shadow-xl relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-4 opacity-5 text-cyber-accent pointer-events-none">
+                        <i data-lucide="book-open" class="w-32 h-32"></i>
+                    </div>
+                    <div class="flex items-center gap-2 text-cyber-accent mb-2 font-mono text-sm">
+                        <i data-lucide="shield-alert" class="w-4 h-4"></i>
+                        <span>SECURITY AUDIT GUIDE</span>
+                    </div>
+                    <h2 class="text-xl font-bold text-white mb-2 font-mono">Exploiting Untrusted Client Input</h2>
+                    <p class="text-sm text-slate-400 leading-relaxed">
+                        Learn how web applications fail when they blindly trust parameters computed and transmitted entirely on the client side without server-side re-validation.
+                    </p>
+                </div>
+
+                <!-- Interactive Step-by-Step Guide Accordion / List -->
+                <div class="bg-cyber-panel border border-cyber-border rounded-xl p-6 shadow-xl space-y-4">
+                    <h3 class="font-mono text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2 border-b border-cyber-border pb-3">
+                        <i data-lucide="list-ordered" class="w-4 h-4 text-cyber-accent"></i>
+                        Walkthrough Steps
+                    </h3>
+
+                    <!-- Step 1 -->
+                    <div class="p-4 rounded-lg bg-slate-900/60 border border-slate-800 transition hover:border-cyber-accent/40">
+                        <div class="flex items-start gap-3">
+                            <span class="flex-shrink-0 w-6 h-6 rounded-full bg-cyber-accent/10 border border-cyber-accent/40 text-cyber-accent font-mono text-xs flex items-center justify-center font-bold">1</span>
+                            <div>
+                                <h4 class="text-sm font-semibold text-white font-mono">Inspect the Frontend Source</h4>
+                                <p class="text-xs text-slate-400 mt-1 leading-relaxed">
+                                    Examine <code class="text-cyber-accent font-mono">main.js</code>. Notice how the calculation <code class="text-cyber-accent font-mono">cost: session.cost * tickets</code> occurs purely in the browser before dispatching an AJAX POST request.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="p-4 rounded-lg bg-slate-900/60 border border-slate-800 transition hover:border-cyber-accent/40">
+                        <div class="flex items-start gap-3">
+                            <span class="flex-shrink-0 w-6 h-6 rounded-full bg-cyber-accent/10 border border-cyber-accent/40 text-cyber-accent font-mono text-xs flex items-center justify-center font-bold">2</span>
+                            <div>
+                                <h4 class="text-sm font-semibold text-white font-mono">Identify Client Trust Vulnerability</h4>
+                                <p class="text-xs text-slate-400 mt-1 leading-relaxed">
+                                    The server accepts JSON payloads like <code class="text-cyber-accent font-mono">{ cost: 5, tickets: 1000000 }</code> without checking if the user's account balance actually supports it.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="p-4 rounded-lg bg-slate-900/60 border border-slate-800 transition hover:border-cyber-accent/40">
+                        <div class="flex items-start gap-3">
+                            <span class="flex-shrink-0 w-6 h-6 rounded-full bg-cyber-accent/10 border border-cyber-accent/40 text-cyber-accent font-mono text-xs flex items-center justify-center font-bold">3</span>
+                            <div>
+                                <h4 class="text-sm font-semibold text-white font-mono">Execute Exploit Payload via Console</h4>
+                                <p class="text-xs text-slate-400 mt-1 leading-relaxed">
+                                    Override the ticket purchase payload in the developer console or simulation panel to bypass price checks, inflate ticket volume, and trigger the win condition.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Educational Takeaway Card -->
+                <div class="bg-cyber-panel border border-cyber-border rounded-xl p-6 shadow-xl space-y-3">
+                    <h3 class="font-mono text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                        <i data-lucide="lightbulb" class="w-4 h-4 text-amber-400"></i>
+                        What This Teaches
+                    </h3>
+                    <ul class="space-y-2 text-xs text-slate-300">
+                        <li class="flex items-start gap-2">
+                            <i data-lucide="check" class="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5"></i>
+                            <span>Never trust data sent from the client (Browser DevTools can alter any request payload).</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i data-lucide="check" class="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5"></i>
+                            <span>Always recalculate prices, balances, and permissions securely on backend server code.</span>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- RIGHT COLUMN: Interactive Lab Sandbox Simulator (7 Cols) -->
+            <section class="lg:col-span-7 flex flex-col space-y-6">
+                <!-- Sandbox Main Frame -->
+                <div class="bg-cyber-panel border border-cyber-border rounded-xl shadow-2xl overflow-hidden flex flex-col">
+                    <!-- Browser-like Header -->
+                    <div class="bg-slate-900 px-4 py-3 border-b border-cyber-border flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
+                            <div class="w-3 h-3 rounded-full bg-amber-500/80"></div>
+                            <div class="w-3 h-3 rounded-full bg-emerald-500/80"></div>
+                            <div class="ml-4 font-mono text-xs text-slate-400 bg-slate-950 px-4 py-1 rounded border border-slate-800 flex items-center gap-2">
+                                <i data-lucide="lock" class="w-3 h-3 text-emerald-400"></i>
+                                https://trove.cyberskyline.com/metro-lottery?uid=09d1f6e
+                            </div>
+                        </div>
+                        <div class="text-xs font-mono text-slate-400 flex items-center gap-1">
+                            <i data-lucide="activity" class="w-3 h-3 text-cyber-accent animate-pulse"></i>
+                            <span>SIMULATOR ACTIVE</span>
+                        </div>
+                    </div>
+
+                    <!-- Application Viewport -->
+                    <div class="p-6 space-y-6">
+                        <!-- User Status Bar -->
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 font-mono text-xs">
+                            <div class="bg-slate-900/80 border border-slate-800 p-3 rounded-lg">
+                                <span class="text-slate-500 block">ACCOUNT BALANCE</span>
+                                <span id="stat-money" class="text-white font-bold text-sm">$100.00</span>
+                            </div>
+                            <div class="bg-slate-900/80 border border-slate-800 p-3 rounded-lg">
+                                <span class="text-slate-500 block">TICKET COST</span>
+                                <span id="stat-cost" class="text-cyber-accent font-bold text-sm">$5.00 / ea</span>
+                            </div>
+                            <div class="bg-slate-900/80 border border-slate-800 p-3 rounded-lg col-span-2 sm:col-span-1">
+                                <span class="text-slate-500 block">CURRENT WIN RATE</span>
+                                <span id="stat-winrate" class="text-amber-400 font-bold text-sm">3.85%</span>
+                            </div>
+                        </div>
+
+                        <!-- Standard Purchase UI Controls -->
+                        <div class="bg-slate-900/50 border border-slate-800 rounded-xl p-5 space-y-4">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-mono text-sm font-bold text-white flex items-center gap-2">
+                                    <i data-lucide="ticket" class="w-4 h-4 text-cyber-accent"></i>
+                                    Metropolis Lottery Terminal
+                                </h4>
+                                <span class="text-xs text-slate-500 font-mono">Standard Mode</span>
+                            </div>
+                            <div class="flex flex-col sm:flex-row gap-3">
+                                <input type="number" id="num-purchase" value="1" min="1" max="20" class="bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 font-mono text-sm text-white focus:outline-none focus:border-cyber-accent flex-grow">
+                                <button id="purchase" class="bg-cyber-accent hover:bg-cyber-glow text-slate-950 font-mono font-bold px-6 py-2 rounded-lg text-sm transition shadow-lg shadow-cyber-accent/20 flex items-center justify-center gap-2">
+                                    <i data-lucide="send" class="w-4 h-4"></i>
+                                    Buy Tickets
+                                </button>
+                            </div>
+                            <p class="text-xs text-slate-500 italic">Notice: Buying with normal funds yields poor odds. Use the simulated developer console below to execute the exploit payload.</p>
+                        </div>
+
+                        <!-- Simulated Developer Console -->
+                        <div class="bg-slate-950 border border-slate-800 rounded-xl overflow-hidden font-mono shadow-inner">
+                            <div class="bg-slate-900 px-4 py-2 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+                                <div class="flex items-center gap-2">
+                                    <i data-lucide="terminal" class="w-3.5 h-3.5 text-cyber-accent"></i>
+                                    <span>Browser Developer Console (Simulated)</span>
+                                </div>
+                                <button id="btn-clear-console" class="hover:text-white transition text-xs">Clear</button>
+                            </div>
+                            <div id="console-output" class="p-4 h-44 overflow-y-auto text-xs space-y-2 text-slate-300">
+                                <div class="text-slate-500">// Welcome to the browser console. Run simulated AJAX commands below or click preset exploit.</div>
+                                <div class="text-emerald-400">&gt; Session initialized successfully. Ready.</div>
+                            </div>
+                            <div class="p-3 bg-slate-900/60 border-t border-slate-800 flex items-center gap-2">
+                                <span class="text-cyber-accent">&gt;</span>
+                                <input type="text" id="console-input" placeholder="Type $.ajax(...) or test admin parameter..." class="bg-transparent border-none text-xs text-white font-mono focus:outline-none flex-grow">
+                                <button id="btn-run-console" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded text-xs transition">Execute</button>
+                            </div>
+                        </div>
+
+                        <!-- Quick Exploit Action Toolbar -->
+                        <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+                            <button id="btn-inject-exploit" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-mono text-cyan-400 px-4 py-2 rounded-lg transition flex items-center gap-2">
+                                <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+                                Load Exploit Payload (cost: 5, tickets: 1M)
+                            </button>
+                            <button id="btn-reset-lab" class="text-xs font-mono text-slate-400 hover:text-white transition flex items-center gap-1">
+                                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                                Reset Lab State
+                            </button>
+                        </div>
+
+                        <!-- Flag / Result Success Banner (Hidden by Default) -->
+                        <div id="flag-container" class="hidden bg-emerald-950/40 border border-emerald-500/50 rounded-xl p-5 space-y-3 animate-fade-in">
+                            <div class="flex items-center gap-2 text-emerald-400 font-mono text-sm font-bold">
+                                <i data-lucide="award" class="w-5 h-5"></i>
+                                <span>WIN CONDITION TRIGGERED // FLAG ACQUIRED</span>
+                            </div>
+                            <p class="text-xs text-slate-300">
+                                Congratulations! By overriding the client-side price payload, you successfully manipulated win percentages and captured the flag:
+                            </p>
+                            <div class="bg-slate-950 border border-emerald-500/30 p-3 rounded-lg font-mono text-sm text-emerald-400 font-bold select-all flex items-center justify-between">
+                                <span id="flag-text">NCL{metro_lottery_untrusted_input_2026}</span>
+                                <button id="btn-copy-flag" class="text-xs bg-emerald-900/40 hover:bg-emerald-900 text-emerald-300 px-3 py-1 rounded border border-emerald-700/50 transition">Copy Flag</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-12 border-t border-cyber-border bg-cyber-panel/40 py-6 text-center text-xs text-slate-500 font-mono">
+        <p>Cyber Skyline Training Environment // Designed for Master Cybersecurity Apprentices & Developers</p>
+    </footer>
+
+    <!-- JavaScript Application Code -->
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Lab State Variables
+        let session = {
+            money: 100.00,
+            cost: 5.00,
+            tickets: 1,
+            winPercentage: 3.85
+        };
+
+        // DOM Elements
+        const statMoney = document.getElementById('stat-money');
+        const statCost = document.getElementById('stat-cost');
+        const statWinRate = document.getElementById('stat-winrate');
+        const numPurchaseInput = document.getElementById('num-purchase');
+        const purchaseBtn = document.getElementById('purchase');
+        const consoleOutput = document.getElementById('console-output');
+        const consoleInput = document.getElementById('console-input');
+        const btnRunConsole = document.getElementById('btn-run-console');
+        const btnClearConsole = document.getElementById('btn-clear-console');
+        const btnInjectExploit = document.getElementById('btn-inject-exploit');
+        const btnResetLab = document.getElementById('btn-reset-lab');
+        const flagContainer = document.getElementById('flag-container');
+        const btnCopyFlag = document.getElementById('btn-copy-flag');
+
+        // Helper: Log message to simulated console
+        function logToConsole(message, type = 'info') {
+            const div = document.createElement('div');
+            if (type === 'error') {
+                div.className = 'text-red-400';
+            } else if (type === 'success') {
+                div.className = 'text-emerald-400 font-bold';
+            } else if (type === 'command') {
+                div.className = 'text-cyber-accent';
+            } else {
+                div.className = 'text-slate-300';
+            }
+            div.textContent = message;
+            consoleOutput.appendChild(div);
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+
+        // Update UI stats
+        function updateUI() {
+            statMoney.textContent = `$${session.money.toFixed(2)}`;
+            statCost.textContent = `$${session.cost.toFixed(2)} / ea`;
+            statWinRate.textContent = `${session.winPercentage.toFixed(2)}%`;
+            if (session.winPercentage > 80) {
+                statWinRate.className = 'text-emerald-400 font-bold text-sm';
+            } else {
+                statWinRate.className = 'text-amber-400 font-bold text-sm';
+            }
+        }
+
+        // Simulate AJAX Purchase Request
+        function simulateAjaxPurchase(cost, tickets, isAdminTest = false) {
+            logToConsole(`POST /purchase?uid=09d1f6e payload: { cost: ${cost}, tickets: ${tickets} }`, 'command');
+            
+            setTimeout(() => {
+                // Vulnerable backend logic simulation: Blind trust of client parameters!
+                if (tickets >= 100000 || cost <= 50) {
+                    session.winPercentage = 92.50;
+                    updateUI();
+                    logToConsole(`Server response (200 OK): { success: true, message: "Lottery round concluded.", win_percentage: 92.50 }`, 'success');
+                    logToConsole(`[!] Win percentage exceeded 80%! Flag triggered.`, 'success');
+                    flagContainer.classList.remove('hidden');
+                    flagContainer.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    if (session.money >= cost) {
+                        session.money -= cost;
+                        updateUI();
+                        logToConsole(`Server response (200 OK): { success: true, tickets_bought: ${tickets}, balance_remaining: ${session.money.toFixed(2)} }`, 'info');
+                    } else {
+                        logToConsole(`Server response (400 Bad Request): Insufficient funds.`, 'error');
+                    }
+                }
+            }, 500);
+        }
+
+        // Event: Normal Purchase Button Click
+        purchaseBtn.addEventListener('click', () => {
+            const tickets = parseInt(numPurchaseInput.value) || 0;
+            const totalCost = session.cost * tickets;
+            if (session.money >= totalCost) {
+                simulateAjaxPurchase(totalCost, tickets);
+            } else {
+                logToConsole(`Client-side check failed: You do not have enough money for ${tickets} tickets.`, 'error');
+            }
+        });
+
+        // Event: Preset Exploit Button
+        btnInjectExploit.addEventListener('click', () => {
+            consoleInput.value = "$.ajax({ method: 'POST', url: '/purchase?uid=09d1f6e', data: JSON.stringify({ cost: 5, tickets: 1000000 }), contentType: 'application/json' });";
+            logToConsole(`> Loaded exploit payload into console input bar. Click Execute!`, 'command');
+        });
+
+        // Event: Run Console Command
+        function handleConsoleExecution() {
+            const cmd = consoleInput.value.trim();
+            if (!cmd) return;
+            logToConsole(`> ${cmd}`, 'command');
+
+            // Simple parser for simulated jQuery $.ajax exploit
+            if (cmd.includes('$.ajax') || cmd.includes('cost') || cmd.includes('tickets')) {
+                try {
+                    // Extract values or default to exploit values
+                    let ticketsMatch = cmd.match(/tickets\s*:\s*(\d+)/);
+                    let costMatch = cmd.match(/cost\s*:\s*([\d\.]+)/);
+                    let tickets = ticketsMatch ? parseInt(ticketsMatch[1]) : 1000000;
+                    let cost = costMatch ? parseFloat(costMatch[1]) : 5;
+
+                    simulateAjaxPurchase(cost, tickets);
+                } catch (e) {
+                    logToConsole(`SyntaxError: Invalid JSON payload structure in AJAX call.`, 'error');
+                }
+            } else if (cmd === 'clear') {
+                consoleOutput.innerHTML = '';
+            } else {
+                logToConsole(`ReferenceError: function or variable not defined in sandbox scope. Try $.ajax snippet.`, 'error');
+            }
+            consoleInput.value = '';
+        }
+
+        btnRunConsole.addEventListener('click', handleConsoleExecution);
+        consoleInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleConsoleExecution();
+        });
+
+        // Clear Console
+        btnClearConsole.addEventListener('click', () => {
+            consoleOutput.innerHTML = '<div class="text-slate-550">// Console cleared.</div>';
+        });
+
+        // Reset Lab
+        btnResetLab.addEventListener('click', () => {
+            session.money = 100.00;
+            session.winPercentage = 3.85;
+            numPurchaseInput.value = 1;
+            flagContainer.classList.add('hidden');
+            consoleOutput.innerHTML = '<div class="text-slate-500">// Lab state reset successfully.</div>';
+            updateUI();
+        });
+
+        // Copy Flag
+        btnCopyFlag.addEventListener('click', () => {
+            const flagText = document.getElementById('flag-text').textContent;
+            navigator.clipboard.writeText(flagText);
+            btnCopyFlag.textContent = "Copied!";
+            setTimeout(() => { btnCopyFlag.textContent = "Copy Flag"; }, 2000);
+        });
+    </script>
+</body>
+</html>
