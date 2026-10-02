@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Deck Lab // Never Winter Bank</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    },
+                    colors: {
+                        cyber: {
+                            bg: '#090d16',
+                            card: '#111827',
+                            border: '#1f293d',
+                            accent: '#10b981',
+                            glow: '#059669',
+                            danger: '#ef4444',
+                            warning: '#f59e0b'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts: Inter & Fira Code -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-mono { font-family: 'Fira Code', monospace; }
+        /* Custom scrollbars for a sleek terminal feel */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #090d16; }
+        ::-webkit-scrollbar-thumb { background: #1f293d; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #374151; }
+    </style>
+</head>
+<body class="bg-cyber-bg text-gray-100 min-h-screen flex flex-col selection:bg-emerald-500 selection:text-black">
+
+    <!-- Top Navigation Bar -->
+    <header class="border-b border-cyber-border bg-cyber-card/60 backdrop-blur sticky top-0 z-50 px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+            <div class="bg-emerald-500/10 p-2 rounded-lg border border-emerald-500/20 text-emerald-400">
+                <i data-lucide="terminal" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h1 class="font-bold tracking-wider text-sm md:text-base flex items-center gap-2">
+                    CYBER SKYLINE <span class="text-xs px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono">LAB v2.6</span>
+                </h1>
+                <p class="text-xs text-gray-400 font-mono">Module: Never Winter Bank (Radix Vulnerability)</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-4">
+            <div class="hidden sm:flex items-center space-x-2 text-xs font-mono bg-cyber-bg px-3 py-1.5 rounded-lg border border-cyber-border text-gray-400">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>SYSTEM: ONLINE</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- Left Column: Step-by-Step Guide (5 Cols) -->
+        <section class="lg:col-span-5 bg-cyber-card border border-cyber-border rounded-xl p-5 md:p-6 shadow-xl space-y-6">
+            <div class="flex items-center justify-between border-b border-cyber-border pb-4">
+                <h2 class="font-semibold flex items-center gap-2 text-emerald-400">
+                    <i data-lucide="book-open" class="w-5 h-5"></i>
+                    <span>Walk-Through Guide</span>
+                </h2>
+                <span class="text-xs font-mono px-2.5 py-1 rounded-full bg-cyber-bg border border-cyber-border text-gray-400">4 Steps</span>
+            </div>
+
+            <!-- Steps List -->
+            <div class="space-y-4 font-sans text-sm">
+                <!-- Step 1 -->
+                <div class="group border border-cyber-border bg-cyber-bg/50 rounded-lg p-4 transition-all hover:border-emerald-500/40">
+                    <div class="flex items-start gap-3">
+                        <span class="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center font-mono text-xs font-bold">1</span>
+                        <div>
+                            <h3 class="font-medium text-gray-200">Reconnaissance & Robots.txt</h3>
+                            <p class="text-gray-400 text-xs mt-1 leading-relaxed">Inspect hidden files by checking <code class="text-emerald-400 font-mono">/robots.txt</code> to find unindexed developer endpoints like <code class="text-emerald-400 font-mono">/dev/rel.js</code>.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="group border border-cyber-border bg-cyber-bg/50 rounded-lg p-4 transition-all hover:border-emerald-500/40">
+                    <div class="flex items-start gap-3">
+                        <span class="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center font-mono text-xs font-bold">2</span>
+                        <div>
+                            <h3 class="font-medium text-gray-200">Analyze the Source Code</h3>
+                            <p class="text-gray-400 text-xs mt-1 leading-relaxed">Notice inconsistent use of <code class="text-emerald-400 font-mono">parseInt()</code>. Security checks omit the base radix parameter, causing strings starting with <code class="text-emerald-400 font-mono">0</code> to be parsed as **octal (base 8)**.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="group border border-cyber-border bg-cyber-bg/50 rounded-lg p-4 transition-all hover:border-emerald-500/40">
+                    <div class="flex items-start gap-3">
+                        <span class="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center font-mono text-xs font-bold">3</span>
+                        <div>
+                            <h3 class="font-medium text-gray-200">Calculate the Octal Bypass</h3>
+                            <p class="text-gray-400 text-xs mt-1 leading-relaxed">Enter an octal value between <code class="text-emerald-400 font-mono">01000</code> (decimal 512) and <code class="text-emerald-400 font-mono">01736</code> (decimal 990) to pass balance validation while draining 1000 credits.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="group border border-cyber-border bg-cyber-bg/50 rounded-lg p-4 transition-all hover:border-emerald-500/40">
+                    <div class="flex items-start gap-3">
+                        <span class="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center font-mono text-xs font-bold">4</span>
+                        <div>
+                            <h3 class="font-medium text-gray-200">Extract the Flag</h3>
+                            <p class="text-gray-400 text-xs mt-1 leading-relaxed">Execute the transaction in the sandbox console to successfully drain the target account and unlock your randomized flag.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Code Snippet Box -->
+            <div class="space-y-2">
+                <span class="text-xs font-mono text-gray-400 flex items-center gap-1.5">
+                    <i data-lucide="code" class="w-3.5 h-3.5"></i> Vulnerable Logic Snippet
+                </span>
+                <div class="bg-cyber-bg border border-cyber-border rounded-lg p-3 font-mono text-xs text-emerald-300 overflow-x-auto">
+                    <pre><code>if (parseInt(amount) < account.amount) {
+  // Missing radix defaults to Octal for '0...'
+  account.amount -= parseInt(amount, 10);
+}</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Right Column: Interactive Lab Sandbox Simulator (7 Cols) -->
+        <section class="lg:col-span-7 bg-cyber-card border border-cyber-border rounded-xl p-5 md:p-6 shadow-xl space-y-5">
+            <div class="flex items-center justify-between border-b border-cyber-border pb-4">
+                <h2 class="font-semibold flex items-center gap-2 text-emerald-400">
+                    <i data-lucide="cpu" class="w-5 h-5"></i>
+                    <span>Sandbox Simulator // Never Winter Bank</span>
+                </h2>
+                <div class="flex items-center gap-2">
+                    <button onclick="resetLab()" class="text-xs font-mono px-3 py-1 bg-cyber-bg hover:bg-gray-800 text-gray-300 border border-cyber-border rounded transition flex items-center gap-1.5">
+                        <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset
+                    </button>
+                </div>
+            </div>
+
+            <!-- Simulated Browser Frame -->
+            <div class="border border-cyber-border rounded-lg bg-cyber-bg overflow-hidden shadow-inner">
+                <!-- Browser Header -->
+                <div class="bg-cyber-card/80 border-b border-cyber-border px-4 py-2.5 flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                        <span class="w-3 h-3 rounded-full bg-red-500/80 inline-block"></span>
+                        <span class="w-3 h-3 rounded-full bg-yellow-500/80 inline-block"></span>
+                        <span class="w-3 h-3 rounded-full bg-green-500/80 inline-block"></span>
+                    </div>
+                    <div class="bg-cyber-bg border border-cyber-border rounded px-3 py-1 text-xs font-mono text-gray-400 w-64 md:w-80 text-center truncate" id="browser-url">
+                        https://neverwinter-bank.internal/dashboard
+                    </div>
+                    <div class="text-gray-500 text-xs font-mono">Secure</div>
+                </div>
+
+                <!-- Simulated App Body -->
+                <div class="p-6 space-y-6">
+                    <div class="flex items-center justify-between bg-cyber-card p-4 rounded-lg border border-cyber-border">
+                        <div>
+                            <span class="text-xs font-mono text-gray-400 uppercase tracking-wider">Account Balance</span>
+                            <div class="text-2xl font-bold font-mono text-emerald-400 mt-0.5" id="display-balance">1000 Credits</div>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs font-mono text-gray-400 uppercase tracking-wider">Min Balance Limit</span>
+                            <div class="text-sm font-bold font-mono text-gray-300 mt-1">10 Credits</div>
+                        </div>
+                    </div>
+
+                    <!-- Transfer Form -->
+                    <div class="space-y-4 bg-cyber-card/40 p-4 rounded-lg border border-cyber-border">
+                        <h3 class="text-xs font-mono text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                            <i data-lucide="shield-alert" class="w-4 h-4 text-warning"></i> Wire Transfer Terminal
+                        </h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div class="sm:col-span-2">
+                                <label class="block text-xs font-mono text-gray-400 mb-1">Transfer Amount (Try octal like 01000):</label>
+                                <input type="text" id="transfer-amount" value="01000" class="w-full bg-cyber-bg border border-cyber-border rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-emerald-500 text-gray-200">
+                            </div>
+                            <div class="flex items-end">
+                                <button onclick="executeTransfer()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-black font-semibold text-xs font-mono uppercase py-2.5 px-4 rounded-lg transition shadow-lg shadow-emerald-900/20 flex items-center justify-center gap-2">
+                                    <i data-lucide="zap" class="w-4 h-4"></i> Transfer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sandbox Console Output & Admin Panel -->
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-mono text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                                <i data-lucide="terminal" class="w-3.5 h-3.5"></i> Execution Log
+                            </span>
+                            <button onclick="toggleAdminPanel()" id="admin-nav-btn" class="text-xs font-mono px-2.5 py-1 rounded bg-cyber-card border border-cyber-border text-gray-400 hover:text-emerald-400 transition flex items-center gap-1">
+                                <i data-lucide="lock" class="w-3 h-3"></i> Go to /admin
+                            </button>
+                        </div>
+                        <div id="console-output" class="bg-black/80 border border-cyber-border rounded-lg p-3 font-mono text-xs text-gray-300 h-32 overflow-y-auto space-y-1">
+                            <div class="text-gray-500">[system] Terminal initialized. Ready for simulation...</div>
+                        </div>
+                    </div>
+
+                    <!-- Hidden Admin / Flag Container -->
+                    <div id="admin-panel" class="hidden bg-emerald-950/20 border border-emerald-500/30 rounded-lg p-4 space-y-3 animate-fadeIn">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-mono text-emerald-400 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                                <i data-lucide="shield-check" class="w-4 h-4"></i> Restricted Admin Console // Flag Unlocked
+                            </span>
+                            <span class="text-xs font-mono bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded border border-emerald-500/30">ACCESS GRANTED</span>
+                        </div>
+                        <p class="text-xs text-gray-300">Congratulations! You exploited the radix mismatch vulnerability successfully. Here is your dynamic flag:</p>
+                        <div class="bg-cyber-bg border border-emerald-500/40 rounded p-3 font-mono text-xs text-emerald-400 select-all flex items-center justify-between">
+                            <span id="flag-text">CS{radix_octal_bypass_7f8a9b}</span>
+                            <button onclick="navigator.clipboard.writeText(document.getElementById('flag-text').innerText)" class="text-gray-400 hover:text-white text-xs bg-cyber-card px-2 py-1 rounded border border-cyber-border">Copy</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-cyber-border bg-cyber-card/40 py-4 px-6 text-center text-xs font-mono text-gray-500">
+        Cyber Deck Lab Environment // Built with Tailwind CSS, Lucide Icons, and Fira Code.
+    </footer>
+
+    <!-- Script to handle Lucide Icons & Simulation Logic -->
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Lab state variables
+        let accountBalance = 1000;
+        let accountMinimum = 10;
+        let isAdminUnlocked = false;
+
+        function logToConsole(message, type = 'info') {
+            const consoleEl = document.getElementById('console-output');
+            const colorClass = type === 'error' ? 'text-red-400' : type === 'success' ? 'text-emerald-400' : 'text-gray-300';
+            const timestamp = new Date().toLocaleTimeString();
+            consoleEl.innerHTML += `<div class="${colorClass}">[${timestamp}] ${message}</div>`;
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        }
+
+        function executeTransfer() {
+            const inputVal = document.getElementById('transfer-amount').value.trim();
+            logToConsole(`-> Executing transfer with input parameter: "${inputVal}"`);
+
+            // Step 1: Vulnerable check using parseInt without radix
+            const parsedCheckAmount = parseInt(inputVal);
+            // Step 2: Actual transfer using parseInt with radix 10
+            const transferAmount = parseInt(inputVal, 10);
+
+            logToConsole(`[Debug] parseInt("${inputVal}") evaluated check value: ${parsedCheckAmount} (Octal if starts with '0')`);
+            logToConsole(`[Debug] parseInt("${inputVal}", 10) transfer value: ${transferAmount} (Base 10)`);
+
+            // Validation logic matching the challenge
+            if (isNaN(parsedCheckAmount) || isNaN(transferAmount)) {
+                logToConsole(`Error: Invalid numeric input format.`, 'error');
+                return;
+            }
+
+            if (parsedCheckAmount < accountBalance) {
+                if ((accountBalance - parsedCheckAmount) < accountMinimum) {
+                    logToConsole(`Error: Account is not allowed to have a balance lower than ${accountMinimum}`, 'error');
+                    return;
+                }
+                
+                // Perform transfer
+                accountBalance -= transferAmount;
+                document.getElementById('display-balance').innerText = `${accountBalance} Credits`;
+                logToConsole(`Success! Transferred ${transferAmount} credits. Remaining balance: ${accountBalance}`, 'success');
+
+                if (transferAmount >= 1000) {
+                    logToConsole(`Account successfully drained! Admin privileges unlocked. Navigate to /admin`, 'success');
+                    isAdminUnlocked = true;
+                    // Auto reveal admin button state
+                    const btn = document.getElementById('admin-nav-btn');
+                    btn.classList.remove('bg-cyber-card', 'text-gray-400');
+                    btn.classList.add('bg-emerald-500/20', 'text-emerald-400', 'border-emerald-500/40', 'animate-pulse');
+                    btn.innerHTML = `<i data-lucide="unlock" class="w-3 h-3"></i> /admin (Ready)`;
+                    lucide.createIcons();
+                }
+            } else {
+                logToConsole(`Error: Insufficient funds for check amount ${parsedCheckAmount}`, 'error');
+            }
+        }
+
+        function toggleAdminPanel() {
+            const panel = document.getElementById('admin-panel');
+            const urlEl = document.getElementById('browser-url');
+            if (isAdminUnlocked) {
+                panel.classList.toggle('hidden');
+                if (!panel.classList.contains('hidden')) {
+                    urlEl.innerText = 'https://neverwinter-bank.internal/admin';
+                    logToConsole(`Navigated to /admin successfully. Flag displayed.`, 'success');
+                } else {
+                    urlEl.innerText = 'https://neverwinter-bank.internal/dashboard';
+                }
+            } else {
+                logToConsole(`Access Denied: You must successfully drain the account (transfer >= 1000 using octal bypass) before accessing /admin.`, 'error');
+            }
+        }
+
+        function resetLab() {
+            accountBalance = 1000;
+            isAdminUnlocked = false;
+            document.getElementById('display-balance').innerText = `${accountBalance} Credits`;
+            document.getElementById('transfer-amount').value = '01000';
+            document.getElementById('admin-panel').classList.add('hidden');
+            document.getElementById('browser-url').innerText = 'https://neverwinter-bank.internal/dashboard';
+            const btn = document.getElementById('admin-nav-btn');
+            btn.className = 'text-xs font-mono px-2.5 py-1 rounded bg-cyber-card border border-cyber-border text-gray-400 hover:text-emerald-400 transition flex items-center gap-1';
+            btn.innerHTML = `<i data-lucide="lock" class="w-3 h-3"></i> Go to /admin`;
+            lucide.createIcons();
+            document.getElementById('console-output').innerHTML = `<div class="text-gray-500">[system] Lab environment reset to initial state.</div>`;
+        }
+    </script>
+</body>
+</html>
