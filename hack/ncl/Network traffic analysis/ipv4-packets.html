@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mastering Manual Packet Dissection</title>
+    <!-- Tailwind CSS CDN for modern responsive utility styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter and Fira Code fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        // Custom Tailwind configuration for dark mode developer aesthetics
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            850: '#111827',
+                            900: '#0F172A',
+                            950: '#0B0F19',
+                        },
+                        cyber: {
+                            purple: '#A855F7',
+                            green: '#22C55E',
+                            cyan: '#06B6D4',
+                            dark: '#020617',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        /* Custom scrollbar styling for technical UI feel */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0B0F19;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-200 font-sans antialiased min-h-screen flex flex-col selection:bg-cyber-purple selection:text-white">
+
+    <!-- ========================================================================= -->
+    <!-- NAVIGATION BAR HEADER                                                     -->
+    <!-- ========================================================================= -->
+    <header class="sticky top-0 z-50 bg-slate-900/90 backdrop-blur border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-3 h-3 rounded-full bg-cyber-green animate-pulse"></div>
+                <span class="font-mono font-bold text-lg text-white tracking-wider">CyberSkyline<span class="text-cyber-purple">//</span>Lab</span>
+            </div>
+            
+            <!-- Dynamic Navigation Links -->
+            <nav class="hidden md:flex space-x-1 text-sm font-medium">
+                <button onclick="switchTab('overview')" id="nav-overview" class="tab-btn px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition">Overview</button>
+                <button onclick="switchTab('specifications')" id="nav-specifications" class="tab-btn px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition">Specs & RFC 791</button>
+                <button onclick="switchTab('workflow')" id="nav-workflow" class="tab-btn px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition">Workflow</button>
+                <button onclick="switchTab('interactive')" id="nav-interactive" class="tab-btn px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition">Interactive Lab</button>
+            </nav>
+
+            <div class="flex items-center space-x-2">
+                <span class="text-xs font-mono bg-slate-800 text-slate-400 px-2.5 py-1 rounded-md border border-slate-700">Topic: Packet Dissection</span>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Menu Dropdown -->
+        <div class="md:hidden border-t border-slate-800 px-4 py-2 flex justify-around text-xs font-mono bg-slate-900">
+            <button onclick="switchTab('overview')" class="text-slate-300 hover:text-cyber-purple">Overview</button>
+            <button onclick="switchTab('specifications')" class="text-slate-300 hover:text-cyber-purple">Specs</button>
+            <button onclick="switchTab('workflow')" class="text-slate-300 hover:text-cyber-purple">Workflow</button>
+            <button onclick="switchTab('interactive')" class="text-slate-300 hover:text-cyber-purple">Lab</button>
+        </div>
+    </header>
+
+    <!-- ========================================================================= -->
+    <!-- MAIN CONTENT CONTAINER                                                   -->
+    <!-- ========================================================================= -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- --------------------------------------------------------------------- -->
+        <!-- TAB 1: OVERVIEW & CORE CONCEPTS                                       -->
+        <!-- --------------------------------------------------------------------- -->
+        <section id="tab-overview" class="tab-content space-y-8">
+            <div class="bg-slate-900 rounded-xl p-6 md:p-8 border border-slate-800 shadow-xl">
+                <div class="inline-block px-3 py-1 bg-cyber-purple/10 text-cyber-purple border border-cyber-purple/20 rounded-full text-xs font-mono font-medium mb-4">
+                    Fundamental Network Analysis
+                </div>
+                <h1 class="text-2xl md:text-4xl font-extrabold text-white tracking-tight mb-4">
+                    Why Dissect Network Packets by Hand?
+                </h1>
+                <p class="text-slate-300 leading-relaxed text-base md:text-lg mb-6">
+                    While automated tools like <strong class="text-white">Wireshark</strong> streamline daily traffic capture, manual packet dissection provides the fundamental knowledge needed when custom protocols, scripting requirements, or legacy bugs break standard tool parsers.
+                </p>
+
+                <!-- Core Concept Cards Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                    <div class="bg-slate-950 p-5 rounded-lg border border-slate-800 hover:border-slate-700 transition">
+                        <div class="text-cyber-cyan text-xl mb-2 font-mono font-bold">01. What is a Packet?</div>
+                        <p class="text-sm text-slate-400 leading-normal">
+                            A self-contained block of binary data transmitted over networks to power browsers, video streams, and web applications.
+                        </p>
+                    </div>
+
+                    <div class="bg-slate-950 p-5 rounded-lg border border-slate-800 hover:border-slate-700 transition">
+                        <div class="text-cyber-purple text-xl mb-2 font-mono font-bold">02. Digital Shipping</div>
+                        <p class="text-sm text-slate-400 leading-normal">
+                            Analagous to physical packages. Headers contain transit instructions (IPs, routing, check-sums) while the payload carries actual content.
+                        </p>
+                    </div>
+
+                    <div class="bg-slate-950 p-5 rounded-lg border border-slate-800 hover:border-slate-700 transition">
+                        <div class="text-cyber-green text-xl mb-2 font-mono font-bold">03. Pure Binary</div>
+                        <p class="text-sm text-slate-400 leading-normal">
+                            Packets are stored and transmitted as raw bits. Strict specifications dictate how software interprets offsets into human numbers or strings.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Future Expansion Card Placeholder -->
+            <!-- EXPANSION HOOK: Add more introductory protocol modules here -->
+            <div class="border border-dashed border-slate-800 rounded-xl p-6 text-center text-slate-500 font-mono text-sm">
+                + [Module Expansion Slot]: Insert TCP / UDP / Application Layer concepts here.
+            </div>
+        </section>
+
+        <!-- --------------------------------------------------------------------- -->
+        <!-- TAB 2: SPECIFICATIONS & RFC 791 DOCUMENTATION                        -->
+        <!-- --------------------------------------------------------------------- -->
+        <section id="tab-specifications" class="tab-content space-y-8 hidden">
+            <div class="bg-slate-900 rounded-xl p-6 md:p-8 border border-slate-800 shadow-xl">
+                <h2 class="text-2xl font-bold text-white mb-2">IPv4 Header Structure (RFC 791)</h2>
+                <p class="text-slate-400 text-sm mb-6">
+                    Published in 1981, RFC 791 outlines the exact bit layout for IP packet headers. Each row represents 32 bits (4 bytes).
+                </p>
+
+                <!-- Interactive Packet Field Bit Map Table -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-xs font-mono border-collapse border border-slate-800 min-w-[600px]">
+                        <thead>
+                            <tr class="bg-slate-950 text-slate-400 border-b border-slate-800">
+                                <th class="p-2 border-r border-slate-800 w-12">Bit</th>
+                                <th class="p-2 border-r border-slate-800 text-center" colspan="4">0 - 3</th>
+                                <th class="p-2 border-r border-slate-800 text-center" colspan="4">4 - 7</th>
+                                <th class="p-2 border-r border-slate-800 text-center" colspan="8">8 - 15</th>
+                                <th class="p-2 text-center" colspan="16">16 - 31</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-center text-slate-300 divide-y divide-slate-800">
+                            <!-- Row 1 -->
+                            <tr class="hover:bg-slate-800/50 transition">
+                                <td class="p-2 bg-slate-950 font-bold border-r border-slate-800 text-slate-500">00</td>
+                                <td colspan="4" class="p-3 border-r border-slate-800 bg-cyber-purple/10 text-cyber-purple font-semibold">Version (4 bits)</td>
+                                <td colspan="4" class="p-3 border-r border-slate-800 bg-cyber-cyan/10 text-cyber-cyan font-semibold">IHL (4 bits)</td>
+                                <td colspan="8" class="p-3 border-r border-slate-800 bg-slate-800/40">Type of Service (8 bits)</td>
+                                <td colspan="16" class="p-3 bg-slate-800/40">Total Length (16 bits)</td>
+                            </tr>
+                            <!-- Row 2 -->
+                            <tr class="hover:bg-slate-800/50 transition">
+                                <td class="p-2 bg-slate-950 font-bold border-r border-slate-800 text-slate-500">32</td>
+                                <td colspan="16" class="p-3 border-r border-slate-800 bg-slate-800/40">Identification (16 bits)</td>
+                                <td colspan="4" class="p-3 border-r border-slate-800 bg-slate-800/40">Flags</td>
+                                <td colspan="12" class="p-3 bg-slate-800/40">Fragment Offset (13 bits)</td>
+                            </tr>
+                            <!-- Row 3 -->
+                            <tr class="hover:bg-slate-800/50 transition">
+                                <td class="p-2 bg-slate-950 font-bold border-r border-slate-800 text-slate-500">64</td>
+                                <td colspan="8" class="p-3 border-r border-slate-800 bg-cyber-green/10 text-cyber-green font-semibold">TTL (8 bits)</td>
+                                <td colspan="8" class="p-3 border-r border-slate-800 bg-slate-800/40">Protocol (8 bits)</td>
+                                <td colspan="16" class="p-3 bg-amber-500/10 text-amber-400 font-semibold">Header Checksum (16 bits)</td>
+                            </tr>
+                            <!-- Row 4 -->
+                            <tr class="hover:bg-slate-800/50 transition">
+                                <td class="p-2 bg-slate-950 font-bold border-r border-slate-800 text-slate-500">96</td>
+                                <td colspan="32" class="p-3 bg-blue-500/10 text-blue-400 font-semibold">Source IP Address (32 bits)</td>
+                            </tr>
+                            <!-- Row 5 -->
+                            <tr class="hover:bg-slate-800/50 transition">
+                                <td class="p-2 bg-slate-950 font-bold border-r border-slate-800 text-slate-500">128</td>
+                                <td colspan="32" class="p-3 bg-emerald-500/10 text-emerald-400 font-semibold">Destination IP Address (32 bits)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Header Field Definitions Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-slate-900 p-5 rounded-lg border border-slate-800">
+                    <h3 class="text-white font-semibold mb-2 text-sm font-mono text-amber-400">Header Checksum</h3>
+                    <p class="text-xs text-slate-400 leading-relaxed">
+                        Verifies structural integrity. Routers recalculate this at every hop; if corrupted in transit (e.g., hardware glitch or short circuit), the packet is dropped.
+                    </p>
+                </div>
+                <div class="bg-slate-900 p-5 rounded-lg border border-slate-800">
+                    <h3 class="text-white font-semibold mb-2 text-sm font-mono text-cyber-green">Time to Live (TTL)</h3>
+                    <p class="text-xs text-slate-400 leading-relaxed">
+                        Prevents infinite routing loops. Decremented by 1 at every router hop. When it hits 0, the packet is discarded.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- --------------------------------------------------------------------- -->
+        <!-- TAB 3: DISSECTION WORKFLOW PROCESS                                    -->
+        <!-- --------------------------------------------------------------------- -->
+        <section id="tab-workflow" class="tab-content space-y-8 hidden">
+            <div class="bg-slate-900 rounded-xl p-6 md:p-8 border border-slate-800 shadow-xl">
+                <h2 class="text-2xl font-bold text-white mb-6">Standard Manual Dissection Steps</h2>
+
+                <div class="space-y-6">
+                    <!-- Step 1 -->
+                    <div class="flex items-start space-x-4">
+                        <div class="w-8 h-8 rounded-full bg-cyber-purple/20 text-cyber-purple font-mono font-bold flex items-center justify-center shrink-0">1</div>
+                        <div>
+                            <h3 class="text-white font-semibold">Obtain Specifications</h3>
+                            <p class="text-sm text-slate-400 mt-1">Locate official documentation (RFCs) to map bit boundaries and offsets.</p>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="flex items-start space-x-4">
+                        <div class="w-8 h-8 rounded-full bg-cyber-cyan/20 text-cyber-cyan font-mono font-bold flex items-center justify-center shrink-0">2</div>
+                        <div>
+                            <h3 class="text-white font-semibold">Select Data Tools</h3>
+                            <p class="text-sm text-slate-400 mt-1">Use manipulation utilities (e.g., CyberChef, hex/binary converters, text editors) to transform segments.</p>
+                        </div>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="flex items-start space-x-4">
+                        <div class="w-8 h-8 rounded-full bg-cyber-green/20 text-cyber-green font-mono font-bold flex items-center justify-center shrink-0">3</div>
+                        <div>
+                            <h3 class="text-white font-semibold">Locate & Extract Bit Offsets</h3>
+                            <p class="text-sm text-slate-400 mt-1">Count binary digit offsets based on line width and isolate target fields (e.g., last 16 bits of Line 3).</p>
+                        </div>
+                    </div>
+
+                    <!-- Step 4 -->
+                    <div class="flex items-start space-x-4">
+                        <div class="w-8 h-8 rounded-full bg-amber-500/20 text-amber-400 font-mono font-bold flex items-center justify-center shrink-0">4</div>
+                        <div>
+                            <h3 class="text-white font-semibold">Convert & Format Data</h3>
+                            <p class="text-sm text-slate-400 mt-1">Transform binary into readable notations (e.g., Hexadecimal for checksums, Dotted Decimal for IPv4 addresses).</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- --------------------------------------------------------------------- -->
+        <!-- TAB 4: INTERACTIVE PACKET DISSECTION LAB                              -->
+        <!-- --------------------------------------------------------------------- -->
+        <section id="tab-interactive" class="tab-content space-y-8 hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                
+                <!-- Left Column: Packet Input & Controls -->
+                <div class="lg:col-span-6 space-y-6">
+                    <div class="bg-slate-900 rounded-xl p-6 border border-slate-800 shadow-xl">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-lg font-bold text-white font-mono">Raw Packet Binary Input</h2>
+                            <button onclick="loadSamplePacket()" class="text-xs text-cyber-cyan hover:underline font-mono">Reset Sample</button>
+                        </div>
+
+                        <!-- Raw Binary Textarea -->
+                        <textarea id="packetInput" rows="10" class="w-full bg-slate-950 text-emerald-400 font-mono text-xs p-4 rounded-lg border border-slate-800 focus:border-cyber-purple focus:outline-none transition leading-relaxed" spellcheck="false"></textarea>
+
+                        <div class="mt-4 flex flex-wrap gap-3">
+                            <button onclick="parsePacket()" class="px-5 py-2.5 bg-cyber-purple hover:bg-purple-600 text-white font-semibold rounded-lg text-sm transition shadow-lg shadow-purple-900/30">
+                                Dissect Packet
+                            </button>
+                            <button onclick="autoParseCyberchef()" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-lg text-sm transition border border-slate-700">
+                                Auto Parse (CyberChef Shortcut)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Dissected Output Results -->
+                <div class="lg:col-span-6 space-y-6">
+                    <div class="bg-slate-900 rounded-xl p-6 border border-slate-800 shadow-xl">
+                        <h2 class="text-lg font-bold text-white font-mono mb-4">Dissection Results</h2>
+
+                        <div class="space-y-4 font-mono text-xs">
+                            <!-- Field: Version & IHL -->
+                            <div class="bg-slate-950 p-3 rounded border border-slate-800 flex justify-between items-center">
+                                <span class="text-slate-400">IP Version & Header Length:</span>
+                                <span id="res-version" class="text-cyber-cyan font-bold">--</span>
+                            </div>
+
+                            <!-- Field: Header Checksum -->
+                            <div class="bg-slate-950 p-3 rounded border border-slate-800 flex justify-between items-center">
+                                <span class="text-slate-400">Header Checksum (Hex):</span>
+                                <span id="res-checksum" class="text-amber-400 font-bold">--</span>
+                            </div>
+
+                            <!-- Field: TTL -->
+                            <div class="bg-slate-950 p-3 rounded border border-slate-800 flex justify-between items-center">
+                                <span class="text-slate-400">Time to Live (TTL):</span>
+                                <span id="res-ttl" class="text-cyber-green font-bold">--</span>
+                            </div>
+
+                            <!-- Field: Source IP -->
+                            <div class="bg-slate-950 p-3 rounded border border-slate-800 flex justify-between items-center">
+                                <span class="text-slate-400">Source IP Address:</span>
+                                <span id="res-src" class="text-blue-400 font-bold">--</span>
+                            </div>
+
+                            <!-- Field: Destination IP -->
+                            <div class="bg-slate-950 p-3 rounded border border-slate-800 flex justify-between items-center">
+                                <span class="text-slate-400">Destination IP Address:</span>
+                                <span id="res-dst" class="text-emerald-400 font-bold">--</span>
+                            </div>
+                        </div>
+
+                        <div id="parse-status" class="mt-4 text-xs font-mono text-slate-500 italic">
+                            Status: Ready for input dissection.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ========================================================================= -->
+    <!-- FOOTER                                                                    -->
+    <!-- ========================================================================= -->
+    <footer class="bg-slate-900 border-t border-slate-800 py-6 mt-12">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500 font-mono">
+            Packet Analysis & Cyber Skyline Lesson Framework • Modular Developer Template
+        </div>
+    </footer>
+
+    <!-- ========================================================================= -->
+    <!-- JAVASCRIPT LOGIC & INTERACTIVITY                                          -->
+    <!-- ========================================================================= -->
+    <script>
+        // Sample Binary Packet (RFC 791 IPv4 Header representation from video lesson)
+        const SAMPLE_PACKET = `01000101000000000000000000111100
+00000000000000000100000000000000
+01000000000001101011100011100101
+11000000101010000000000100000001
+11000000101010000000000101100100`;
+
+        // Load Default Sample Packet into text area on startup
+        window.addEventListener('DOMContentLoaded', () => {
+            loadSamplePacket();
+        });
+
+        function loadSamplePacket() {
+            document.getElementById('packetInput').value = SAMPLE_PACKET;
+            resetOutput();
+        }
+
+        function resetOutput() {
+            document.getElementById('res-version').innerText = '--';
+            document.getElementById('res-checksum').innerText = '--';
+            document.getElementById('res-ttl').innerText = '--';
+            document.getElementById('res-src').innerText = '--';
+            document.getElementById('res-dst').innerText = '--';
+            document.getElementById('parse-status').innerText = 'Status: Ready for input dissection.';
+        }
+
+        // Tab Navigation Switcher Logic
+        function switchTab(tabId) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            // Remove active states from buttons
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('bg-slate-800', 'text-white'));
+
+            // Show selected tab
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            // Highlight current tab button
+            const activeNav = document.getElementById(`nav-${tabId}`);
+            if (activeNav) {
+                activeNav.classList.add('bg-slate-800', 'text-white');
+            }
+        }
+
+        // Helper: Convert 8-bit binary string to decimal
+        function binToDec(binStr) {
+            return parseInt(binStr, 2);
+        }
+
+        // Helper: Convert binary string to Hexadecimal
+        function binToHex(binStr) {
+            let hex = parseInt(binStr, 2).toString(16).toUpperCase();
+            return '0x' + hex.padStart(Math.ceil(binStr.length / 4), '0');
+        }
+
+        // Helper: Convert 32-bit binary string to IPv4 address format
+        function binToIp(binStr) {
+            if (binStr.length !== 32) return 'Invalid Bit Length';
+            const octet1 = binToDec(binStr.substring(0, 8));
+            const octet2 = binToDec(binStr.substring(8, 16));
+            const octet3 = binToDec(binStr.substring(16, 24));
+            const octet4 = binToDec(binStr.substring(24, 32));
+            return `${octet1}.${octet2}.${octet3}.${octet4}`;
+        }
+
+        // Main Manual Packet Parsing Logic
+        function parsePacket() {
+            try {
+                // Strip whitespace and newlines
+                const rawInput = document.getElementById('packetInput').value.replace(/\s+/g, '');
+                
+                if (rawInput.length < 160) {
+                    alert('Input binary length is too short for a full IPv4 header (minimum 160 bits needed).');
+                    return;
+                }
+
+                // Line 1 Offsets
+                const versionBits = rawInput.substring(0, 4);
+                const ihlBits = rawInput.substring(4, 8);
+                
+                // Line 3 Offsets
+                const ttlBits = rawInput.substring(64, 72);
+                const checksumBits = rawInput.substring(80, 96);
+
+                // Line 4 Offset (Source IP)
+                const srcIpBits = rawInput.substring(96, 128);
+
+                // Line 5 Offset (Destination IP)
+                const dstIpBits = rawInput.substring(128, 160);
+
+                // Populate UI Results
+                document.getElementById('res-version').innerText = `IPv${binToDec(versionBits)} (Header Length: ${binToDec(ihlBits) * 4} bytes)`;
+                document.getElementById('res-checksum').innerText = binToHex(checksumBits);
+                document.getElementById('res-ttl').innerText = `${binToDec(ttlBits)} hops`;
+                document.getElementById('res-src').innerText = binToIp(srcIpBits);
+                document.getElementById('res-dst').innerText = binToIp(dstIpBits);
+
+                document.getElementById('parse-status').innerText = 'Status: Successfully dissected manually via explicit bit offsets.';
+            } catch (err) {
+                alert('Error parsing binary data. Ensure valid binary input.');
+            }
+        }
+
+        // CyberChef Automation Simulation Shortcut
+        function autoParseCyberchef() {
+            parsePacket();
+            document.getElementById('parse-status').innerText = 'Status: Automated CyberChef parse complete (fromBinary -> toHex -> parseIPv4Header).';
+        }
+    </script>
+</body>
+</html>
