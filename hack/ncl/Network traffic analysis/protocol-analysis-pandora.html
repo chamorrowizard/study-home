@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <!-- 
+      ==========================================================================
+      METADATA & EXTERNAL ASSETS
+      ==========================================================================
+      Using Tailwind CSS for modern utility-first styling, Lucide icons for UI markers,
+      and Fira Code / Inter for technical readability.
+    -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protocol Analysis & Reverse Engineering Hub</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter (UI) & Fira Code (Hex / Code snippets) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans antialiased h-full flex flex-col selection:bg-cyan-500 selection:text-slate-950">
+
+    <!-- 
+      ==========================================================================
+      NAVIGATION BAR
+      ==========================================================================
+    -->
+    <header class="sticky top-0 z-50 bg-slate-900/80 backdrop-blur-md border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="p-2 bg-cyan-500/10 border border-cyan-500/30 rounded-lg text-cyan-400">
+                    <i data-lucide="shield-alert" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-base sm:text-lg tracking-tight text-white">Project Pandora: Protocol Lab</h1>
+                    <p class="text-xs text-slate-400 hidden sm:block">Interactive Network Reverse Engineering Guide</p>
+                </div>
+            </div>
+            <nav class="flex items-center space-x-2 sm:space-x-4">
+                <a href="#overview" class="text-xs sm:text-sm font-medium text-slate-300 hover:text-cyan-400 transition">Overview</a>
+                <a href="#architecture" class="text-xs sm:text-sm font-medium text-slate-300 hover:text-cyan-400 transition">Architecture</a>
+                <a href="#walkthrough" class="text-xs sm:text-sm font-medium text-slate-300 hover:text-cyan-400 transition">Analysis</a>
+                <a href="#assessment" class="px-3 py-1.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold text-xs sm:text-sm rounded-lg transition shadow-lg shadow-cyan-500/20">Questions (1-11)</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 
+      ==========================================================================
+      MAIN CONTENT WRAPPER
+      ==========================================================================
+    -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-16 w-full">
+
+        <!-- SECTION: HERO / INTRO -->
+        <section id="overview" class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center pt-4">
+            <div class="lg:col-span-7 space-y-6">
+                <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-medium">
+                    <i data-lucide="terminal" class="w-3.5 h-3.5"></i>
+                    <span>Module: Custom Protocol Decapsulation</span>
+                </div>
+                <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight">
+                    Reverse Engineering <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">Custom Protocols</span>
+                </h2>
+                <p class="text-slate-300 text-base sm:text-lg leading-relaxed">
+                    When analyzing network traffic (PCAPs), proprietary systems frequently bypass standard HTTP or TLS schemas in favor of bespoke application-layer protocols. This dashboard breaks down how to isolate noise, parse message headers, track endpoints, and extract hidden data structures.
+                </p>
+                <div class="flex flex-wrap gap-4 pt-2">
+                    <a href="#architecture" class="px-5 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 font-medium rounded-xl text-sm transition flex items-center space-x-2">
+                        <i data-lucide="cpu" class="w-4 h-4 text-cyan-400"></i>
+                        <span>Explore Specs</span>
+                    </a>
+                    <a href="#assessment" class="px-5 py-3 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold rounded-xl text-sm transition flex items-center space-x-2 shadow-lg shadow-cyan-500/20">
+                        <i data-lucide="check-circle" class="w-4 h-4"></i>
+                        <span>Test Your Knowledge</span>
+                    </a>
+                </div>
+            </div>
+            <div class="lg:col-span-5">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
+                    <div class="absolute -right-10 -top-10 w-40 h-40 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                    <h3 class="text-sm font-semibold uppercase tracking-wider text-cyan-400 mb-4 flex items-center space-x-2">
+                        <i data-lucide="activity" class="w-4 h-4"></i>
+                        <span>Quick Diagnostic Metric</span>
+                    </h3>
+                    <div class="space-y-4 font-mono text-xs">
+                        <div class="p-3 bg-slate-950 rounded-lg border border-slate-800 flex justify-between items-center">
+                            <span class="text-slate-400">Target Filter:</span>
+                            <span class="text-cyan-300">tcp && !(port 22 || 80)</span>
+                        </div>
+                        <div class="p-3 bg-slate-950 rounded-lg border border-slate-800 flex justify-between items-center">
+                            <span class="text-slate-400">Magic Check ID:</span>
+                            <span class="text-amber-300">0x0417 (1047 dec)</span>
+                        </div>
+                        <div class="p-3 bg-slate-950 rounded-lg border border-slate-800 flex justify-between items-center">
+                            <span class="text-slate-400">Hash Chunk Length:</span>
+                            <span class="text-emerald-300">32 Bytes</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: PROTOCOL ARCHITECTURE SPECIFICATION -->
+        <section id="architecture" class="space-y-8 pt-6 border-t border-slate-800/80">
+            <div class="text-center max-w-2xl mx-auto space-y-3">
+                <h2 class="text-2xl sm:text-3xl font-bold text-white">Message Architecture Specification</h2>
+                <p class="text-slate-400 text-sm sm:text-base">
+                    The protocol relies on a strict handshake and serialized request-response sequence between client and server.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Card 1 -->
+                <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between hover:border-cyan-500/50 transition">
+                    <div class="space-y-4">
+                        <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center font-bold">01</div>
+                        <h3 class="text-lg font-semibold text-white">Initialization</h3>
+                        <p class="text-sm text-slate-400">
+                            Sent by the client upon establishing connection to define transaction bounds.
+                        </p>
+                        <div class="p-3 bg-slate-950 rounded-lg font-mono text-xs text-slate-300 border border-slate-800">
+                            <span class="text-cyan-400">N (4 Bytes):</span> Integer defining total forthcoming hash requests.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between hover:border-cyan-500/50 transition">
+                    <div class="space-y-4">
+                        <div class="w-10 h-10 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center font-bold">02</div>
+                        <h3 class="text-lg font-semibold text-white">Hash Request</h3>
+                        <p class="text-sm text-slate-400">
+                            Iterative chunks sent by client containing message integrity bytes and payload data.
+                        </p>
+                        <div class="p-3 bg-slate-950 rounded-lg font-mono text-xs text-slate-300 border border-slate-800 space-y-1">
+                            <div><span class="text-amber-400">Check (2B):</span> Fixed magic value</div>
+                            <div><span class="text-cyan-400">Len (4B):</span> Payload byte length</div>
+                            <div><span class="text-emerald-400">Data:</span> Raw bytes to hash</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between hover:border-cyan-500/50 transition">
+                    <div class="space-y-4">
+                        <div class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center font-bold">03</div>
+                        <h3 class="text-lg font-semibold text-white">Hash Response</h3>
+                        <p class="text-sm text-slate-400">
+                            Single concluding payload sent from server containing aggregated hash results.
+                        </p>
+                        <div class="p-3 bg-slate-950 rounded-lg font-mono text-xs text-slate-300 border border-slate-800 space-y-1">
+                            <div><span class="text-cyan-400">Count (4B):</span> Total length of response data</div>
+                            <div><span class="text-emerald-400">Hashes:</span> Sequential fixed-length chunks</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: STEP-BY-STEP ANALYSIS WALKTHROUGH -->
+        <section id="walkthrough" class="space-y-8 pt-6 border-t border-slate-800/80">
+            <div class="text-center max-w-2xl mx-auto space-y-3">
+                <h2 class="text-2xl sm:text-3xl font-bold text-white">Step-by-Step Analysis Guide</h2>
+                <p class="text-slate-400 text-sm sm:text-base">
+                    Follow this breakdown to inspect network streams like a senior analyst.
+                </p>
+            </div>
+
+            <div class="space-y-6">
+                <!-- Step Item 1 -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row gap-6 items-start">
+                    <div class="flex-shrink-0 w-12 h-12 rounded-2xl bg-cyan-500 text-slate-950 font-bold flex items-center justify-center text-lg">1</div>
+                    <div class="space-y-3 flex-grow">
+                        <h3 class="text-xl font-semibold text-white">Noise Filtering in Wireshark</h3>
+                        <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+                            Packet captures often contain background protocols like SSH (port 22) and HTTP (port 80). To isolate your custom protocol traffic cleanly, apply the standard exclusion filter:
+                        </p>
+                        <div class="p-4 bg-slate-950 rounded-xl font-mono text-xs sm:text-sm text-cyan-300 border border-slate-800 overflow-x-auto">
+                            tcp && !(tcp.port == 22) && !(tcp.port == 80)
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step Item 2 -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row gap-6 items-start">
+                    <div class="flex-shrink-0 w-12 h-12 rounded-2xl bg-cyan-500 text-slate-950 font-bold flex items-center justify-center text-lg">2</div>
+                    <div class="space-y-3 flex-grow">
+                        <h3 class="text-xl font-semibold text-white">TCP Stream Inspection & Hex Dump Analysis</h3>
+                        <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+                            Right-click the filtered stream and select <span class="text-cyan-400 font-medium">Follow TCP Stream</span>. Read the raw hex layout. The initial 4 bytes define request count ($N=5$), followed by the 2-byte magic check (`0x0417` = 1047 decimal).
+                        </p>
+                        <div class="p-4 bg-slate-950 rounded-xl font-mono text-xs text-slate-300 border border-slate-800 space-y-2">
+                            <div class="text-slate-500"># Calculating individual hash chunk sizes:</div>
+                            <div>Total Response Advertised = <span class="text-amber-300">0xa0</span> (160 bytes)</div>
+                            <div>Total Requests = <span class="text-cyan-300">5</span></div>
+                            <div class="text-emerald-400 font-bold">160 bytes / 5 requests = 32 bytes per hash chunk</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: INTERACTIVE ASSESSMENT / QUESTIONS MODULE (QUESTIONS 1 - 11) -->
+        <section id="assessment" class="space-y-8 pt-6 border-t border-slate-800/80 pb-12">
+            <div class="text-center max-w-2xl mx-auto space-y-3">
+                <h2 class="text-2xl sm:text-3xl font-bold text-white">Challenge Knowledge Check (Questions 1–11)</h2>
+                <p class="text-slate-400 text-sm sm:text-base">
+                    Test your understanding of the protocol mechanics across all 11 evaluation checkpoints. Click options to reveal answers and explanations.
+                </p>
+            </div>
+
+            <!-- Question Card Container -->
+            <div id="questions-container" class="max-w-3xl mx-auto space-y-6">
+                
+                <!-- Question 1 -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">Question 1 of 11</span>
+                        <span class="text-xs text-slate-400 font-mono">Endpoints</span>
+                    </div>
+                    <h3 class="text-base sm:text-lg font-medium text-white">What is the IP address of the server?</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" data-question="1">
+                        <button onclick="checkAnswer(this, 1, false)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">A) 192.168.1.50</button>
+                        <button onclick="checkAnswer(this, 1, true)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">B) 10.0.0.10 (Target Host)</button>
+                        <button onclick="checkAnswer(this, 1, false)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">C) 127.0.0.1</button>
+                        <button onclick="checkAnswer(this, 1, false)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">D) 172.16.0.4</button>
+                    </div>
+                    <div id="explanation-1" class="hidden p-4 bg-slate-950 rounded-xl border border-cyan-500/30 text-xs sm:text-sm text-slate-300 space-y-2">
+                        <span class="font-semibold text-cyan-400 flex items-center space-x-1"><i data-lucide="check" class="w-4 h-4"></i><span>Detailed Explanation:</span></span>
+                        <p>Filtering traffic with <code class="text-cyan-300 font-mono">tcp &amp;&amp; !(tcp.port == 22) &amp;&amp; !(tcp.port == 80)</code> removes SSH and HTTP noise. The destination IP in the initial TCP handshake identifies the server hosting the custom protocol.</p>
+                    </div>
+                </div>
+
+                <!-- Question 2 -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">Question 2 of 11</span>
+                        <span class="text-xs text-slate-400 font-mono">Endpoints</span>
+                    </div>
+                    <h3 class="text-base sm:text-lg font-medium text-white">What is the IP address of the client?</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" data-question="2">
+                        <button onclick="checkAnswer(this, 2, true)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">A) Source IP initiating connection</button>
+                        <button onclick="checkAnswer(this, 2, false)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">B) 10.0.0.10</button>
+                        <button onclick="checkAnswer(this, 2, false)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">C) 8.8.8.8</button>
+                        <button onclick="checkAnswer(this, 2, false)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">D) 192.168.0.1</button>
+                    </div>
+                    <div id="explanation-2" class="hidden p-4 bg-slate-950 rounded-xl border border-cyan-500/30 text-xs sm:text-sm text-slate-300 space-y-2">
+                        <span class="font-semibold text-cyan-400 flex items-center space-x-1"><i data-lucide="check" class="w-4 h-4"></i><span>Detailed Explanation:</span></span>
+                        <p>The client is identified by observing the source IP address that sends the initial TCP SYN packet to begin the connection.</p>
+                    </div>
+                </div>
+
+                <!-- Question 3 -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">Question 3 of 11</span>
+                        <span class="text-xs text-slate-400 font-mono">Endpoints</span>
+                    </div>
+                    <h3 class="text-base sm:text-lg font-medium text-white">What port is the server listening on?</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" data-question="3">
+                        <button onclick="checkAnswer(this, 3, false)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">A) Port 80 (HTTP)</button>
+                        <button onclick="checkAnswer(this, 3, false)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">B) Port 22 (SSH)</button>
+                        <button onclick="checkAnswer(this, 3, true)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">C) Custom target application port</button>
+                        <button onclick="checkAnswer(this, 3, false)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">D) Port 443 (HTTPS)</button>
+                    </div>
+                    <div id="explanation-3" class="hidden p-4 bg-slate-950 rounded-xl border border-cyan-500/30 text-xs sm:text-sm text-slate-300 space-y-2">
+                        <span class="font-semibold text-cyan-400 flex items-center space-x-1"><i data-lucide="check" class="w-4 h-4"></i><span>Detailed Explanation:</span></span>
+                        <p>After excluding ports 22 and 80, the remaining destination port in the TCP handshake identifies the custom application’s listening port.</p>
+                    </div>
+                </div>
+
+                <!-- Question 4 -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">Question 4 of 11</span>
+                        <span class="text-xs text-slate-400 font-mono">Protocol Basics</span>
+                    </div>
+                    <h3 class="text-base sm:text-lg font-medium text-white">What is the magic 2-byte ID in decimal representation?</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" data-question="4">
+                        <button onclick="checkAnswer(this, 4, false)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">A) 88 (0x58)</button>
+                        <button onclick="checkAnswer(this, 4, true)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">B) 1047 (0x0417)</button>
+                        <button onclick="checkAnswer(this, 4, false)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">C) 160 (0xa0)</button>
+                        <button onclick="checkAnswer(this, 4, false)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">D) 5 (0x05)</button>
+                    </div>
+                    <div id="explanation-4" class="hidden p-4 bg-slate-950 rounded-xl border border-cyan-500/30 text-xs sm:text-sm text-slate-300 space-y-2">
+                        <span class="font-semibold text-cyan-400 flex items-center space-x-1"><i data-lucide="check" class="w-4 h-4"></i><span>Detailed Explanation:</span></span>
+                        <p>The fixed 2-byte magic check is <code class="text-amber-300 font-mono">0x0417</code>. Converting it to decimal gives $(4 \times 256) + 23 = 1047$.</p>
+                    </div>
+                </div>
+
+                <!-- Question 5 -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">Question 5 of 11</span>
+                        <span class="text-xs text-slate-400 font-mono">Request Count</span>
+                    </div>
+                    <h3 class="text-base sm:text-lg font-medium text-white">How many encrypt requests were made by the client?</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" data-question="5">
+                        <button onclick="checkAnswer(this, 5, false)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">A) 3 requests</button>
+                        <button onclick="checkAnswer(this, 5, true)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">B) 5 requests</button>
+                        <button onclick="checkAnswer(this, 5, false)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">C) 10 requests</button>
+                        <button onclick="checkAnswer(this, 5, false)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">D) 160 requests</button>
+                    </div>
+                    <div id="explanation-5" class="hidden p-4 bg-slate-950 rounded-xl border border-cyan-500/30 text-xs sm:text-sm text-slate-300 space-y-2">
+                        <span class="font-semibold text-cyan-400 flex items-center space-x-1"><i data-lucide="check" class="w-4 h-4"></i><span>Detailed Explanation:</span></span>
+                        <p>The initialization message contains a 4-byte integer <code class="text-cyan-300 font-mono">N</code> in network byte order. It specifies the total request count; in this capture, $N = 5$.</p>
+                    </div>
+                </div>
+
+                <!-- Question 6 -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">Question 6 of 11</span>
+                        <span class="text-xs text-slate-400 font-mono">Request Analysis</span>
+                    </div>
+                    <h3 class="text-base sm:text-lg font-medium text-white">What is the length of the first encrypt request?</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" data-question="6">
+                        <button onclick="checkAnswer(this, 6, false)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">A) 0x48 (72 dec)</button>
+                        <button onclick="checkAnswer(this, 6, true)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">B) 0x58 (88 dec)</button>
+                        <button onclick="checkAnswer(this, 6, false)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">C) 0xa0 (160 dec)</button>
+                        <button onclick="checkAnswer(this, 6, false)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">D) 0x0417 (1047 dec)</button>
+                    </div>
+                    <div id="explanation-6" class="hidden p-4 bg-slate-950 rounded-xl border border-cyan-500/30 text-xs sm:text-sm text-slate-300 space-y-2">
+                        <span class="font-semibold text-cyan-400 flex items-center space-x-1"><i data-lucide="check" class="w-4 h-4"></i><span>Detailed Explanation:</span></span>
+                        <p>After the first <code class="text-amber-300 font-mono">0x0417</code> magic check, the 4-byte length header is <code class="text-cyan-300 font-mono">0x58</code>, which equals 88 bytes.</p>
+                    </div>
+                </div>
+
+                <!-- Question 7 -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">Question 7 of 11</span>
+                        <span class="text-xs text-slate-400 font-mono">Request Analysis</span>
+                    </div>
+                    <h3 class="text-base sm:text-lg font-medium text-white">What is the length of the second encrypt request?</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" data-question="7">
+                        <button onclick="checkAnswer(this, 7, true)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">A) 0x48 (72 dec)</button>
+                        <button onclick="checkAnswer(this, 7, false)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">B) 0x58 (88 dec)</button>
+                        <button onclick="checkAnswer(this, 7, false)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">C) 0xa0 (160 dec)</button>
+                        <button onclick="checkAnswer(this, 7, false)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">D) 0x0417 (1047 dec)</button>
+                    </div>
+                    <div id="explanation-7" class="hidden p-4 bg-slate-950 rounded-xl border border-cyan-500/30 text-xs sm:text-sm text-slate-300 space-y-2">
+                        <span class="font-semibold text-cyan-400 flex items-center space-x-1"><i data-lucide="check" class="w-4 h-4"></i><span>Detailed Explanation:</span></span>
+                        <p>The second <code class="text-amber-300 font-mono">0x0417</code> magic check precedes a length header of <code class="text-cyan-300 font-mono">0x48</code>, which converts to 72 bytes.</p>
+                    </div>
+                </div>
+
+                <!-- Question 8 -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">Question 8 of 11</span>
+                        <span class="text-xs text-slate-400 font-mono">Payload Calculation</span>
+                    </div>
+                    <h3 class="text-base sm:text-lg font-medium text-white">How large is an individual encrypt hash in bytes?</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" data-question="8">
+                        <button onclick="checkAnswer(this, 8, false)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">A) 16 bytes</button>
+                        <button onclick="checkAnswer(this, 8, false)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">B) 64 bytes</button>
+                        <button onclick="checkAnswer(this, 8, true)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">C) 32 bytes</button>
+                        <button onclick="checkAnswer(this, 8, false)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">D) 128 bytes</button>
+                    </div>
+                    <div id="explanation-8" class="hidden p-4 bg-slate-950 rounded-xl border border-cyan-500/30 text-xs sm:text-sm text-slate-300 space-y-2">
+                        <span class="font-semibold text-cyan-400 flex items-center space-x-1"><i data-lucide="check" class="w-4 h-4"></i><span>Detailed Explanation:</span></span>
+                        <p>The server advertises a total response size of <code class="text-amber-300 font-mono">0xa0</code> (160 bytes). Dividing by the 5 requests ($160 / 5$) gives <code class="text-emerald-300 font-mono">32 bytes</code> per hash chunk.</p>
+                    </div>
+                </div>
+
+                <!-- Question 9 -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">Question 9 of 11</span>
+                        <span class="text-xs text-slate-400 font-mono">Hex Responses</span>
+                    </div>
+                    <h3 class="text-base sm:text-lg font-medium text-white">What was the encrypt response in hexadecimal form for the first request?</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" data-question="9">
+                        <button onclick="checkAnswer(this, 9, true)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">A) First 32-byte chunk hex block</button>
+                        <button onclick="checkAnswer(this, 9, false)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">B) Second 32-byte chunk hex block</button>
+                        <button onclick="checkAnswer(this, 9, false)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">C) 0x0417</button>
+                        <button onclick="checkAnswer(this, 9, false)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">D) 0x58</button>
+                    </div>
+                    <div id="explanation-9" class="hidden p-4 bg-slate-950 rounded-xl border border-cyan-500/30 text-xs sm:text-sm text-slate-300 space-y-2">
+                        <span class="font-semibold text-cyan-400 flex items-center space-x-1"><i data-lucide="check" class="w-4 h-4"></i><span>Detailed Explanation:</span></span>
+                        <p>The server sends fixed-length hash chunks sequentially, in request order. The first request’s response therefore maps to the first 32-byte chunk in the server response payload.</p>
+                    </div>
+                </div>
+
+                <!-- Question 10 -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">Question 10 of 11</span>
+                        <span class="text-xs text-slate-400 font-mono">Hex Responses</span>
+                    </div>
+                    <h3 class="text-base sm:text-lg font-medium text-white">What was the encrypt response in hexadecimal form for the second request?</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" data-question="10">
+                        <button onclick="checkAnswer(this, 10, false)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">A) First 32-byte chunk hex block</button>
+                        <button onclick="checkAnswer(this, 10, true)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">B) Second 32-byte chunk hex block</button>
+                        <button onclick="checkAnswer(this, 10, false)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">C) 0x48</button>
+                        <button onclick="checkAnswer(this, 10, false)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">D) 0xa0</button>
+                    </div>
+                    <div id="explanation-10" class="hidden p-4 bg-slate-950 rounded-xl border border-cyan-500/30 text-xs sm:text-sm text-slate-300 space-y-2">
+                        <span class="font-semibold text-cyan-400 flex items-center space-x-1"><i data-lucide="check" class="w-4 h-4"></i><span>Detailed Explanation:</span></span>
+                        <p>Responses follow the same sequence as requests, so the second hash response maps to the second 32-byte chunk in the server response stream.</p>
+                    </div>
+                </div>
+
+                <!-- Question 11 -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">Question 11 of 11</span>
+                        <span class="text-xs text-slate-400 font-mono">Flag Exfiltration</span>
+                    </div>
+                    <h3 class="text-base sm:text-lg font-medium text-white">What is the hidden flag being sent over the protocol?</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" data-question="11">
+                        <button onclick="checkAnswer(this, 11, false)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">A) Brute-forced hash string</button>
+                        <button onclick="checkAnswer(this, 11, true)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">B) Base64 decoded data payload string</button>
+                        <button onclick="checkAnswer(this, 11, false)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">C) Plaintext SSH key string</button>
+                        <button onclick="checkAnswer(this, 11, false)" class="p-3 text-left bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl text-sm transition text-slate-300">D) HTTP cookie token</button>
+                    </div>
+                    <div id="explanation-11" class="hidden p-4 bg-slate-950 rounded-xl border border-cyan-500/30 text-xs sm:text-sm text-slate-300 space-y-2">
+                        <span class="font-semibold text-cyan-400 flex items-center space-x-1"><i data-lucide="check" class="w-4 h-4"></i><span>Detailed Explanation:</span></span>
+                        <p>The client sends text data for hashing in each request. Inspecting the request data field and Base64-decoding its payload reveals the hidden challenge flag.</p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 
+      ==========================================================================
+      FOOTER
+      ==========================================================================
+    -->
+    <footer class="bg-slate-900 border-t border-slate-800 py-8 text-center text-xs text-slate-500">
+        <p>Interactive Protocol Analysis Dashboard • Designed for Cybersecurity & Reverse Engineering Training</p>
+    </footer>
+
+    <!-- 
+      ==========================================================================
+      JAVASCRIPT LOGIC & INTERACTIVITY
+      ==========================================================================
+    -->
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        /**
+         * Validates selected quiz options and reveals explanations interactively.
+         * 
+         * @param {HTMLElement} button - The button element clicked by the user.
+         * @param {number} qId - The ID of the question.
+         * @param {boolean} isCorrect - Flag indicating if the choice is correct.
+         */
+        function checkAnswer(button, qId, isCorrect) {
+            const parentContainer = button.parentElement;
+            const buttons = parentContainer.querySelectorAll('button');
+            
+            // Reset styles for all buttons in this question group
+            buttons.forEach(btn => {
+                btn.classList.remove('bg-emerald-500/20', 'border-emerald-500', 'text-emerald-300', 'bg-rose-500/20', 'border-rose-500', 'text-rose-300', 'font-semibold');
+                btn.classList.add('bg-slate-950', 'border-slate-800', 'text-slate-300');
+            });
+
+            // Highlight selected button
+            if (isCorrect) {
+                button.classList.remove('bg-slate-950', 'border-slate-800', 'text-slate-300');
+                button.classList.add('bg-emerald-500/20', 'border-emerald-500', 'text-emerald-300', 'font-semibold');
+            } else {
+                button.classList.remove('bg-slate-950', 'border-slate-800', 'text-slate-300');
+                button.classList.add('bg-rose-500/20', 'border-rose-500', 'text-rose-300');
+            }
+
+            // Reveal explanation box
+            const explanationBox = document.getElementById(`explanation-${qId}`);
+            if (explanationBox) {
+                explanationBox.classList.remove('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
