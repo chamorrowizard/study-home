@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <!-- 
+      MASTER UX/UI DESIGN & ARCHITECTURE NOTES:
+      - App: Wireshark HTTPS Decryption Interactive Learning Hub
+      - Theme: Cyberpunk / SOC Dark Mode (Slate backgrounds, emerald/cyan accents)
+      - Responsive: Fully mobile and desktop optimized via Tailwind CSS grid & flex utilities.
+      - Extensibility: Modular DOM architecture with clear separation of concerns (Sidebar, Content Area, Interactive Labs, Modals) and commented extension hooks.
+    -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unit 42 Masterclass: Decrypting HTTPS Traffic in Wireshark</title>
+    <!-- Tailwind CSS CDN for rapid, responsive design -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind Configuration for custom dark theme colors -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            900: '#0b0f19',
+                            800: '#111827',
+                            700: '#1f2937',
+                            600: '#374151',
+                            accent: '#10b981', // Emerald green
+                            cyan: '#06b6d4',
+                            warning: '#f59e0b',
+                            danger: '#ef4444'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons for professional UI iconography -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-cyber-900 text-gray-100 font-sans antialiased min-h-screen flex flex-col selection:bg-cyber-accent selection:text-black">
+
+    <!-- ==================== HEADER & TOP NAVIGATION ==================== -->
+    <header class="sticky top-0 z-50 bg-cyber-800/90 backdrop-blur border-b border-cyber-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="p-2 bg-cyber-accent/10 rounded-lg border border-cyber-accent/30 text-cyber-accent">
+                    <i data-lucide="shield-alert" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <span class="text-xs font-semibold uppercase tracking-wider text-cyber-cyan">Unit 42 Learning Hub</span>
+                    <h1 class="text-lg font-bold text-white tracking-tight">Decrypting HTTPS Traffic</h1>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span class="hidden md:inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-cyber-700 text-cyber-accent border border-cyber-accent/20">
+                    <i data-lucide="clock" class="w-3.5 h-3.5 mr-1.5"></i> 7 min interactive guide
+                </span>
+                <button onclick="toggleMobileSidebar()" class="md:hidden p-2 text-gray-400 hover:text-white focus:outline-none">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ==================== MAIN LAYOUT CONTAINER ==================== -->
+    <div class="max-w-7xl mx-auto w-full flex-grow flex flex-col md:flex-row px-4 sm:px-6 lg:px-8 py-6 gap-6">
+
+        <!-- ==================== SIDEBAR NAVIGATION (Table of Contents) ==================== -->
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-72 bg-cyber-800 border-r border-cyber-700 transform -translate-x-full md:translate-x-0 md:static md:w-64 md:bg-transparent md:border-0 transition-transform duration-200 ease-in-out p-6 md:p-0 flex flex-col">
+            <div class="flex items-center justify-between md:hidden mb-6">
+                <h2 class="text-lg font-bold text-white">Table of Contents</h2>
+                <button onclick="toggleMobileSidebar()" class="text-gray-400 hover:text-white">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Lesson Modules</div>
+            <nav id="toc-nav" class="space-y-1 overflow-y-auto flex-grow pr-2">
+                <!-- Dynamically populated or static lesson anchors -->
+                <a href="#section-summary" class="toc-link flex items-center px-3 py-2 text-sm font-medium rounded-lg bg-cyber-700/60 text-cyber-accent transition group">
+                    <i data-lucide="chevron-right" class="w-4 h-4 mr-2 text-cyber-accent"></i> Executive Summary
+                </a>
+                <a href="#section-context" class="toc-link flex items-center px-3 py-2 text-sm font-medium rounded-lg text-gray-300 hover:bg-cyber-700/40 hover:text-white transition group">
+                    <i data-lucide="chevron-right" class="w-4 h-4 mr-2 text-gray-500 group-hover:text-cyber-accent"></i> Context of Encrypted Traffic
+                </a>
+                <a href="#section-keys" class="toc-link flex items-center px-3 py-2 text-sm font-medium rounded-lg text-gray-300 hover:bg-cyber-700/40 hover:text-white transition group">
+                    <i data-lucide="chevron-right" class="w-4 h-4 mr-2 text-gray-500 group-hover:text-cyber-accent"></i> Encryption Key Log File
+                </a>
+                <a href="#section-lab" class="toc-link flex items-center px-3 py-2 text-sm font-medium rounded-lg text-gray-300 hover:bg-cyber-700/40 hover:text-white transition group">
+                    <i data-lucide="chevron-right" class="w-4 h-4 mr-2 text-gray-500 group-hover:text-cyber-accent"></i> Interactive Lab & Filters
+                </a>
+                <a href="#section-analysis" class="toc-link flex items-center px-3 py-2 text-sm font-medium rounded-lg text-gray-300 hover:bg-cyber-700/40 hover:text-white transition group">
+                    <i data-lucide="chevron-right" class="w-4 h-4 mr-2 text-gray-500 group-hover:text-cyber-accent"></i> Malware Artifact Extraction
+                </a>
+                <a href="#section-conclusion" class="toc-link flex items-center px-3 py-2 text-sm font-medium rounded-lg text-gray-300 hover:bg-cyber-700/40 hover:text-white transition group">
+                    <i data-lucide="chevron-right" class="w-4 h-4 mr-2 text-gray-500 group-hover:text-cyber-accent"></i> Conclusion & Resources
+                </a>
+            </nav>
+
+            <!-- Extension Hook: Quick Stats Widget -->
+            <div class="mt-6 p-4 bg-cyber-800 rounded-xl border border-cyber-700 text-xs text-gray-400">
+                <div class="flex items-center text-cyber-warning font-semibold mb-1">
+                    <i data-lucide="alert-triangle" class="w-4 h-4 mr-1.5"></i> Safety Warning
+                </div>
+                Pcap contains live Windows Dridex malware. Analyze in Linux/BSD/macOS.
+            </div>
+        </aside>
+
+        <!-- ==================== MAIN CONTENT AREA ==================== -->
+        <main class="flex-grow space-y-8 max-w-4xl">
+
+            <!-- MODULE 1: EXECUTIVE SUMMARY -->
+            <section id="section-summary" class="bg-cyber-800 rounded-2xl border border-cyber-700 p-6 sm:p-8 shadow-xl">
+                <div class="flex items-center space-x-3 mb-4">
+                    <div class="p-2 bg-cyber-cyan/10 rounded-lg text-cyber-cyan">
+                        <i data-lucide="book-open" class="w-5 h-5"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-white">Executive Summary</h2>
+                </div>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    Designed for security professionals investigating suspicious network activity using Wireshark 3.x. When reviewing packet captures (pcaps) of malware activity, post-infection traffic is frequently encrypted via HTTPS (SSL/TLS). 
+                </p>
+                <div class="p-4 bg-cyber-700/40 rounded-xl border border-cyber-600 flex items-start space-x-3">
+                    <i data-lucide="info" class="w-5 h-5 text-cyber-accent flex-shrink-0 mt-0.5"></i>
+                    <p class="text-sm text-gray-300">
+                        <strong>Key Takeaway:</strong> Decryption requires a text-based session key log file captured when the pcap was originally recorded using a Man-in-the-Middle (MitM) technique. Today's lesson uses a sample from a <span class="text-cyber-danger font-semibold">Dridex malware infection</span>.
+                    </p>
+                </div>
+            </section>
+
+            <!-- MODULE 2: THE CONTEXT BEHIND ENCRYPTED TRAFFIC -->
+            <section id="section-context" class="bg-cyber-800 rounded-2xl border border-cyber-700 p-6 sm:p-8 shadow-xl">
+                <div class="flex items-center space-x-3 mb-4">
+                    <div class="p-2 bg-cyber-accent/10 rounded-lg text-cyber-accent">
+                        <i data-lucide="lock" class="w-5 h-5"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-white">The Context Behind Encrypted Traffic</h2>
+                </div>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    In the 1990s, web traffic relied on unencrypted HTTP. Today, almost all web browsing uses HTTPS, an encrypted communications tunnel running over TLS (or legacy SSL). While HTTPS protects user privacy, malware authors leverage the exact same tunnels to hide command-and-control (C2) communications and payload delivery.
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="p-4 bg-cyber-700/30 rounded-xl border border-cyber-700">
+                        <h3 class="text-sm font-semibold text-white mb-1 flex items-center"><i data-lucide="eye-off" class="w-4 h-4 mr-2 text-cyber-warning"></i> Without Decryption</h3>
+                        <p class="text-xs text-gray-400">Only IP addresses, TCP ports, and visible Server Name Indication (SNI) domains are visible. Actual URLs, POST payloads, and downloaded binaries remain fully encrypted.</p>
+                    </div>
+                    <div class="p-4 bg-cyber-700/30 rounded-xl border border-cyber-700">
+                        <h3 class="text-sm font-semibold text-white mb-1 flex items-center"><i data-lucide="eye" class="w-4 h-4 mr-2 text-cyber-accent"></i> With Key Log File</h3>
+                        <p class="text-xs text-gray-400">Wireshark decrypts the TLS session on the fly, exposing full HTTP requests, parameters, server responses, and exportable malware binaries.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MODULE 3: ENCRYPTION KEY LOG FILE -->
+            <section id="section-keys" class="bg-cyber-800 rounded-2xl border border-cyber-700 p-6 sm:p-8 shadow-xl">
+                <div class="flex items-center space-x-3 mb-4">
+                    <div class="p-2 bg-cyber-warning/10 rounded-lg text-cyber-warning">
+                        <i data-lucide="key" class="w-5 h-5"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-white">Encryption Key Log File & Setup</h2>
+                </div>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    The encryption key log file (<code class="bg-cyber-900 px-2 py-0.5 rounded text-cyber-cyan text-sm">Wireshark-tutorial-KeysLogFile.txt</code>) stores pre-master secrets. To load it into Wireshark 3.x, navigate through the preferences menu:
+                </p>
+                <div class="space-y-2 mb-6">
+                    <div class="flex items-center space-x-3 text-sm text-gray-300 bg-cyber-700/40 p-3 rounded-lg border border-cyber-700">
+                        <span class="w-6 h-6 rounded-full bg-cyber-700 text-cyber-accent flex items-center justify-center font-bold text-xs">1</span>
+                        <span>Go to <strong class="text-white">Edit &gt; Preferences</strong></span>
+                    </div>
+                    <div class="flex items-center space-x-3 text-sm text-gray-300 bg-cyber-700/40 p-3 rounded-lg border border-cyber-700">
+                        <span class="w-6 h-6 rounded-full bg-cyber-700 text-cyber-accent flex items-center justify-center font-bold text-xs">2</span>
+                        <span>Expand <strong class="text-white">Protocols</strong> on the left pane and select <strong class="text-white">TLS</strong></span>
+                    </div>
+                    <div class="flex items-center space-x-3 text-sm text-gray-300 bg-cyber-700/40 p-3 rounded-lg border border-cyber-700">
+                        <span class="w-6 h-6 rounded-full bg-cyber-700 text-cyber-accent flex items-center justify-center font-bold text-xs">3</span>
+                        <span>Browse and select your key log file under <strong class="text-white">(Pre)-Master-Secret log filename</strong></span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MODULE 4: INTERACTIVE LAB & FILTER SIMULATOR -->
+            <section id="section-lab" class="bg-cyber-800 rounded-2xl border border-cyber-700 p-6 sm:p-8 shadow-xl">
+                <div class="flex items-center space-x-3 mb-4">
+                    <div class="p-2 bg-cyber-cyan/10 rounded-lg text-cyber-cyan">
+                        <i data-lucide="terminal" class="w-5 h-5"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-white">Interactive Wireshark Filter Simulator</h2>
+                </div>
+                <p class="text-gray-300 text-sm mb-4">
+                    Test the essential display filter recommended for analyzing malware pcaps in Wireshark 3.x:
+                </p>
+                
+                <div class="bg-cyber-900 rounded-xl p-4 border border-cyber-700 font-mono text-xs mb-4 text-cyber-cyan overflow-x-auto">
+                    (http.request or tls.handshake.type eq 1) and !(ssdp)
+                </div>
+
+                <!-- Interactive Filter Simulator Widget -->
+                <div class="bg-cyber-700/30 rounded-xl p-4 border border-cyber-700">
+                    <label class="block text-xs font-semibold text-gray-300 uppercase mb-2">Simulate Wireshark Packet View</label>
+                    <div class="flex flex-col sm:flex-row gap-2 mb-4">
+                        <input type="text" id="filterInput" placeholder="Type filter or click preset..." class="flex-grow bg-cyber-900 border border-cyber-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyber-accent">
+                        <button onclick="applyFilter()" class="bg-cyber-accent hover:bg-emerald-600 text-black font-semibold px-4 py-2 rounded-lg text-sm transition">Apply Filter</button>
+                    </div>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <button onclick="setFilter('(http.request or tls.handshake.type eq 1) and !(ssdp)')" class="text-xs bg-cyber-700 hover:bg-cyber-600 text-gray-200 px-2.5 py-1 rounded border border-cyber-600">Basic Web Filter</br></button>
+                        <button onclick="setFilter('tcp.stream eq 2')" class="text-xs bg-cyber-700 hover:bg-cyber-600 text-gray-200 px-2.5 py-1 rounded border border-cyber-600">DLL Download Stream</button>
+                        <button onclick="setFilter('tcp.stream eq 5')" class="text-xs bg-cyber-700 hover:bg-cyber-600 text-gray-200 px-2.5 py-1 rounded border border-cyber-600">C2 POST Stream</button>
+                    </div>
+
+                    <!-- Packet List Table simulation -->
+                    <div class="overflow-x-auto rounded-lg border border-cyber-700 bg-cyber-900">
+                        <table class="w-full text-left text-xs font-mono">
+                            <thead class="bg-cyber-800 text-gray-400 border-b border-cyber-700">
+                                <tr>
+                                    <th class="p-3">No.</th>
+                                    <th class="p-3">Destination Host / Stream</th>
+                                    <th class="p-3">Protocol</th>
+                                    <th class="p-3">Info / Decrypted Payload</th>
+                                </tr>
+                            </thead>
+                            <tbody id="packetTableBody" class="divide-y divide-cyber-800 text-gray-300">
+                                <tr class="packet-row hover:bg-cyber-800/50" data-stream="2">
+                                    <td class="p-3 text-gray-500">142</td>
+                                    <td class="p-3 text-cyber-danger font-semibold">foodsgoodforliver.com</td>
+                                    <td class="p-3">HTTP</td>
+                                    <td class="p-3">GET /invest_20.dll HTTP/1.1 (Malware DLL)</td>
+                                </tr>
+                                <tr class="packet-row hover:bg-cyber-800/50" data-stream="5">
+                                    <td class="p-3 text-gray-500">189</td>
+                                    <td class="p-3 text-cyber-warning font-semibold">105711.com</td>
+                                    <td class="p-3">HTTP</td>
+                                    <td class="p-3">POST /docs.php HTTP/1.1 (Dridex C2 Traffic)</td>
+                                </tr>
+                                <tr class="packet-row hover:bg-cyber-800/50" data-stream="1">
+                                    <td class="p-3 text-gray-500">220</td>
+                                    <td class="p-3 text-gray-300">microsoft.com</td>
+                                    <td class="p-3">HTTP</td>
+                                    <td class="p-3">GET /fwlink/?LinkId=... HTTP/1.1</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MODULE 5: MALWARE ARTIFACT EXTRACTION -->
+            <section id="section-analysis" class="bg-cyber-800 rounded-2xl border border-cyber-700 p-6 sm:p-8 shadow-xl">
+                <div class="flex items-center space-x-3 mb-4">
+                    <div class="p-2 bg-cyber-danger/10 rounded-lg text-cyber-danger">
+                        <i data-lucide="cpu" class="w-5 h-5"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-white">Malware Artifact Extraction & Hashing</h2>
+                </div>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    Once decrypted, objects can be exported in Wireshark via <code class="bg-cyber-900 px-2 py-0.5 rounded text-cyber-cyan text-sm">File &gt; Export Objects &gt; HTTP</code>. Linux/BSD/macOS analysts can verify and hash the extracted DLL binary:
+                </p>
+                <div class="bg-cyber-900 rounded-xl p-4 border border-cyber-700 font-mono text-xs space-y-2 text-gray-300">
+                    <p class="text-gray-500"># Verify file type</p>
+                    <p class="text-cyber-accent">$ file extracted_binary.dll</p>
+                    <p class="text-gray-100">PE32+ executable (DLL) (GUI) x86-64, for MS Windows</p>
+                    <p class="text-gray-500 mt-2"># Compute SHA256 Hash</p>
+                    <p class="text-cyber-accent">$ shasum -a 256 extracted_binary.dll</p>
+                    <p class="text-cyber-warning break-all">31cf42b2a7c5c558f44cfc67684cc344c17d4946d3a1e0b2cecb8eb58173cb2f</p>
+                </div>
+            </section>
+
+            <!-- MODULE 6: CONCLUSION & RESOURCES -->
+            <section id="section-conclusion" class="bg-cyber-800 rounded-2xl border border-cyber-700 p-6 sm:p-8 shadow-xl">
+                <div class="flex items-center space-x-3 mb-4">
+                    <div class="p-2 bg-cyber-accent/10 rounded-lg text-cyber-accent">
+                        <i data-lucide="check-circle" class="w-5 h-5"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-white">Conclusion & Additional Resources</h2>
+                </div>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    Decrypting HTTPS pcap files with session key logs is an essential skillset for incident responders analyzing modern malware campaigns like Dridex, Trickbot, Qakbot, and Ursnif.
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                    <a href="https://unit42.paloaltonetworks.com/wireshark-tutorial-decrypting-https-traffic/" target="_blank" class="p-3 bg-cyber-700/30 hover:bg-cyber-700/60 rounded-xl border border-cyber-700 flex items-center justify-between text-gray-200 transition">
+                        <span>Original Unit 42 Article</span>
+                        <i data-lucide="external-link" class="w-4 h-4 text-cyber-accent"></i>
+                    </a>
+                    <a href="https://unit42.paloaltonetworks.com/wireshark-tutorial-display-filter-expressions/" target="_blank" class="p-3 bg-cyber-700/30 hover:bg-cyber-700/60 rounded-xl border border-cyber-700 flex items-center justify-between text-gray-200 transition">
+                        <span>Display Filter Expressions</span>
+                        <i data-lucide="external-link" class="w-4 h-4 text-cyber-accent"></i>
+                    </a>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer class="bg-cyber-800 border-t border-cyber-700 mt-12 py-6">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-gray-500">
+            Interactive Learning App engineered for security analysts. Content sourced from Palo Alto Networks Unit 42.
+        </div>
+    </footer>
+
+    <!-- ==================== JAVASCRIPT LOGIC & EXTENSIBILITY HOOKS ==================== -->
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Mobile Sidebar Toggle Function
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('-translate-x-full');
+        }
+
+        // Interactive Filter Simulator Function
+        function setFilter(filterText) {
+            document.getElementById('filterInput').value = filterText;
+            applyFilter();
+        }
+
+        function applyFilter() {
+            const query = document.getElementById('filterInput').value.toLowerCase();
+            const rows = document.querySelectorAll('.packet-row');
+            
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                if (query === '' || text.includes(query) || query.includes('http') || query.includes('tls')) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        // EXTENSION HOOK: Developers can easily append new module objects here to expand the lesson content dynamically.
+        const lessonModules = [
+            { id: 'section-summary', title: 'Executive Summary' },
+            { id: 'section-context', title: 'Context Behind Encrypted Traffic' },
+            { id: 'section-keys', title: 'Encryption Key Log File' },
+            { id: 'section-lab', title: 'Interactive Lab & Filters' },
+            { id: 'section-analysis', title: 'Malware Artifact Extraction' },
+            { id: 'section-conclusion', title: 'Conclusion & Resources' }
+        ];
+    </script>
+</body>
+</html>
