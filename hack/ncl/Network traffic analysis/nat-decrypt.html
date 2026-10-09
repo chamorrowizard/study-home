@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <!-- 
+      MASTER UX/UI DESIGN & ARCHITECTURE NOTES:
+      - App: Cyber Skyline "Decrypt" CTF Interactive Guide
+      - Theme: SOC Dark Mode (Slate backgrounds, emerald/cyan accents, terminal fonts)
+      - Responsive: Fully mobile and desktop optimized via Tailwind CSS grid & flex utilities.
+      - Purpose: Educational walkthrough teaching how HTTPS decryption, Cipher Suites, X.509 Certificates, and TLS streams work in Wireshark.
+    -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Skyline Masterclass: Decrypting HTTPS Traffic & CTF Guide</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            900: '#0b0f19',
+                            800: '#111827',
+                            700: '#1f2937',
+                            600: '#374151',
+                            accent: '#10b981', // Emerald green
+                            cyan: '#06b6d4',
+                            warning: '#f59e0b',
+                            danger: '#ef4444'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-cyber-900 text-gray-100 font-sans antialiased min-h-screen flex flex-col selection:bg-cyber-accent selection:text-black">
+
+    <!-- ==================== HEADER & NAVIGATION ==================== -->
+    <header class="sticky top-0 z-50 bg-cyber-800/90 backdrop-blur border-b border-cyber-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="p-2 bg-cyber-accent/10 rounded-lg border border-cyber-accent/30 text-cyber-accent">
+                    <i data-lucide="terminal" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <span class="text-xs font-semibold uppercase tracking-wider text-cyber-cyan">Cyber Skyline CTF Guide</span>
+                    <h1 class="text-lg font-bold text-white tracking-tight">Challenge: Decrypt</h1>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span class="hidden md:inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-cyber-700 text-cyber-accent border border-cyber-accent/20">
+                    <i data-lucide="award" class="w-3.5 h-3.5 mr-1.5"></i> 3 Core Questions Solved
+                </span>
+                <button onclick="toggleMobileSidebar()" class="md:hidden p-2 text-gray-400 hover:text-white focus:outline-none">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ==================== MAIN CONTAINER ==================== -->
+    <div class="max-w-7xl mx-auto w-full flex-grow flex flex-col md:flex-row px-4 sm:px-6 lg:px-8 py-6 gap-6">
+
+        <!-- ==================== SIDEBAR (TABLE OF CONTENTS) ==================== -->
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-72 bg-cyber-800 border-r border-cyber-700 transform -translate-x-full md:translate-x-0 md:static md:w-64 md:bg-transparent md:border-0 transition-transform duration-200 ease-in-out p-6 md:p-0 flex flex-col">
+            <div class="flex items-center justify-between md:hidden mb-6">
+                <h2 class="text-lg font-bold text-white">Table of Contents</h2>
+                <button onclick="toggleMobileSidebar()" class="text-gray-400 hover:text-white">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Module Breakdown</div>
+            <nav class="space-y-1 overflow-y-auto flex-grow pr-2">
+                <a href="#overview" class="flex items-center px-3 py-2 text-sm font-medium rounded-lg bg-cyber-700/60 text-cyber-accent transition">
+                    <i data-lucide="chevron-right" class="w-4 h-4 mr-2"></i> Challenge Overview
+                </a>
+                <a href="#setup" class="flex items-center px-3 py-2 text-sm font-medium rounded-lg text-gray-300 hover:bg-cyber-700/40 hover:text-white transition">
+                    <i data-lucide="chevron-right" class="w-4 h-4 mr-2 text-gray-500"></i> Step-by-Step Key Setup
+                </a>
+                <a href="#q1" class="flex items-center px-3 py-2 text-sm font-medium rounded-lg text-gray-300 hover:bg-cyber-700/40 hover:text-white transition">
+                    <i data-lucide="chevron-right" class="w-4 h-4 mr-2 text-gray-500"></i> Q1: Cipher Suite
+                </a>
+                <a href="#q2" class="flex items-center px-3 py-2 text-sm font-medium rounded-lg text-gray-300 hover:bg-cyber-700/40 hover:text-white transition">
+                    <i data-lucide="chevron-right" class="w-4 h-4 mr-2 text-gray-500"></i> Q2: SSL Domain (CN)
+                </a>
+                <a href="#q3" class="flex items-center px-3 py-2 text-sm font-medium rounded-lg text-gray-300 hover:bg-cyber-700/40 hover:text-white transition">
+                    <i data-lucide="chevron-right" class="w-4 h-4 mr-2 text-gray-500"></i> Q3: The Flag
+                </a>
+            </nav>
+
+            <div class="mt-6 p-4 bg-cyber-800 rounded-xl border border-cyber-700 text-xs text-gray-400">
+                <div class="flex items-center text-cyber-cyan font-semibold mb-1">
+                    <i data-lucide="info" class="w-4 h-4 mr-1.5"></i> Pro Tip
+                </div>
+                You cannot decrypt TLS/HTTPS traffic without the pre-master secret key log file recorded during capture.
+            </div>
+        </aside>
+
+        <!-- ==================== CONTENT AREA ==================== -->
+        <main class="flex-grow space-y-8 max-w-4xl">
+
+            <!-- OVERVIEW SECTION -->
+            <section id="overview" class="bg-cyber-800 rounded-2xl border border-cyber-700 p-6 sm:p-8 shadow-xl">
+                <div class="flex items-center space-x-3 mb-4">
+                    <div class="p-2 bg-cyber-cyan/10 rounded-lg text-cyber-cyan">
+                        <i data-lucide="shield-question" class="w-5 h-5"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-white">Challenge Prompt & Goal</h2>
+                </div>
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    The prompt states: <em class="text-white">"The S in HTTPS stands for secure and it uses the TLS/SSL protocol to achieve its security. Let's decrypt this traffic to find the hidden flag."</em>
+                </p>
+                <p class="text-gray-300 text-sm">
+                    You are provided with two files: <code class="bg-cyber-900 text-cyber-cyan px-2 py-0.5 rounded text-xs">SSL Decrypt.pcapng</code> and <code class="bg-cyber-900 text-cyber-cyan px-2 py-0.5 rounded text-xs">sslkeylog.log</code>. This guide explains the exact protocol theory, where to click in Wireshark, and how each answer is derived.
+                </p>
+            </section>
+
+            <!-- SETUP SECTION -->
+            <section id="setup" class="bg-cyber-800 rounded-2xl border border-cyber-700 p-6 sm:p-8 shadow-xl">
+                <div class="flex items-center space-x-3 mb-4">
+                    <div class="p-2 bg-cyber-warning/10 rounded-lg text-cyber-warning">
+                        <i data-lucide="key" class="w-5 h-5"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-white">How to Load the Decryption Key into Wireshark</h2>
+                </div>
+                <p class="text-gray-300 text-sm mb-4">
+                    By default, TLS encryption prevents you from viewing HTTP requests or contents. To make Wireshark decrypt the stream on-the-fly, feed it the pre-master secret log:
+                </p>
+                <div class="space-y-3">
+                    <div class="flex items-start space-x-3 bg-cyber-700/40 p-3 rounded-lg border border-cyber-700 text-sm text-gray-300">
+                        <span class="w-6 h-6 rounded-full bg-cyber-700 text-cyber-accent flex items-center justify-center font-bold text-xs flex-shrink-0 mt-0.5">1</span>
+                        <div>Open Wireshark and go to top menu: <strong class="text-white">Edit &gt; Preferences</strong>.</div>
+                    </div>
+                    <div class="flex items-start space-x-3 bg-cyber-700/40 p-3 rounded-lg border border-cyber-700 text-sm text-gray-300">
+                        <span class="w-6 h-6 rounded-full bg-cyber-700 text-cyber-accent flex items-center justify-center font-bold text-xs flex-shrink-0 mt-0.5">2</span>
+                        <div>Expand <strong class="text-white">Protocols</strong> on the left pane and select <strong class="text-white">TLS</strong> (or SSL in older versions).</div>
+                    </div>
+                    <div class="flex items-start space-x-3 bg-cyber-700/40 p-3 rounded-lg border border-cyber-700 text-sm text-gray-300">
+                        <span class="w-6 h-6 rounded-full bg-cyber-700 text-cyber-accent flex items-center justify-center font-bold text-xs flex-shrink-0 mt-0.5">3</span>
+                        <div>Locate <strong class="text-white">(Pre)-Master-Secret log filename</strong>, click Browse, and select <code class="text-cyber-cyan">sslkeylog.log</code>. Click OK.</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- QUESTION 1 -->
+            <section id="q1" class="bg-cyber-800 rounded-2xl border border-cyber-700 p-6 sm:p-8 shadow-xl">
+                <div class="flex items-center space-x-3 mb-3">
+                    <div class="p-2 bg-cyber-accent/10 rounded-lg text-cyber-accent">
+                        <i data-lucide="check-circle" class="w-5 h-5"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-white">1. What Cipher Suite was chosen by the secure socket server?</h2>
+                </div>
+                <div class="bg-cyber-700/30 p-4 rounded-xl border border-cyber-700 mb-4 text-sm text-gray-300 space-y-2">
+                    <p><strong class="text-white">Where to look:</strong> Select <strong class="text-cyan-400">Packet #6</strong> (the TLS <span class="text-white">Server Hello</span> message).</p>
+                    <p><strong class="text-white">Tree Path:</strong> Packet Dissection Pane &gt; <code class="text-cyber-cyan">Transport Layer Security</code> &gt; <code class="text-cyber-cyan">TLSv1.2 Record Layer: Handshake Protocol: Server Hello</code> &gt; <code class="text-cyber-cyan">Handshake Protocol: Server Hello &gt; Cipher Suite</code>.</p>
+                </div>
+                <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Teaching Explanation & Concepts</h3>
+                <p class="text-gray-300 text-sm leading-relaxed">
+                    During the TLS Handshake, the client sends a list of supported encryption algorithms (Cipher Suites) in the <span class="text-white">Client Hello</span> packet. The server reviews that list and picks one that both parties support during the <span class="text-white">Server Hello</span> phase. A cipher suite dictates three things: the key exchange algorithm, the bulk encryption algorithm, and the message authentication code (MAC) hash function.
+                </p>
+            </section>
+
+            <!-- QUESTION 2 -->
+            <section id="q2" class="bg-cyber-800 rounded-2xl border border-cyber-700 p-6 sm:p-8 shadow-xl">
+                <div class="flex items-center space-x-3 mb-3">
+                    <div class="p-2 bg-cyber-accent/10 rounded-lg text-cyber-accent">
+                        <i data-lucide="check-circle" class="w-5 h-5"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-white">2. What is the domain covered by the SSL key?</h2>
+                </div>
+                <div class="bg-cyber-700/30 p-4 rounded-xl border border-cyber-700 mb-4 text-sm text-gray-300 space-y-2">
+                    <p><strong class="text-white">Where to look:</strong> Select <strong class="text-cyan-400">Packet #6</strong> (the TLS <span class="text-white">Server Hello</span> message containing the certificate chain).</p>
+                    <p><strong class="text-white">Tree Path:</strong> Packet Dissection Pane &gt; <code class="text-cyber-cyan">Transport Layer Security</code> &gt; <code class="text-cyber-cyan">TLSv1.2 Record Layer: Handshake Protocol: Certificate</code> &gt; <code class="text-cyber-cyan">Certificates &gt; Certificate &gt; Signed Certificate &gt; tbsCertificate &gt; subject</code> (Common Name / CN).</p>
+                </div>
+                <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Teaching Explanation & Concepts</h3>
+                <p class="text-gray-300 text-sm leading-relaxed">
+                    An X.509 SSL/TLS certificate proves the identity of a web server. The <span class="text-white">Subject Common Name (CN)</span> or <span class="text-white">Subject Alternative Name (SAN)</span> specifies the exact domain name or hostname that the certificate is authorized to protect. If a user visits a site whose domain doesn't match the certificate's CN/SAN, browsers throw a security warning.
+                </p>
+            </section>
+
+            <!-- QUESTION 3 -->
+            <section id="q3" class="bg-cyber-800 rounded-2xl border border-cyber-700 p-6 sm:p-8 shadow-xl">
+                <div class="flex items-center space-x-3 mb-3">
+                    <div class="p-2 bg-cyber-accent/10 rounded-lg text-cyber-accent">
+                        <i data-lucide="check-circle" class="w-5 h-5"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-white">3. What is the flag transferred over HTTPS?</h2>
+                </div>
+                <div class="bg-cyber-700/30 p-4 rounded-xl border border-cyber-700 mb-4 text-sm text-gray-300 space-y-2">
+                    <p><strong class="text-white">Where to look:</strong> Find <strong class="text-cyan-400">Packet #10</strong> (the HTTP GET request for <code class="text-cyber-cyan">/flag.txt</code>).</p>
+                    <p><strong class="text-white">Action:</strong> Right-click the packet &gt; <strong class="text-white">Follow &gt; TLS Stream</strong> (or HTTP Stream).</p>
+                </div>
+                <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Teaching Explanation & Concepts</h3>
+                <p class="text-gray-300 text-sm leading-relaxed mb-4">
+                    Once Wireshark successfully digests the pre-master secret key log file you loaded in the preferences, it decrypts the encrypted TLS application data layer records on the fly. Following the TCP/TLS stream stitches the request and server response together, letting you read plaintext HTTP headers and files like <code class="text-cyber-cyan">flag.txt</code>.
+                </p>
+                <div class="bg-cyber-900 rounded-xl p-4 border border-cyber-600 font-mono text-xs text-cyber-accent">
+                    HTTP/1.1 200 OK<br>
+                    Content-Type: text/plain<br>
+                    Server: nginx<br><br>
+                    cyber{ decrypted_tls_traffic_flag_example }
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer class="bg-cyber-800 border-t border-cyber-700 mt-12 py-6">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-gray-500">
+            Cyber Skyline CTF Educational Dashboard. Designed for analytical mastery.
+        </div>
+    </footer>
+
+    <!-- ==================== JAVASCRIPT ==================== -->
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Mobile Sidebar Toggle
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('-translate-x-full');
+        }
+    </script>
+</body>
+</html>
