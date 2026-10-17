@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StegMaster | The Ultimate DIIT Steganography Guide</title>
+    <!-- Tailwind CSS CDN for modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 antialiased selection:bg-indigo-500 selection:text-white">
+
+    <!-- TOP NAVIGATION BAR -->
+    <header class="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-md border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-indigo-600 p-2 rounded-xl text-white shadow-lg shadow-indigo-500/30">
+                    <i data-lucide="shield-check" class="w-6 h-6"></i>
+                </div>
+                <span class="font-bold text-lg tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">StegMaster</span>
+            </div>
+            <nav class="hidden md:flex items-center space-x-6 text-sm font-medium text-slate-400">
+                <a href="#intro" class="hover:text-white transition">Basics</a>
+                <a href="#workflow" class="hover:text-white transition">DIIT Workflow</a>
+                <a href="#algorithms" class="hover:text-white transition">Algorithms & Config</a>
+                <a href="#summary" class="hover:text-white transition">Summary</a>
+            </nav>
+            <div class="flex items-center space-x-2">
+                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <span class="w-1.5 h-1.5 mr-1.5 bg-emerald-400 rounded-full animate-pulse"></span>
+                    Interactive Lesson v2.0
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
+
+        <!-- SECTION 1: INTRODUCTION -->
+        <section id="intro" class="space-y-6">
+            <div class="inline-flex items-center space-x-2 text-indigo-400 text-sm font-semibold tracking-wider uppercase">
+                <i data-lucide="book-open" class="w-4 h-4"></i>
+                <span>Module 01</span>
+            </div>
+            <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight text-white">
+                Steganography with DIIT
+            </h1>
+            <p class="text-lg text-slate-300 leading-relaxed">
+                Steganography is the art of hiding secret messages inside ordinary carrier files (cover images). Rather than relying on guesswork scripts or manual hex carving, professional toolkits like the <strong class="text-indigo-400">Digital Invisible Ink Toolkit (DIIT)</strong> provide dedicated graphical interfaces for embedding and extracting payloads seamlessly.
+            </p>
+        </section>
+
+        <hr class="border-slate-800">
+
+        <!-- SECTION 2: DIIT WORKFLOW -->
+        <section id="workflow" class="space-y-6">
+            <div class="inline-flex items-center space-x-2 text-indigo-400 text-sm font-semibold tracking-wider uppercase">
+                <i data-lucide="terminal" class="w-4 h-4"></i>
+                <span>Module 02</span>
+            </div>
+            <h2 class="text-3xl font-bold tracking-tight text-white">
+                Step-by-Step Toolkit Workflow
+            </h2>
+            <p class="text-slate-300 leading-relaxed">
+                To solve challenges using DIIT, you follow a structured operational sequence from launching the application GUI to executing the extraction process.
+            </p>
+
+            <!-- Step Grid Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-3">
+                    <div class="bg-indigo-600/20 text-indigo-400 w-10 h-10 rounded-lg flex items-center justify-center font-bold">1</div>
+                    <h3 class="text-lg font-semibold text-white">Launch Toolkit</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Execute the Java package via terminal to open the DIIT graphical interface:<br>
+                        <code class="text-indigo-300 bg-slate-950 px-1.5 py-0.5 rounded text-xs mt-1 inline-block">java -jar diit-1.5.jar</code>
+                    </p>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-3">
+                    <div class="bg-indigo-600/20 text-indigo-400 w-10 h-10 rounded-lg flex items-center justify-center font-bold">2</div>
+                    <h3 class="text-lg font-semibold text-white">Load Cover Image</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Import the target carrier file (<code class="text-indigo-300 text-xs">Steg2.bmp</code>) into the toolkit workspace to inspect pixel channels.
+                    </p>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-3">
+                    <div class="bg-indigo-600/20 text-indigo-400 w-10 h-10 rounded-lg flex items-center justify-center font-bold">3</div>
+                    <h3 class="text-lg font-semibold text-white">Configure & Extract</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Select the appropriate steganographic algorithm configuration inside DIIT and execute extraction to reveal the hidden flag.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <hr class="border-slate-800">
+
+        <!-- SECTION 3: ALGORITHMS & CONFIGURATION -->
+        <section id="algorithms" class="space-y-6">
+            <div class="inline-flex items-center space-x-2 text-indigo-400 text-sm font-semibold tracking-wider uppercase">
+                <i data-lucide="cpu" class="w-4 h-4"></i>
+                <span>Module 03</span>
+            </div>
+            <h2 class="text-3xl font-bold tracking-tight text-white">
+                Understanding Algorithm Settings
+            </h2>
+            <p class="text-slate-300 leading-relaxed">
+                DIIT implements specialized embedding mechanics across pixel structures. Recognizing the configuration parameters and algorithm choices within the tool UI is critical for successful message recovery.
+            </p>
+
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+                <div class="flex items-start space-x-3">
+                    <i data-lucide="check-circle-2" class="w-5 h-5 text-indigo-400 flex-shrink-0 mt-0.5"></i>
+                    <div>
+                        <h4 class="text-white font-semibold">Algorithm Identification (Q1)</h4>
+                        <p class="text-slate-400 text-sm mt-1">
+                            Identifying the underlying steganographic embedding method (such as Least Significant Bit manipulation) configured in the toolkit parameters.
+                        </p>
+                    </div>
+                </div>
+                <div class="flex items-start space-x-3">
+                    <i data-lucide="check-circle-2" class="w-5 h-5 text-indigo-400 flex-shrink-0 mt-0.5"></i>
+                    <div>
+                        <h4 class="text-white font-semibold">Payload Extraction (Q2)</h4>
+                        <p class="text-slate-400 text-sm mt-1">
+                            Retrieving the decoded plaintext payload string directly from the tool output interface.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- EXPANDED DEEP-DIVE: ALGORITHM & CIPHER INVESTIGATION MECHANICS -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 space-y-6">
+                <div class="flex items-center space-x-3 text-indigo-400">
+                    <i data-lucide="layers" class="w-6 h-6"></i>
+                    <h3 class="text-xl sm:text-2xl font-semibold text-white">Deep-Dive: How Algorithm &amp; Cipher Selection Works</h3>
+                </div>
+
+                <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+                    Finding that a file may contain hidden data is only the start of an investigation. To extract the payload and answer questions like <strong class="text-indigo-400">Q1</strong> and <strong class="text-indigo-400">Q2</strong>, determine how the data was embedded in the carrier and whether it was separately encrypted. The embedding algorithm controls where and how bits are stored; an encryption cipher, when used, transforms the payload and may require a key.
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-slate-950 border border-slate-800/80 rounded-xl p-5 space-y-2">
+                        <div class="flex items-center space-x-2 text-indigo-300 font-semibold text-sm">
+                            <i data-lucide="cpu" class="w-4 h-4"></i>
+                            <span>1. Spatial vs. Transform Domains</span>
+                        </div>
+                        <p class="text-slate-400 text-xs sm:text-sm leading-relaxed">
+                            Spatial-domain methods alter pixel values directly, for example by changing least-significant bits or using a substitution pattern. Transform-domain methods modify frequency data, such as DCT coefficients commonly associated with JPEG images. A <code class="text-indigo-300">.bmp</code> carrier can make spatial methods a reasonable place to investigate, but file type alone does not identify the algorithm.
+                        </p>
+                    </div>
+
+                    <div class="bg-slate-950 border border-slate-800/80 rounded-xl p-5 space-y-2">
+                        <div class="flex items-center space-x-2 text-indigo-300 font-semibold text-sm">
+                            <i data-lucide="key" class="w-4 h-4"></i>
+                            <span>2. Tool Modules &amp; Optional Ciphers</span>
+                        </div>
+                        <p class="text-slate-400 text-xs sm:text-sm leading-relaxed">
+                            Toolkits such as DIIT offer distinct embedding methods; BattleSteg is an example of a steganographic algorithm, not an encryption cipher. The selected method determines how the extractor locates and reconstructs embedded bits. If the payload was also encrypted, identify that cipher and any required key separately. A mismatched method or parameter can produce unreadable output.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="bg-indigo-950/30 border border-indigo-500/20 rounded-xl p-4 flex items-start space-x-3">
+                    <i data-lucide="lightbulb" class="w-5 h-5 text-indigo-400 flex-shrink-0 mt-0.5"></i>
+                    <div class="space-y-1">
+                        <h4 class="text-white text-sm font-medium">Investigative Takeaway for CTFs</h4>
+                        <p class="text-slate-300 text-xs sm:text-sm leading-relaxed">
+                            Compare the carrier's format and properties with challenge clues and the toolkit's available methods. Test plausible algorithm settings systematically, then investigate encryption and key requirements if extraction succeeds but the payload is not readable. A failed attempt is evidence to reassess the method or settings, not proof of a particular cipher.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <hr class="border-slate-800">
+
+        <!-- SECTION 4: SUMMARY -->
+        <section id="summary" class="space-y-6 pb-12">
+            <div class="inline-flex items-center space-x-2 text-indigo-400 text-sm font-semibold tracking-wider uppercase">
+                <i data-lucide="award" class="w-4 h-4"></i>
+                <span>Module 04</span>
+            </div>
+            <h2 class="text-3xl font-bold tracking-tight text-white">
+                Key Takeaways
+            </h2>
+            <ul class="space-y-3 text-slate-300">
+                <li class="flex items-center space-x-3">
+                    <i data-lucide="check" class="w-5 h-5 text-indigo-400 flex-shrink-0"></i>
+                    <span>Dedicated GUIs like DIIT simplify complex pixel-level steganography tasks.</span>
+                </li>
+                <li class="flex items-center space-x-3">
+                    <i data-lucide="check" class="w-5 h-5 text-indigo-400 flex-shrink-0"></i>
+                    <span>Matching the correct algorithm configuration in the tool solves challenge parameters efficiently.</span>
+                </li>
+            </ul>
+        </section>
+        
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-slate-900 border-t border-slate-800 py-8 text-center text-xs text-slate-500">
+        <p>StegMaster Interactive Learning Guide • Designed for Cybersecurity Learners</p>
+    </footer>
+
+    <!-- Initialize Lucide Icons -->
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
