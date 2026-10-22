@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Beginner Learning Hub - Rainbow Tables & NTLM Passwords</title>
+    <!-- Tailwind CSS for modern, responsive, mobile-friendly & desktop-friendly UI design -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cyberdark: '#0a0f1d',
+                        cybercard: '#131b2e',
+                        cyberaccent: '#00ffcc',
+                        cyberpurple: '#8b5cf6',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome for clean icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Custom smooth scrolling and scrollbar styling */
+        html { scroll-behavior: smooth; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0a0f1d; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #00ffcc; }
+    </style>
+</head>
+<body class="bg-cyberdark text-slate-100 font-sans antialiased selection:bg-cyberaccent selection:text-cyberdark">
+
+    <!-- ==========================================
+         NAVIGATION BAR (Responsive for Mobile & Desktop)
+         ========================================== -->
+    <nav class="sticky top-0 z-50 bg-cyberdark/90 backdrop-blur-md border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo / App Title -->
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-lg bg-gradient-to-tr from-cyberaccent to-cyberpurple flex items-center justify-center shadow-lg shadow-cyan-500/20">
+                        <i class="fa-solid fa-shield-halved text-cyberdark text-lg font-bold"></i>
+                    </div>
+                    <span class="font-black text-xl tracking-wider bg-gradient-to-r from-white via-slate-200 to-cyberaccent bg-clip-text text-transparent">
+                        CYBER<span class="text-cyberaccent">HUB</span>
+                    </span>
+                </div>
+                <!-- Desktop Navigation Links -->
+                <div class="hidden md:flex items-center space-x-6 text-sm font-medium text-slate-300">
+                    <a href="#rainbow-tables" class="hover:text-cyberaccent transition-colors">Rainbow Tables</a>
+                    <a href="#time-memory" class="hover:text-cyberaccent transition-colors">Time vs Memory</a>
+                    <a href="#ntlm-passwords" class="hover:text-cyberaccent transition-colors">NTLM & Legacy</a>
+                    <a href="#why-learn" class="hover:text-cyberaccent transition-colors">Why It Matters</a>
+                    <a href="#demo-tools" class="hover:text-cyberaccent transition-colors">Ophcrack & Demo</a>
+                    <a href="#attacker-objectives" class="hover:text-cyberaccent transition-colors">Forensics</a>
+                </div>
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden">
+                    <button id="mobile-menu-btn" class="text-slate-300 hover:text-white focus:outline-none p-2">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Dropdown Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-cybercard border-b border-slate-800 px-4 pt-2 pb-4 space-y-2">
+            <a href="#rainbow-tables" class="block py-2 text-slate-300 hover:text-cyberaccent">Rainbow Tables</a>
+            <a href="#time-memory" class="block py-2 text-slate-300 hover:text-cyberaccent">Time vs Memory</a>
+            <a href="#ntlm-passwords" class="block py-2 text-slate-300 hover:text-cyberaccent">NTLM & Legacy</a>
+            <a href="#why-learn" class="block py-2 text-slate-300 hover:text-cyberaccent">Why It Matters</a>
+            <a href="#demo-tools" class="block py-2 text-slate-300 hover:text-cyberaccent">Ophcrack & Demo</a>
+            <a href="#attacker-objectives" class="block py-2 text-slate-300 hover:text-cyberaccent">Forensics</a>
+        </div>
+    </nav>
+
+    <!-- ==========================================
+         HERO SECTION
+         ========================================== -->
+    <header class="relative overflow-hidden py-20 px-4 sm:px-6 lg:px-8 border-b border-slate-800/60">
+        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/20 via-cyberdark to-cyberdark pointer-events-none"></div>
+        <div class="max-w-5xl mx-auto text-center relative z-10">
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-cyberaccent/10 text-cyberaccent border border-cyberaccent/20 mb-6">
+                <i class="fa-solid fa-graduation-cap mr-2"></i> Beginner-Friendly Cyber & CS Masterclass
+            </span>
+            <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight mb-6">
+                Somewhere Over the <br><span class="bg-gradient-to-r from-cyberaccent via-cyan-400 to-cyberpurple bg-clip-text text-transparent">Rainbow Tables</span>
+            </h1>
+            <p class="text-lg sm:text-xl text-slate-400 max-w-3xl mx-auto mb-8 leading-relaxed">
+                A masterclass web application breaking down precomputed hash tables, time-memory tradeoffs, Windows NTLM/LM password mechanisms, and ophcrack tool usage from absolute scratch.
+            </p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="#rainbow-tables" class="px-6 py-3 rounded-xl bg-cyberaccent text-cyberdark font-bold hover:bg-cyan-400 transition-all shadow-lg shadow-cyan-500/20">
+                    Start Learning <i class="fa-solid fa-arrow-down ml-2"></i>
+                </a>
+                <a href="#demo-tools" class="px-6 py-3 rounded-xl bg-cybercard border border-slate-700 text-slate-200 font-bold hover:border-cyberaccent transition-all">
+                    View Ophcrack Guide <i class="fa-solid fa-terminal ml-2"></i>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container for Lessons & Modules -->
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-20">
+
+        <!-- ==========================================
+             MODULE 1: WHAT ARE RAINBOW TABLES?
+             ========================================== -->
+        <section id="rainbow-tables" class="bg-cybercard border border-slate-800 rounded-2xl p-6 sm:p-10 shadow-xl transition-all hover:border-slate-700">
+            <div class="flex items-center space-x-4 mb-6">
+                <div class="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 text-xl font-bold">
+                    01
+                </div>
+                <div>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-white">What Are Rainbow Tables?</h2>
+                    <p class="text-sm text-slate-400">Understanding precomputed hash dictionaries and cryptographic reversing</p>
+                </div>
+            </div>
+
+            <div class="space-y-4 text-slate-300 leading-relaxed mb-8">
+                <p>
+                    <strong class="text-white">Beginner Analogy:</strong> Imagine trying to guess a combination lock by trying every single number on the spot (brute forcing) versus looking up every combination in a massive pre-printed phone book that already lists the answers. A rainbow table is like that pre-printed phone book for passwords—all the heavy mathematical computing has already been done in advance!
+                </p>
+                <p>
+                    <strong class="text-white">Technical Definition:</strong> A rainbow table is a precomputed table for reversing cryptographic hash functions (like MD5, SHA, or LM/NTLM) to crack passwords. Because cryptographic hash functions are one-way (irreversible), attackers cannot simply "un-hash" a password. Instead, they precompute massive lists pairing plaintext words with their resulting hash values.
+                </p>
+                <p>
+                    <strong class="text-white">Precomputed Dictionaries vs. True Rainbow Tables:</strong> While basic lookup tables list plaintexts directly next to hashes, true rainbow tables use reduction functions and cryptographic chains to compress massive amounts of data efficiently without running into massive hash collision issues.
+                </p>
+            </div>
+
+            <!-- Scripture / Moral Lesson Box -->
+            <div class="bg-gradient-to-r from-blue-950/40 to-indigo-950/40 border-l-4 border-blue-500 p-5 rounded-r-xl">
+                <div class="flex items-start space-x-3">
+                    <i class="fa-solid fa-book-bible text-blue-400 text-lg mt-1"></i>
+                    <div>
+                        <h4 class="text-sm font-bold text-blue-300 uppercase tracking-wide">Scripture & Life Lesson</h4>
+                        <p class="text-sm text-slate-300 mt-1 italic">
+                            "The plans of the diligent lead surely to abundance, but everyone who is hasty comes only to poverty." — Proverbs 21:5
+                        </p>
+                        <p class="text-xs text-slate-400 mt-2">
+                            <strong>Lesson:</strong> Just as attackers invest immense upfront computational labor to precompute shortcuts, preparation and diligence in our daily endeavors yield powerful results. Conversely, neglecting our spiritual security leaves us vulnerable to shortcuts taken by adversity.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             MODULE 2: TIME-MEMORY EFFICIENCY
+             ========================================== -->
+        <section id="time-memory" class="bg-cybercard border border-slate-800 rounded-2xl p-6 sm:p-10 shadow-xl transition-all hover:border-slate-700">
+            <div class="flex items-center space-x-4 mb-6">
+                <div class="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 text-xl font-bold">
+                    02
+                </div>
+                <div>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-white">Rainbow Tables and Time-Memory Efficiency</h2>
+                    <p class="text-sm text-slate-400">Balancing processing speed against storage space</p>
+                </div>
+            </div>
+
+            <div class="space-y-4 text-slate-300 leading-relaxed mb-8">
+                <p>
+                    <strong class="text-white">The Core CS Tradeoff:</strong> In computer science, <em>Time</em> and <em>Memory</em> are constantly battling. 
+                </p>
+                <ul class="list-disc list-inside space-y-2 text-sm text-slate-300">
+                    <li><strong class="text-white">Brute Forcing:</strong> Uses virtually zero disk storage memory, but takes astronomical amounts of computer processing time because it calculates hashes on the fly.</li>
+                    <li><strong class="text-white">Wordlists:</strong> Stores plain text words, requiring the computer to calculate hashes during the attack.</li>
+                    <li><strong class="text-white">Rainbow Tables:</strong> Precomputes and stores the hashes in advance, striking a sweet spot between time and memory—until passwords get too complex!</li>
+                </ul>
+                <p>
+                    <strong class="text-white">The Drawback of Complexity:</strong> As passwords grow longer or include symbols, numbers, and upper/lowercase letters, the number of combinations multiplies exponentially (e.g., adding symbols jumps candidate pools to 95+ characters per position), making rainbow table file sizes impractically massive.
+                </p>
+            </div>
+
+            <!-- Scripture / Moral Lesson Box -->
+            <div class="bg-gradient-to-r from-purple-950/40 to-indigo-950/40 border-l-4 border-purple-500 p-5 rounded-r-xl">
+                <div class="flex items-start space-x-3">
+                    <i class="fa-solid fa-book-bible text-purple-400 text-lg mt-1"></i>
+                    <div>
+                        <h4 class="text-sm font-bold text-purple-300 uppercase tracking-wide">Scripture & Life Lesson</h4>
+                        <p class="text-sm text-slate-300 mt-1 italic">
+                            "Count the cost... otherwise, when he has laid a foundation and is not able to finish, all who see it begin to mock him." — Luke 14:28-29
+                        </p>
+                        <p class="text-xs text-slate-400 mt-2">
+                            <strong>Lesson:</strong> Every system design involves trade-offs between resource consumption and efficiency. Wise planning requires evaluating the long-term cost of our choices before committing resources.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             MODULE 3: WINDOWS NTLM & LEGACY PASSWORDS
+             ========================================== -->
+        <section id="ntlm-passwords" class="bg-cybercard border border-slate-800 rounded-2xl p-6 sm:p-10 shadow-xl transition-all hover:border-slate-700">
+            <div class="flex items-center space-x-4 mb-6">
+                <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-xl font-bold">
+                    03
+                </div>
+                <div>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-white">Windows NTLM Passwords & Rainbow Tables</h2>
+                    <p class="text-sm text-slate-400">Unsalted legacy hashes and protocol downgrade vulnerabilities</p>
+                </div>
+            </div>
+
+            <div class="space-y-4 text-slate-300 leading-relaxed mb-8">
+                <p>
+                    <strong class="text-white">Why Rainbow Tables Target Windows:</strong> Older versions of Windows (such as Windows XP, Server 2003, and earlier) stored user passwords using LM (LAN Manager) and NTLM hashes that were completely <strong class="text-white">unsalted</strong> (lacking random protective data strings added before hashing).
+                </p>
+                <p>
+                    <strong class="text-white">LM Hash Weaknesses:</strong> LM hashes automatically forced all letters into uppercase and were case-agnostic, drastically shrinking the possible character space and making them exceptionally vulnerable to rainbow tables.
+                </p>
+                <p>
+                    <strong class="text-white">Protocol Downgrade Attacks:</strong> Even though modern operating systems deprecated these weak hashes by default, many legacy enterprise systems, industrial controllers, or unpatched servers still rely on them. Attackers exploit this via <em>protocol downgrade attacks</em>, forcing systems to fall back to older, vulnerable authentication methods.
+                </p>
+            </div>
+
+            <!-- Scripture / Moral Lesson Box -->
+            <div class="bg-gradient-to-r from-emerald-950/40 to-teal-950/40 border-l-4 border-emerald-500 p-5 rounded-r-xl">
+                <div class="flex items-start space-x-3">
+                    <i class="fa-solid fa-book-bible text-emerald-400 text-lg mt-1"></i>
+                    <div>
+                        <h4 class="text-sm font-bold text-emerald-300 uppercase tracking-wide">Scripture & Life Lesson</h4>
+                        <p class="text-sm text-slate-300 mt-1 italic">
+                            "A prudent man sees danger and hides himself, but the simple go on and suffer for it." — Proverbs 22:3
+                        </p>
+                        <p class="text-xs text-slate-400 mt-2">
+                            <strong>Lesson:</strong> Ignoring outdated habits or unaddressed vulnerabilities in our lives leaves us exposed to recurring pitfalls. True wisdom recognizes legacy weaknesses and actively patches them.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             MODULE 4: WHY LEARN ABOUT RAINBOW TABLES?
+             ========================================== -->
+        <section id="why-learn" class="bg-cybercard border border-slate-800 rounded-2xl p-6 sm:p-10 shadow-xl transition-all hover:border-slate-700">
+            <div class="flex items-center space-x-4 mb-6">
+                <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 text-xl font-bold">
+                    04
+                </div>
+                <div>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-white">Why Learn About Rainbow Tables Today?</h2>
+                    <p class="text-sm text-slate-400">Salting, modern cryptography, and the value of foundational security principles</p>
+                </div>
+            </div>
+
+            <div class="space-y-4 text-slate-300 leading-relaxed mb-8">
+                <p>
+                    <strong class="text-white">Are Rainbow Tables Obsolete?</strong> In many modern contexts, yes. Advanced modern hashing algorithms (like bcrypt or Argon2) combined with <strong class="text-white">salting</strong> (adding random characters to each password before hashing) render rainbow tables computationally inefficient because attackers would need a unique rainbow table for every single salt variation.
+                </p>
+                <p>
+                    <strong class="text-white">Why They Remain Crucial to Study:</strong>
+                </p>
+                <ul class="list-disc list-inside space-y-2 text-sm text-slate-300">
+                    <li><strong class="text-white">Legacy Systems Exist:</strong> Many organizations still run ancient software, embedded systems, or legacy servers with short password constraints (e.g., 8-character limits).</li>
+                    <li><strong class="text-white">Understanding Core Tradeoffs:</strong> Studying rainbow tables teaches fundamental computer science principles regarding time-memory trade-offs, which apply broadly to AI, cloud architecture, and database optimization.</li>
+                    <li><strong class="text-white">Appreciating Defensive Controls:</strong> Knowing how unsalted hashes fail helps us deeply understand <em>why</em> modern salting and robust hashing standards are mandatory.</li>
+                </ul>
+            </div>
+
+            <!-- Scripture / Moral Lesson Box -->
+            <div class="bg-gradient-to-r from-amber-950/40 to-orange-950/40 border-l-4 border-amber-500 p-5 rounded-r-xl">
+                <div class="flex items-start space-x-3">
+                    <i class="fa-solid fa-book-bible text-amber-400 text-lg mt-1"></i>
+                    <div>
+                        <h4 class="text-sm font-bold text-amber-300 uppercase tracking-wide">Scripture & Life Lesson</h4>
+                        <p class="text-sm text-slate-300 mt-1 italic">
+                            "Do not remove the ancient landmark that your fathers have set." — Proverbs 22:28
+                        </p>
+                        <p class="text-xs text-slate-400 mt-2">
+                            <strong>Lesson:</strong> Understanding foundational history and legacy concepts gives us deep context for why modern standards exist, helping us avoid repeating past mistakes.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             MODULE 5: DEMO & OPHCRACK SETUP
+             ========================================== -->
+        <section id="demo-tools" class="bg-cybercard border border-slate-800 rounded-2xl p-6 sm:p-10 shadow-xl transition-all hover:border-slate-700">
+            <div class="flex items-center space-x-4 mb-6">
+                <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 text-xl font-bold">
+                    05
+                </div>
+                <div>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-white">Ophcrack & Rainbow Table Demo Guide</h2>
+                    <p class="text-sm text-slate-400">Downloading tables, installing packages, and cracking NTLM hashes</p>
+                </div>
+            </div>
+
+            <div class="space-y-4 text-slate-300 leading-relaxed mb-8">
+                <p>
+                    <strong class="text-white">Using Ophcrack:</strong> Ophcrack is a popular Windows/Linux password cracker built specifically to use rainbow tables for cracking NTLM and LM hashes. In Kali Linux, ophcrack comes pre-installed.
+                </p>
+                <p>
+                    <strong class="text-white">Downloading Rainbow Tables:</strong> Because rainbow tables are massive, they are downloaded separately (e.g., from SourceForge or community archives). Tables like `XP free fast` contain alphanumeric combinations up to 14 characters.
+                </p>
+                <p>
+                    <strong class="text-white">Installation Best Practice:</strong> Rainbow tables consist of numerous index and binary files (`.table`, `.dat`, etc.). You must keep them inside their specific folder directory (e.g., `XP_free_fast`) and point ophcrack to that folder via the <strong class="text-white">Tables</strong> menu rather than loading individual files.
+                </p>
+            </div>
+
+            <!-- Scripture / Moral Lesson Box -->
+            <div class="bg-gradient-to-r from-cyan-950/40 to-blue-950/40 border-l-4 border-cyan-500 p-5 rounded-r-xl">
+                <div class="flex items-start space-x-3">
+                    <i class="fa-solid fa-book-bible text-cyan-400 text-lg mt-1"></i>
+                    <div>
+                        <h4 class="text-sm font-bold text-cyan-300 uppercase tracking-wide">Scripture & Life Lesson</h4>
+                        <p class="text-sm text-slate-300 mt-1 italic">
+                            "Let all things be done decently and in order." — 1 Corinthians 14:40
+                        </p>
+                        <p class="text-xs text-slate-400 mt-2">
+                            <strong>Lesson:</strong> Just as organizing tool directories and table files correctly is required for software to function properly, maintaining order and structure in our daily routines prevents unnecessary frustration and failure.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             MODULE 6: FORENSIC INVESTIGATION & ATTACKER OBJECTIVES
+             ========================================== -->
+        <section id="attacker-objectives" class="bg-cybercard border border-slate-800 rounded-2xl p-6 sm:p-10 shadow-xl transition-all hover:border-slate-700">
+            <div class="flex items-center space-x-4 mb-6">
+                <div class="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400 text-xl font-bold">
+                    06
+                </div>
+                <div>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-white">Attacker Objectives & Step-by-Step Forensics</h2>
+                    <p class="text-sm text-slate-400">Analyzing NTLM password dumps, formatting hashes, and cracking credentials</p>
+                </div>
+            </div>
+
+            <div class="space-y-4 text-slate-300 leading-relaxed mb-8">
+                <h3 class="text-lg font-semibold text-white">What the Attacker / Analyst is Looking For:</h3>
+                <p>
+                    In this scenario, analysts obtain password dumps from old Windows servers run by a criminal group. They target <strong>NTLM hashes</strong> (identifiable by the colon format separating the LM hash and the NT hash) to recover plaintext credentials and audit network security.
+                </p>
+            </div>
+
+            <!-- Step-by-Step Instructions -->
+            <div class="space-y-4 text-sm text-slate-300 mb-8">
+                <h3 class="text-lg font-semibold text-white">Step-by-Step Cracking Walkthrough:</h3>
+
+                <div class="bg-cyberdark border border-slate-800 p-4 rounded-xl">
+                    <span class="text-cyberaccent font-bold">Step 1: Identifying NTLM Hash Format</span>
+                    <p class="mt-1">Recognize the format containing two hash parts separated by a colon (`LM_hash:NT_hash`).</p>
+                </div>
+
+                <div class="bg-cyberdark border border-slate-800 p-4 rounded-xl">
+                    <span class="text-cyberaccent font-bold">Step 2: Creating a Hash File</span>
+                    <p class="mt-1">Create a text file containing the target hashes (one per line with no extra spaces):</p>
+                    <code class="block bg-slate-900 p-2 rounded mt-2 font-mono text-slate-200">nano hashes.txt</code>
+                </div>
+
+                <div class="bg-cyberdark border border-slate-800 p-4 rounded-xl">
+                    <span class="text-cyberaccent font-bold">Step 3: Loading Hashes into Ophcrack</span>
+                    <p class="mt-1">Open Ophcrack, click <strong>Load</strong> -> <strong>Encrypted passwords (PWDUMP file)</strong>, select your text file, and make sure your rainbow tables are correctly installed via the Tables menu.</p>
+                </div>
+
+                <div class="bg-cyberdark border border-slate-800 p-4 rounded-xl">
+                    <span class="text-cyberaccent font-bold">Step 4: Executing the Crack</span>
+                    <p class="mt-1">Click the <strong>Crack</strong> button and observe the engine process the tables against the NTLM hashes in seconds.</p>
+                </div>
+
+                <div class="bg-cyberdark border border-slate-800 p-4 rounded-xl">
+                    <span class="text-cyberaccent font-bold">Step 5: Alternative Lookups (Crackstation)</span>
+                    <p class="mt-1">If using online precomputed tables like Crackstation, ensure you format hashes correctly (sometimes removing the LM portion or colon depending on the tool requirements).</p>
+                </div>
+            </div>
+
+            <!-- Scripture / Moral Lesson Box -->
+            <div class="bg-gradient-to-r from-rose-950/40 to-pink-950/40 border-l-4 border-rose-500 p-5 rounded-r-xl">
+                <div class="flex items-start space-x-3">
+                    <i class="fa-solid fa-book-bible text-rose-400 text-lg mt-1"></i>
+                    <div>
+                        <h4 class="text-sm font-bold text-rose-300 uppercase tracking-wide">Scripture & Life Lesson</h4>
+                        <p class="text-sm text-slate-300 mt-1 italic">
+                            "Be watchful, stand firm in the faith, act like men, be strong." — 1 Corinthians 16:13
+                        </p>
+                        <p class="text-xs text-slate-400 mt-2">
+                            <strong>Lesson:</strong> Learning how attackers analyze data structures and exploit weak credentials empowers security professionals to reinforce defenses and protect critical digital assets.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             COMMAND CHEAT SHEET SECTION
+             ========================================== -->
+        <section id="commands" class="bg-cybercard border border-slate-800 rounded-2xl p-6 sm:p-10 shadow-xl">
+            <div class="flex items-center space-x-4 mb-6">
+                <div class="w-12 h-12 rounded-xl bg-cyberaccent/10 border border-cyberaccent/30 flex items-center justify-center text-cyberaccent text-xl font-bold">
+                    <i class="fa-solid fa-terminal"></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-white">Forensic & Terminal Command Cheat Sheet</h2>
+                    <p class="text-sm text-slate-400">Quick reference guide for password cracking and file utilities</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Command Card 1 -->
+                <div class="bg-cyberdark border border-slate-800 rounded-xl p-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <code class="text-cyberaccent font-mono font-bold">ophcrack</code>
+                        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-300">GUI Tool</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mb-2">Launches the graphical interface for ophcrack password cracking tool in Kali Linux.</p>
+                    <code class="text-[11px] text-slate-500 font-mono">Example: ophcrack &</code>
+                </div>
+
+                <!-- Command Card 2 -->
+                <div class="bg-cyberdark border border-slate-800 rounded-xl p-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <code class="text-cyberaccent font-mono font-bold">nano hashes.txt</code>
+                        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-300">Text Editor</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mb-2">Creates or edits the target hash dump file containing NTLM credentials.</p>
+                    <code class="text-[11px] text-slate-500 font-mono">Example: nano hashes.txt</code>
+                </div>
+
+                <!-- Command Card 3 -->
+                <div class="bg-cyberdark border border-slate-800 rounded-xl p-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <code class="text-cyberaccent font-mono font-bold">md5sum [file]</code>
+                        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-300">Integrity Check</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mb-2">Verifies file integrity and checksums of downloaded rainbow table files.</p>
+                    <code class="text-[11px] text-slate-500 font-mono">Example: md5sum table_file.dat</code>
+                </div>
+
+                <!-- Command Card 4 -->
+                <div class="bg-cyberdark border border-slate-800 rounded-xl p-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <code class="text-cyberaccent font-mono font-bold">hashcat -m 1000</code>
+                        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-300">GPU Cracking</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mb-2">Advanced GPU password recovery tool targeting NTLM hashes (Mode 1000).</p>
+                    <code class="text-[11px] text-slate-500 font-mono">Example: hashcat -m 1000 hashes.txt wordlist.txt</code>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ==========================================
+         FOOTER
+         ========================================== -->
+    <footer class="bg-cybercard border-t border-slate-800 mt-20 py-8 text-center text-sm text-slate-500">
+        <div class="max-w-7xl mx-auto px-4 space-y-2">
+            <p>Designed as a Master UX/UI Responsive Web Application for Beginners.</p>
+            <p class="text-xs text-slate-600">Built with Tailwind CSS & FontAwesome. Fully modular for easy future expansion.</p>
+        </div>
+    </footer>
+
+    <!-- ==========================================
+         JAVASCRIPT FOR MOBILE MENU TOGGLE
+         ========================================== -->
+    <script>
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Close mobile menu when clicking a link
+        const mobileLinks = mobileMenu.querySelectorAll('a');
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+            });
+        });
+    </script>
+</body>
+</html>
