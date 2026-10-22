@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Beginner Learning Hub - Hack the Gibson & Cybersecurity Fundamentals</title>
+    <!-- Tailwind CSS for modern, responsive, mobile-friendly & desktop-friendly UI design -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cyberdark: '#0a0f1d',
+                        cybercard: '#131b2e',
+                        cyberaccent: '#00ffcc',
+                        cyberpurple: '#8b5cf6',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome for clean icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Custom smooth scrolling and scrollbar styling */
+        html { scroll-behavior: smooth; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0a0f1d; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #00ffcc; }
+    </style>
+</head>
+<body class="bg-cyberdark text-slate-100 font-sans antialiased selection:bg-cyberaccent selection:text-cyberdark">
+
+    <!-- ==========================================
+         NAVIGATION BAR (Responsive for Mobile & Desktop)
+         ========================================== -->
+    <nav class="sticky top-0 z-50 bg-cyberdark/90 backdrop-blur-md border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo / App Title -->
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-lg bg-gradient-to-tr from-cyberaccent to-cyberpurple flex items-center justify-center shadow-lg shadow-cyan-500/20">
+                        <i class="fa-solid fa-terminal text-cyberdark text-lg font-bold"></i>
+                    </div>
+                    <span class="font-black text-xl tracking-wider bg-gradient-to-r from-white via-slate-200 to-cyberaccent bg-clip-text text-transparent">
+                        CYBER<span class="text-cyberaccent">HUB</span>
+                    </span>
+                </div>
+                <!-- Desktop Navigation Links -->
+                <div class="hidden md:flex items-center space-x-6 text-sm font-medium text-slate-300">
+                    <a href="#mainframes" class="hover:text-cyberaccent transition-colors">Mainframes</a>
+                    <a href="#virtual-env" class="hover:text-cyberaccent transition-colors">Virtual Envs</a>
+                    <a href="#sboms" class="hover:text-cyberaccent transition-colors">SBOMs</a>
+                    <a href="#forensics" class="hover:text-cyberaccent transition-colors">Forensics</a>
+                    <a href="#encodings" class="hover:text-cyberaccent transition-colors">Encodings</a>
+                    <a href="#passwords" class="hover:text-cyberaccent transition-colors">Passwords</a>
+                    <a href="#commands" class="hover:text-cyberaccent transition-colors">Command Cheat Sheet</a>
+                </div>
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden">
+                    <button id="mobile-menu-btn" class="text-slate-300 hover:text-white focus:outline-none p-2">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Dropdown Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-cybercard border-b border-slate-800 px-4 pt-2 pb-4 space-y-2">
+            <a href="#mainframes" class="block py-2 text-slate-300 hover:text-cyberaccent">Mainframes</a>
+            <a href="#virtual-env" class="block py-2 text-slate-300 hover:text-cyberaccent">Virtual Envs</a>
+            <a href="#sboms" class="block py-2 text-slate-300 hover:text-cyberaccent">SBOMs</a>
+            <a href="#forensics" class="block py-2 text-slate-300 hover:text-cyberaccent">Forensics</a>
+            <a href="#encodings" class="block py-2 text-slate-300 hover:text-cyberaccent">Encodings</a>
+            <a href="#passwords" class="block py-2 text-slate-300 hover:text-cyberaccent">Passwords</a>
+            <a href="#commands" class="block py-2 text-slate-300 hover:text-cyberaccent">Command Cheat Sheet</a>
+        </div>
+    </nav>
+
+    <!-- ==========================================
+         HERO SECTION
+         ========================================== -->
+    <header class="relative overflow-hidden py-20 px-4 sm:px-6 lg:px-8 border-b border-slate-800/60">
+        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/20 via-cyberdark to-cyberdark pointer-events-none"></div>
+        <div class="max-w-5xl mx-auto text-center relative z-10">
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-cyberaccent/10 text-cyberaccent border border-cyberaccent/20 mb-6">
+                <i class="fa-solid fa-graduation-cap mr-2"></i> Beginner-Friendly Cyber & CS Masterclass
+            </span>
+            <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight mb-6">
+                Hack the Gibson: <br><span class="bg-gradient-to-r from-cyberaccent via-cyan-400 to-cyberpurple bg-clip-text text-transparent">Mainframes & Forensics</span>
+            </h1>
+            <p class="text-lg sm:text-xl text-slate-400 max-w-3xl mx-auto mb-8 leading-relaxed">
+                A masterclass web application breaking down enterprise mainframes, Python virtual environments, file forensics, encodings, and password cracking for absolute beginners.
+            </p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="#mainframes" class="px-6 py-3 rounded-xl bg-cyberaccent text-cyberdark font-bold hover:bg-cyan-400 transition-all shadow-lg shadow-cyan-500/20">
+                    Start Learning <i class="fa-solid fa-arrow-down ml-2"></i>
+                </a>
+                <a href="#commands" class="px-6 py-3 rounded-xl bg-cybercard border border-slate-700 text-slate-200 font-bold hover:border-cyberaccent transition-all">
+                    View Command Guide <i class="fa-solid fa-terminal ml-2"></i>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container for Lessons & Modules -->
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-20">
+
+        <!-- ==========================================
+             MODULE 1: MAINFRAMES & ENTERPRISE SYSTEMS
+             ========================================== -->
+        <section id="mainframes" class="bg-cybercard border border-slate-800 rounded-2xl p-6 sm:p-10 shadow-xl transition-all hover:border-slate-700">
+            <div class="flex items-center space-x-4 mb-6">
+                <div class="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 text-xl font-bold">
+                    01
+                </div>
+                <div>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-white">Mainframes & Enterprise Systems</h2>
+                    <p class="text-sm text-slate-400">Understanding heavy-duty enterprise computing & IBM's legacy</p>
+                </div>
+            </div>
+
+            <!-- Beginner Explanation & Analogy -->
+            <div class="space-y-4 text-slate-300 leading-relaxed mb-8">
+                <p>
+                    <strong class="text-white">What is a Mainframe?</strong> Imagine a regular home PC or laptop is like a delivery motorcycle—great for personal errands, quick tasks, and everyday browsing. A mainframe, on the other hand, is like a massive, indestructible freight train designed to haul thousands of tons of cargo nonstop across the country without ever breaking down. Mainframes are hyper-powerful computers designed to process billions of transactions every single day.
+                </p>
+                <p>
+                    <strong class="text-white">Why Financial Institutions & Governments Use Them:</strong> Banks, credit bureaus, insurance companies, and tax agencies handle massive databases containing gigabytes or terabytes of vital records. When you swipe your debit card or transfer funds, that change must reflect instantly and with 100% accuracy. Mainframes excel at doing this concurrently for millions of users without crashing.
+                </p>
+                <p>
+                    <strong class="text-white">IBM's Role:</strong> IBM pioneered commercial mainframe manufacturing in the 1950s. Back then, competitors were nicknamed "IBM and the Seven Dwarfs." Today, IBM remains the undisputed giant in this space, constantly modernizing mainframes—even adding integrated on-chip AI accelerators in recent models to handle modern workloads.
+                </p>
+            </div>
+
+            <!-- Key Technical Context (MTBF) -->
+            <div class="bg-cyberdark border border-slate-800 rounded-xl p-5 mb-8">
+                <h4 class="text-sm font-semibold text-cyberaccent uppercase tracking-wider mb-2">
+                    <i class="fa-solid fa-microchip mr-2"></i> Key Concept: Reliability & MTBF
+                </h4>
+                <p class="text-sm text-slate-300">
+                    Mainframes are built with complete hardware redundancy—meaning backup parts are built right inside the machine. Their reliability is measured in <strong class="text-white">MTBF (Mean Time Before Failure)</strong>, which on mainframes is measured in <em>decades</em> rather than years.
+                </p>
+            </div>
+
+            <!-- Scripture / Moral Lesson Box -->
+            <div class="bg-gradient-to-r from-blue-950/40 to-indigo-950/40 border-l-4 border-blue-500 p-5 rounded-r-xl">
+                <div class="flex items-start space-x-3">
+                    <i class="fa-solid fa-book-bible text-blue-400 text-lg mt-1"></i>
+                    <div>
+                        <h4 class="text-sm font-bold text-blue-300 uppercase tracking-wide">Scripture & Life Lesson</h4>
+                        <p class="text-sm text-slate-300 mt-1 italic">
+                            "He is like a man building a house, who dug deep and laid the foundation on the rock." — Luke 6:48
+                        </p>
+                        <p class="text-xs text-slate-400 mt-2">
+                            <strong>Lesson:</strong> Just as mainframes are engineered with profound structural integrity and redundancy to withstand immense pressure, building our lives and character upon a solid foundation ensures we remain resilient through major life storms.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             MODULE 2: VIRTUAL ENVIRONMENTS (PYTHON & DEV)
+             ========================================== -->
+        <section id="virtual-env" class="bg-cybercard border border-slate-800 rounded-2xl p-6 sm:p-10 shadow-xl transition-all hover:border-slate-700">
+            <div class="flex items-center space-x-4 mb-6">
+                <div class="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 text-xl font-bold">
+                    02
+                </div>
+                <div>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-white">Python Virtual Environments</h2>
+                    <p class="text-sm text-slate-400">Isolating dependencies and managing project folders safely</p>
+                </div>
+            </div>
+
+            <!-- Beginner Explanation & Analogy -->
+            <div class="space-y-4 text-slate-300 leading-relaxed mb-8">
+                <p>
+                    <strong class="text-white">Explain Like I'm Five:</strong> Imagine working on an art project at a shared community table where everyone uses the same jar of paint. If Project A needs bright neon pink paint, but Project B needs dark pastel pink, mixing them globally ruins everything. A virtual environment is like giving each project its own private, self-contained art box with its exact tools and colors inside.
+                </p>
+                <p>
+                    <strong class="text-white">Virtual Environment vs. Virtual Machine:</strong> Beginners often confuse these. A <em>Virtual Machine (VM)</em> is like running an entire simulated computer inside your computer (complete with its own operating system). A <em>Virtual Environment</em> is much lighter—it's simply a designated folder (`.venv`) that tells Python: <em>"Look for libraries only inside this folder, not across the whole operating system."</em>
+                </p>
+                <p>
+                    <strong class="text-white">Why Developers Use Them:</strong> Different software projects rely on different versions of libraries. Isolating dependencies prevents version conflicts (e.g., Project 1 needing Python 2 libraries while Project 2 runs Python 3).
+                </p>
+            </div>
+
+            <!-- Key Technical Context & Files -->
+            <div class="bg-cyberdark border border-slate-800 rounded-xl p-5 mb-8">
+                <h4 class="text-sm font-semibold text-cyberaccent uppercase tracking-wider mb-2">
+                    <i class="fa-solid fa-folder-tree mr-2"></i> What's Inside a Virtual Environment?
+                </h4>
+                <ul class="text-sm text-slate-300 space-y-2 list-disc list-inside">
+                    <li><strong class="text-white">Bin / Scripts Folder:</strong> Contains executable scripts and activation files.</li>
+                    <li><strong class="text-white">Lib / Site-Packages:</strong> Where local package dependencies installed via `pip` live.</li>
+                    <li><strong class="text-white">Configuration Files:</strong> The essential configuration files that tell Python to restrict library searches strictly to this directory.</li>
+                    <li><strong class="text-white">Hidden Prefix (`.venv`):</strong> Starting a folder name with a dot (`.`) hides it by default in Linux/Mac directory listings.</li>
+                </ul>
+            </div>
+
+            <!-- Scripture / Moral Lesson Box -->
+            <div class="bg-gradient-to-r from-purple-950/40 to-indigo-950/40 border-l-4 border-purple-500 p-5 rounded-r-xl">
+                <div class="flex items-start space-x-3">
+                    <i class="fa-solid fa-book-bible text-purple-400 text-lg mt-1"></i>
+                    <div>
+                        <h4 class="text-sm font-bold text-purple-300 uppercase tracking-wide">Scripture & Life Lesson</h4>
+                        <p class="text-sm text-slate-300 mt-1 italic">
+                            "Keep your heart with all vigilance, for from it flow the springs of life." — Proverbs 4:23
+                        </p>
+                        <p class="text-xs text-slate-400 mt-2">
+                            <strong>Lesson:</strong> Just as virtual environments create healthy boundaries to prevent outside pollution and version conflicts, establishing healthy mental and spiritual boundaries in life protects our minds from toxic contamination.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             MODULE 3: SOFTWARE BILLS OF MATERIALS (SBOMs)
+             ========================================== -->
+        <section id="sboms" class="bg-cybercard border border-slate-800 rounded-2xl p-6 sm:p-10 shadow-xl transition-all hover:border-slate-700">
+            <div class="flex items-center space-x-4 mb-6">
+                <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-xl font-bold">
+                    03
+                </div>
+                <div>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-white">Software Bills of Materials (SBOMs)</h2>
+                    <p class="text-sm text-slate-400">Inventorying software components for rapid vulnerability patching</p>
+                </div>
+            </div>
+
+            <!-- Beginner Explanation & Analogy -->
+            <div class="space-y-4 text-slate-300 leading-relaxed mb-8">
+                <p>
+                    <strong class="text-white">What is an SBOM?</strong> Think of an SBOM like the ingredient label on the back of a cereal box or food package. Instead of listing grains and vitamins, an SBOM lists every single software library, third-party component, and dependency baked into an application.
+                </p>
+                <p>
+                    <strong class="text-white">Why They Matter in Cybersecurity:</strong> When a massive zero-day vulnerability strikes (such as the famous <strong class="text-white">Log4j</strong> security incident), Chief Information Security Officers (CISOs) immediately need to know: <em>"Do any of our apps use this vulnerable component?"</em> Without an SBOM, teams are flying blind. With an SBOM, they can pinpoint vulnerable software instantly and patch it within minutes.
+                </p>
+            </div>
+
+            <!-- Scripture / Moral Lesson Box -->
+            <div class="bg-gradient-to-r from-emerald-950/40 to-teal-950/40 border-l-4 border-emerald-500 p-5 rounded-r-xl">
+                <div class="flex items-start space-x-3">
+                    <i class="fa-solid fa-book-bible text-emerald-400 text-lg mt-1"></i>
+                    <div>
+                        <h4 class="text-sm font-bold text-emerald-300 uppercase tracking-wide">Scripture & Life Lesson</h4>
+                        <p class="text-sm text-slate-300 mt-1 italic">
+                            "For which of you, desiring to build a tower, does not first sit down and count the cost..." — Luke 14:28
+                        </p>
+                        <p class="text-xs text-slate-400 mt-2">
+                            <strong>Lesson:</strong> Transparency and complete awareness of our inner components (our habits, influences, and dependencies) allow us to identify weak spots and correct them before crisis strikes.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             MODULE 4: FILE FORENSICS & COMMAND-LINE BASICS
+             ========================================== -->
+        <section id="forensics" class="bg-cybercard border border-slate-800 rounded-2xl p-6 sm:p-10 shadow-xl transition-all hover:border-slate-700">
+            <div class="flex items-center space-x-4 mb-6">
+                <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 text-xl font-bold">
+                    04
+                </div>
+                <div>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-white">File Forensics & Command-Line Basics</h2>
+                    <p class="text-sm text-slate-400">Unmasking unknown files using terminal tools and binary analysis</p>
+                </div>
+            </div>
+
+            <!-- Beginner Explanation & Analogy -->
+            <div class="space-y-4 text-slate-300 leading-relaxed mb-8">
+                <p>
+                    <strong class="text-white">Digital Forensics:</strong> When cyber investigators inspect a compromised mainframe, they receive mysterious files with no clear extensions or clues. Using command-line forensics tools is like being a digital detective inspecting fingerprints and hidden clues at a crime scene.
+                </p>
+                <p>
+                    <strong class="text-white">The Investigation Workflow:</strong> In the demonstration challenge, the analyst downloaded an unknown file (`.xmi`), checked its details, noticed Base64 encoding signatures (like trailing `=` signs), decoded it into an IBM Net Data file, discovered it was actually a hidden ZIP archive, unzipped it, and revealed database files inside!
+                </p>
+            </div>
+
+            <!-- Command Breakdown Table -->
+            <div class="overflow-x-auto mb-8">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="bg-slate-900 text-cyberaccent border-b border-slate-800">
+                            <th class="p-3">Command</th>
+                            <th class="p-3">What It Does</th>
+                            <th class="p-3">Beginner Analogy</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800 text-slate-300">
+                        <tr>
+                            <td class="p-3 font-mono text-white">ls -la</td>
+                            <td class="p-3">Lists all files in a directory, including hidden files (`.`).</td>
+                            <td class="p-3">Turning on the flashlight in a dark room to see every item (even hidden ones).</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 font-mono text-white">file [name]</td>
+                            <td class="p-3">Inspects binary magic bytes to determine true file type.</td>
+                            <td class="p-3">Sniffing a container to see if it holds milk, juice, or water regardless of its label.</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 font-mono text-white">cat [name]</td>
+                            <td class="p-3">Outputs file contents directly to the terminal screen.</td>
+                            <td class="p-3">Opening a letter and reading it top to bottom.</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 font-mono text-white">hexdump</td>
+                            <td class="p-3">Displays raw hexadecimal bytes of a file.</td>
+                            <td class="p-3">Looking at the microscopic cellular structure of a material.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Scripture / Moral Lesson Box -->
+            <div class="bg-gradient-to-r from-amber-950/40 to-orange-950/40 border-l-4 border-amber-500 p-5 rounded-r-xl">
+                <div class="flex items-start space-x-3">
+                    <i class="fa-solid fa-book-bible text-amber-400 text-lg mt-1"></i>
+                    <div>
+                        <h4 class="text-sm font-bold text-amber-300 uppercase tracking-wide">Scripture & Life Lesson</h4>
+                        <p class="text-sm text-slate-300 mt-1 italic">
+                            "Nothing is covered up that will not be revealed, or hidden that will not be known." — Luke 12:2
+                        </p>
+                        <p class="text-xs text-slate-400 mt-2">
+                            <strong>Lesson:</strong> Just as digital forensics tools peel back layers of encoding, encryption, and disguise to reveal the raw truth of a file, truth and integrity always come to light over time.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             MODULE 5: CHARACTER ENCODINGS (ASCII vs. EBCDIC)
+             ========================================== -->
+        <section id="encodings" class="bg-cybercard border border-slate-800 rounded-2xl p-6 sm:p-10 shadow-xl transition-all hover:border-slate-700">
+            <div class="flex items-center space-x-4 mb-6">
+                <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 text-xl font-bold">
+                    05
+                </div>
+                <div>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-white">Character Encodings: ASCII vs. EBCDIC</h2>
+                    <p class="text-sm text-slate-400">Decoding mainframe text formats and recognizing hex patterns</p>
+                </div>
+            </div>
+
+            <!-- Beginner Explanation & Analogy -->
+            <div class="space-y-4 text-slate-300 leading-relaxed mb-8">
+                <p>
+                    <strong class="text-white">What is Character Encoding?</strong> Computers only understand numbers (0s and 1s). An encoding is a translation dictionary that maps numbers to letters and symbols.
+                </p>
+                <p>
+                    <strong class="text-white">ASCII vs. EBCDIC:</strong> Most modern computers use <strong class="text-white">ASCII</strong>. However, legacy IBM mainframes use <strong class="text-white">EBCDIC</strong> (Extended Binary Coded Decimal Interchange Code), an older encoding standard developed in the 1960s.
+                </p>
+                <p>
+                    <strong class="text-white">Spotting EBCDIC in a Hex Dump:</strong> When an analyst opens an EBCDIC-encoded database file in a hex editor, they notice repeating hex values like <code class="text-cyberaccent">40 40 40</code> everywhere. In EBCDIC, `40` represents a space! Recognizing this pattern is the crucial "aha moment" that reveals the file needs a translation tool (like `dd`) to convert into readable ASCII.
+                </p>
+            </div>
+
+            <!-- Scripture / Moral Lesson Box -->
+            <div class="bg-gradient-to-r from-cyan-950/40 to-blue-950/40 border-l-4 border-cyan-500 p-5 rounded-r-xl">
+                <div class="flex items-start space-x-3">
+                    <i class="fa-solid fa-book-bible text-cyan-400 text-lg mt-1"></i>
+                    <div>
+                        <h4 class="text-sm font-bold text-cyan-300 uppercase tracking-wide">Scripture & Life Lesson</h4>
+                        <p class="text-sm text-slate-300 mt-1 italic">
+                            "If I do not know the meaning of the language, I seem to a foreigner to be a speaker, and the speaker a foreigner to me." — 1 Corinthians 14:11
+                        </p>
+                        <p class="text-xs text-slate-400 mt-2">
+                            <strong>Lesson:</strong> Communication requires a shared language and proper translation. Understanding different perspectives helps us bridge gaps and connect meaningfully with others.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             MODULE 6: PASSWORD HASHING & CRACKING BASICS
+             ========================================== -->
+        <section id="passwords" class="bg-cybercard border border-slate-800 rounded-2xl p-6 sm:p-10 shadow-xl transition-all hover:border-slate-700">
+            <div class="flex items-center space-x-4 mb-6">
+                <div class="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400 text-xl font-bold">
+                    06
+                </div>
+                <div>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-white">Password Hashing & Cracking Basics</h2>
+                    <p class="text-sm text-slate-400">Understanding RACF hashes, wordlists, and John the Ripper</p>
+                </div>
+            </div>
+
+            <!-- Beginner Explanation & Analogy -->
+            <div class="space-y-4 text-slate-300 leading-relaxed mb-8">
+                <p>
+                    <strong class="text-white">What is a Password Hash?</strong> A hash is a one-way mathematical scrambler. Instead of storing your actual password (e.g., `Secret123`), systems store a scrambled cryptographic hash (e.g., `5e88489...`). When you log in, your password is hashed and compared against the stored hash.
+                </p>
+                <p>
+                    <strong class="text-white">RACF Hashes & z/OS:</strong> Mainframe systems (running IBM's <strong class="text-white">z/OS</strong> operating system) manage user security credentials using <strong class="text-white">RACF</strong> (Resource Access Control Facility) hashes.
+                </p>
+                <p>
+                    <strong class="text-white">Password Cracking Tools:</strong> Security professionals use tools like <strong class="text-white">John the Ripper</strong> combined with massive common password wordlists (like <strong class="text-white">RockYou</strong>) and modification rules (such as `best64` rules that test common leetspeak substitutions) to test password strength and audit system security.
+                </p>
+            </div>
+
+            <!-- Scripture / Moral Lesson Box -->
+            <div class="bg-gradient-to-r from-rose-950/40 to-pink-950/40 border-l-4 border-rose-500 p-5 rounded-r-xl">
+                <div class="flex items-start space-x-3">
+                    <i class="fa-solid fa-book-bible text-rose-400 text-lg mt-1"></i>
+                    <div>
+                        <h4 class="text-sm font-bold text-rose-300 uppercase tracking-wide">Scripture & Life Lesson</h4>
+                        <p class="text-sm text-slate-300 mt-1 italic">
+                            "The name of the Lord is a strong tower; the righteous man runs into it and is safe." — Proverbs 18:10
+                        </p>
+                        <p class="text-xs text-slate-400 mt-2">
+                            <strong>Lesson:</strong> Just as strong passwords and robust hashing protect sensitive enterprise data from unauthorized intrusion, anchoring our trust in a secure spiritual fortress protects our hearts from moral compromise.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================================================
+     MODULE 7: FORENSIC INVESTIGATION & ATTACKER OBJECTIVES
+     (Add this section right after Module 6 inside <main>)
+     ========================================================================== -->
+<section id="attacker-objectives" class="bg-cybercard border border-slate-800 rounded-2xl p-6 sm:p-10 shadow-xl transition-all hover:border-slate-700">
+    <div class="flex items-center space-x-4 mb-6">
+        <div class="w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400 text-xl font-bold">
+            07
+        </div>
+        <div>
+            <h2 class="text-2xl sm:text-3xl font-bold text-white">What the Attacker Wanted & Step-by-Step Forensics</h2>
+            <p class="text-sm text-slate-400">Analyzing a mainframe compromise and executing the recovery steps from scratch</p>
+        </div>
+    </div>
+
+    <!-- What the Attacker is Looking For -->
+    <div class="space-y-4 text-slate-300 leading-relaxed mb-8">
+        <h3 class="text-lg font-semibold text-white">Target Objectives: What Was the Attacker Looking For?</h3>
+        <p>
+            In this scenario (Nor Central Loans mainframe compromised by the group <em>Liberation</em>), an attacker breaks into a high-value corporate or financial mainframe. They aren't just looking to vandalize; they are performing <strong>data exfiltration</strong> and reconnaissance. Specifically, they target:
+        </p>
+        <ul class="list-disc list-inside space-y-2 text-sm">
+            <li><strong class="text-white">Database Archives & Backup Dumps (.xmi / Net Data):</strong> Bundled database tables containing sensitive records, communications, and system configurations.</li>
+            <li><strong class="text-white">User Credential Tables:</strong> Account names and user authorization stores.</li>
+            <li><strong class="text-white">Password Hashes (RACF):</strong> Encrypted user credentials that can be cracked offline to escalate privileges and access deeper systems.</li>
+        </ul>
+    </div>
+
+    <!-- Thorough Step-by-Step Beginner Guide -->
+    <div class="space-y-6 mb-8">
+        <h3 class="text-lg font-semibold text-white">Complete Step-by-Step Forensics & Cracking Walkthrough</h3>
+        
+        <div class="space-y-4 text-sm text-slate-300">
+            <div class="bg-cyberdark border border-slate-800 p-4 rounded-xl">
+                <span class="text-cyberaccent font-bold">Step 1: File Inspection & Initial Analysis</span>
+                <p class="mt-1">Download the evidence file and check its format using the terminal:</p>
+                <code class="block bg-slate-900 p-2 rounded mt-2 font-mono text-slate-200">ls -la<br>file archive.net</code>
+            </div>
+
+            <div class="bg-cyberdark border border-slate-800 p-4 rounded-xl">
+                <span class="text-cyberaccent font-bold">Step 2: Decoding Base64 & Identifying Net Data</span>
+                <p class="mt-1">Notice trailing `=` signs indicating Base64 encoding. Decode it into an IBM Net Data file:</p>
+                <code class="block bg-slate-900 p-2 rounded mt-2 font-mono text-slate-200">base64 -d archive.net > archive_decoded.bin<br>file archive_decoded.bin</code>
+            </div>
+
+            <div class="bg-cyberdark border border-slate-800 p-4 rounded-xl">
+                <span class="text-cyberaccent font-bold">Step 3: Setting Up a Python Virtual Environment</span>
+                <p class="mt-1">Create an isolated directory workspace so installed parsing libraries don't mess up your system:</p>
+                <code class="block bg-slate-900 p-2 rounded mt-2 font-mono text-slate-200">python3 -m venv .venv<br>source .venv/bin/activate<br>pip install XMI-reader</code>
+            </div>
+
+            <div class="bg-cyberdark border border-slate-800 p-4 rounded-xl">
+                <span class="text-cyberaccent font-bold">Step 4: Extracting the Archive</span>
+                <p class="mt-1">Run the extraction tool to unpack the mainframe dataset, rename it to a standard `.zip`, and extract contents:</p>
+                <code class="block bg-slate-900 p-2 rounded mt-2 font-mono text-slate-200">extract-xmi archive_decoded.bin<br>mv archive_decoded.bin archive.zip<br>unzip archive.zip</code>
+            </div>
+
+            <div class="bg-cyberdark border border-slate-800 p-4 rounded-xl">
+                <span class="text-cyberaccent font-bold">Step 5: Overcoming EBCDIC Encoding</span>
+                <p class="mt-1">Inspect extracted files in a hex editor (`hexdump`) and spot repeating `40` values (EBCDIC spaces). Convert the database files from EBCDIC to ASCII:</p>
+                <code class="block bg-slate-900 p-2 rounded mt-2 font-mono text-slate-200">dd if=users of=users.ascii conv=ascii</code>
+            </div>
+
+            <div class="bg-cyberdark border border-slate-800 p-4 rounded-xl">
+                <span class="text-cyberaccent font-bold">Step 6: Cracking RACF Password Hashes</span>
+                <p class="mt-1">Isolate the extracted hashes into a file and run John the Ripper using the RockYou wordlist and best64 rule set:</p>
+                <code class="block bg-slate-900 p-2 rounded mt-2 font-mono text-slate-200">john --format=racf --wordlist=rockq.txt users.hash</code>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripture / Lesson Box -->
+    <div class="bg-gradient-to-r from-red-950/40 to-indigo-950/40 border-l-4 border-red-500 p-5 rounded-r-xl">
+        <div class="flex items-start space-x-3">
+            <i class="fa-solid fa-book-bible text-red-400 text-lg mt-1"></i>
+            <div>
+                <h4 class="text-sm font-bold text-red-300 uppercase tracking-wide">Scripture & Life Lesson</h4>
+                <p class="text-sm text-slate-300 mt-1 italic">
+                    "Be watchful, stand firm in the faith, act like men, be strong." — 1 Corinthians 16:13
+                </p>
+                <p class="text-xs text-slate-400 mt-2">
+                    <strong>Lesson:</strong> Understanding how malicious actors probe for weaknesses, gather intelligence, and exploit vulnerabilities helps security professionals better defend critical systems against breach.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+        <!-- ==========================================
+             COMMAND CHEAT SHEET SECTION
+             ========================================== -->
+        <section id="commands" class="bg-cybercard border border-slate-800 rounded-2xl p-6 sm:p-10 shadow-xl">
+            <div class="flex items-center space-x-4 mb-6">
+                <div class="w-12 h-12 rounded-xl bg-cyberaccent/10 border border-cyberaccent/30 flex items-center justify-center text-cyberaccent text-xl font-bold">
+                    <i class="fa-solid fa-terminal"></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-white">Forensic & Terminal Command Cheat Sheet</h2>
+                    <p class="text-sm text-slate-400">Quick reference guide for Linux forensics commands used in the challenge</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Command Card 1 -->
+                <div class="bg-cyberdark border border-slate-800 rounded-xl p-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <code class="text-cyberaccent font-mono font-bold">ls -la</code>
+                        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-300">File Listing</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mb-2">Lists all files in the current directory in long format, revealing hidden files starting with a dot (`.`).</p>
+                    <code class="text-[11px] text-slate-500 font-mono">Example: ls -la /home/user/downloads</code>
+                </div>
+
+                <!-- Command Card 2 -->
+                <div class="bg-cyberdark border border-slate-800 rounded-xl p-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <code class="text-cyberaccent font-mono font-bold">file [filename]</code>
+                        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-300">Type Identification</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mb-2">Analyzes magic bytes inside a file to determine its true format regardless of file extension.</p>
+                    <code class="text-[11px] text-slate-500 font-mono">Example: file archive.net</code>
+                </div>
+
+                <!-- Command Card 3 -->
+                <div class="bg-cyberdark border border-slate-800 rounded-xl p-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <code class="text-cyberaccent font-mono font-bold">base64 -d</code>
+                        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-300">Decoding</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mb-2">Decodes Base64 encoded text back into raw binary or readable data streams.</p>
+                    <code class="text-[11px] text-slate-500 font-mono">Example: base64 -d encoded.txt -o decoded.bin</code>
+                </div>
+
+                <!-- Command Card 4 -->
+                <div class="bg-cyberdark border border-slate-800 rounded-xl p-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <code class="text-cyberaccent font-mono font-bold">python3 -m venv .venv</code>
+                        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-300">Environment</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mb-2">Creates an isolated Python virtual environment folder named `.venv`.</p>
+                    <code class="text-[11px] text-slate-500 font-mono">Example: python3 -m venv .venv</code>
+                </div>
+
+                <!-- Command Card 5 -->
+                <div class="bg-cyberdark border border-slate-800 rounded-xl p-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <code class="text-cyberaccent font-mono font-bold">source .venv/bin/activate</code>
+                        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-300">Activation</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mb-2">Activates the virtual environment so packages install locally within the project.</p>
+                    <code class="text-[11px] text-slate-500 font-mono">Example: source .venv/bin/activate</code>
+                </div>
+
+                <!-- Command Card 6 -->
+                <div class="bg-cyberdark border border-slate-800 rounded-xl p-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <code class="text-cyberaccent font-mono font-bold">dd if=in of=out</code>
+                        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-300">Conversion</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mb-2">Low-level data copy and conversion utility used to translate EBCDIC to ASCII.</p>
+                    <code class="text-[11px] text-slate-500 font-mono">Example: dd if=users of=users.ascii conv=ascii</code>
+                </div>
+
+                <!-- Command Card 7 -->
+                <div class="bg-cyberdark border border-slate-800 rounded-xl p-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <code class="text-cyberaccent font-mono font-bold">john --format=racf</code>
+                        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-300">Password Cracking</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mb-2">John the Ripper password cracker configured to target mainframe RACF hashes.</p>
+                    <code class="text-[11px] text-slate-500 font-mono">Example: john --format=racf --wordlist=rockyou.txt users.hash</code>
+                </div>
+
+                <!-- Command Card 8 -->
+                <div class="bg-cyberdark border border-slate-800 rounded-xl p-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <code class="text-cyberaccent font-mono font-bold">unzip [file.zip]</code>
+                        <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-300">Extraction</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mb-2">Extracts compressed files and directories from standard ZIP archives.</p>
+                    <code class="text-[11px] text-slate-500 font-mono">Example: unzip archive.zip</code>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ==========================================
+         FOOTER
+         ========================================== -->
+    <footer class="bg-cybercard border-t border-slate-800 mt-20 py-8 text-center text-sm text-slate-500">
+        <div class="max-w-7xl mx-auto px-4 space-y-2">
+            <p>Designed as a Master UX/UI Responsive Web Application for Beginners.</p>
+            <p class="text-xs text-slate-600">Built with Tailwind CSS & FontAwesome. Fully modular for easy future expansion.</p>
+        </div>
+    </footer>
+
+    <!-- ==========================================
+         JAVASCRIPT FOR MOBILE MENU TOGGLE
+         ========================================== -->
+    <script>
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Close mobile menu when clicking a link
+        const mobileLinks = mobileMenu.querySelectorAll('a');
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+            });
+        });
+    </script>
+</body>
+</html>
