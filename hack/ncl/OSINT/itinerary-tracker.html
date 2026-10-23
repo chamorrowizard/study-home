@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en" class="dark scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSINT Geospatial Intelligence & Distance Calculations | Cyber Academy</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Fira Code & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b0f19;
+            color: #e2e8f0;
+        }
+        code, pre, .font-mono {
+            font-family: 'Fira Code', monospace;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b0f19;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+        .glow-border {
+            box-shadow: 0 0 15px rgba(14, 165, 233, 0.15);
+        }
+        .glow-border:hover {
+            box-shadow: 0 0 25px rgba(14, 165, 233, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-[#0b0f19] text-slate-100 min-h-screen selection:bg-cyan-500 selection:text-black">
+
+    <!-- ========================================== -->
+    <!-- NAVIGATION BAR -->
+    <!-- ========================================== -->
+    <header class="sticky top-0 z-50 backdrop-blur-md bg-[#0b0f19]/80 border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo & Brand -->
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+                        <i class="fa-solid fa-satellite-dish text-slate-950 text-lg font-bold"></i>
+                    </div>
+                    <div>
+                        <span class="font-bold text-lg tracking-wider bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">CYBER<span class="text-white">ACADEMY</span></span>
+                        <span class="block text-[10px] text-slate-400 font-mono tracking-widest uppercase">Geospatial OSINT Module</span>
+                    </div>
+                </div>
+
+                <!-- Desktop Nav Links -->
+                <nav class="hidden md:flex items-center space-x-8 text-sm font-medium">
+                    <a href="#overview" class="text-slate-300 hover:text-cyan-400 transition-colors">Overview</a>
+                    <a href="#what3words" class="text-slate-300 hover:text-cyan-400 transition-colors">What3Words</a>
+                    <a href="#haversine" class="text-slate-300 hover:text-cyan-400 transition-colors">Great-Circle Math</a>
+                    <a href="#cheatsheet" class="text-slate-300 hover:text-cyan-400 transition-colors">Tool Cheat Sheet</a>
+                    <a href="#forensics" class="text-slate-300 hover:text-cyan-400 transition-colors">Investigator Workflow</a>
+                </nav>
+
+                <!-- Action Button -->
+                <div class="hidden md:flex items-center space-x-4">
+                    <a href="#cheatsheet" class="px-4 py-2 text-xs font-mono font-semibold uppercase tracking-wider bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 rounded-lg hover:bg-cyan-500/20 transition-all">
+                        <i class="fa-solid fa-terminal mr-1.5"></i> CLI Toolkit
+                    </a>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-button" class="text-slate-400 hover:text-white focus:outline-none p-2">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Dropdown Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-[#0f172a] border-b border-slate-800 px-4 pt-2 pb-4 space-y-2">
+            <a href="#overview" class="block py-2 text-slate-300 hover:text-cyan-400 text-sm">Overview</a>
+            <a href="#what3words" class="block py-2 text-slate-300 hover:text-cyan-400 text-sm">What3Words</a>
+            <a href="#haversine" class="block py-2 text-slate-300 hover:text-cyan-400 text-sm">Great-Circle Math</a>
+            <a href="#cheatsheet" class="block py-2 text-slate-300 hover:text-cyan-400 text-sm">Tool Cheat Sheet</a>
+            <a href="#forensics" class="block py-2 text-slate-300 hover:text-cyan-400 text-sm">Investigator Workflow</a>
+        </div>
+    </header>
+
+    <!-- ========================================== -->
+    <!-- MAIN CONTENT CONTAINER -->
+    <!-- ========================================== -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-16">
+
+        <!-- MODULE 1: OVERVIEW & INTRODUCTION -->
+        <section id="overview" class="space-y-6">
+            <div class="border-l-4 border-cyan-500 pl-4 py-1">
+                <span class="text-xs font-mono font-bold uppercase tracking-widest text-cyan-400">Module 01 // Introduction</span>
+                <h1 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mt-1">Open Source Intelligence (OSINT) & Geospatial Tracking</h1>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- ELI5 Card -->
+                <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-6 glow-border transition-all">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                            <i class="fa-solid fa-child-reaching text-lg"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white">Explain Like I'm 5</h3>
+                    </div>
+                    <p class="text-slate-300 text-sm leading-relaxed">
+                        Imagine the entire Earth is a giant pizza. Geospatial OSINT is like being a detective who doesn't use secret spy gadgets—instead, you look at public clues left behind on the internet (like a photo background, a tweet, or three random words) to figure out the exact slice of pizza someone is standing on, and then measure how far they walked to get to the next slice!
+                    </p>
+                </div>
+
+                <!-- Technical Definition Card -->
+                <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-6 glow-border transition-all">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-10 h-10 rounded-lg bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400">
+                            <i class="fa-solid fa-book text-lg"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white">Technical Definition</h3>
+                    </div>
+                    <p class="text-slate-300 text-sm leading-relaxed">
+                        OSINT is the collection, analysis, and exploitation of information gathered from publicly available sources to satisfy intelligence requirements. In cybersecurity challenges and investigations, <strong>geospatial OSINT</strong> involves translating unstructured geographic references (place names, landmarks, grid codes) into precise geodetic coordinates (latitude and longitude) for spatial analysis.
+                    </p>
+                </div>
+
+                <!-- Real World Importance Card -->
+                <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-6 glow-border transition-all">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                            <i class="fa-solid fa-shield-halved text-lg"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white">Why It Matters</h3>
+                    </div>
+                    <p class="text-slate-300 text-sm leading-relaxed">
+                        Security teams and incident responders use OSINT to track physical infrastructure threats, investigate insider threats where employees leak company travel plans online, verify corporate asset locations, and perform pre-employment vetting or executive protection assessments.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- MODULE 2: WHAT3WORDS & GLOBAL GRID SYSTEMS -->
+        <section id="what3words" class="space-y-6">
+            <div class="border-l-4 border-cyan-500 pl-4 py-1">
+                <span class="text-xs font-mono font-bold uppercase tracking-widest text-cyan-400">Module 02 // Spatial Indexing</span>
+                <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-1">Understanding What3Words (w3w)</h2>
+            </div>
+
+            <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-6 sm:p-8 space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                    <div class="space-y-4">
+                        <h3 class="text-xl font-bold text-white flex items-center">
+                            <i class="fa-solid fa-th text-cyan-400 mr-3"></i> The 3-Meter Global Grid
+                        </h3>
+                        <p class="text-slate-300 text-sm leading-relaxed">
+                            Traditional latitude and longitude coordinates (e.g., <code class="bg-slate-800 px-2 py-0.5 rounded text-cyan-300 text-xs">43.7022, -72.2895</code>) are precise but prone to human error, typos, and difficulty in verbal communication. What3Words solved this by dividing the entire surface of the Earth into a grid of <strong class="text-white">3-meter by 3-meter squares</strong>.
+                        </p>
+                        <p class="text-slate-300 text-sm leading-relaxed">
+                            Every single square is assigned a unique combination of three dictionary words separated by dots (e.g., <code class="bg-slate-800 px-2 py-0.5 rounded text-cyan-300 text-xs">locals.attract.requirement</code>). This allows investigators to pinpoint exact trailheads, campsites, or building entrances globally with incredible ease.
+                        </p>
+                    </div>
+
+                    <div class="bg-slate-950 border border-slate-800 p-5 rounded-xl font-mono text-xs space-y-3">
+                        <div class="flex items-center justify-between text-slate-500 border-b border-slate-800 pb-2">
+                            <span>MAPPING_SYSTEM.py</span>
+                            <span class="text-cyan-400">ENCODING_GRID</span>
+                        </div>
+                        <div class="text-slate-300">
+                            <span class="text-purple-400">def</span> <span class="text-blue-400">resolve_w3w</span>(address):<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-slate-500"># Splits string by dot delimiter</span><br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;words = address.<span class="text-blue-300">split</span>(<span class="string">'.'</span>)<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-purple-400">if</span> <span class="blue-300">len</span>(words) == <span class="orange-400">3</span>:<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-cyan-300">return</span> query_global_index(words)<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-purple-400">raise</span> <span class="red-400">ValueError</span>(<span class="string">"Invalid format"</span>)
+                        </div>
+                        <div class="text-emerald-400 text-[11px] pt-1">
+                            ✓ Output: Lat/Long Geodetic Pair
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-t border-slate-800 pt-6">
+                    <h4 class="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">Key Terminology</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="bg-slate-950/50 p-4 rounded-lg border border-slate-800/80">
+                            <span class="font-bold text-white text-sm block mb-1">Geodetic Datum</span>
+                            <p class="text-slate-400 text-xs leading-relaxed">A mathematical model representing the earth's surface used to calculate accurate positions (e.g., WGS 84).</p>
+                        </div>
+                        <div class="bg-slate-950/50 p-4 rounded-lg border border-slate-800/80">
+                            <span class="font-bold text-white text-sm block mb-1">Spatial Resolution</span>
+                            <p class="text-slate-400 text-xs leading-relaxed">The smallest separable detail on a map or grid system—in w3w's case, exactly 3x3 meters.</p>
+                        </div>
+                        <div class="bg-slate-950/50 p-4 rounded-lg border border-slate-800/80">
+                            <span class="font-bold text-white text-sm block mb-1">Ambiguity Resolution</span>
+                            <p class="text-slate-400 text-xs leading-relaxed">Using regional context (such as state or country) to select the correct w3w match when duplicate words exist globally.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MODULE 3: GREAT-CIRCLE MATH & THE HAVERSINE FORMULA -->
+        <section id="haversine" class="space-y-6">
+            <div class="border-l-4 border-cyan-500 pl-4 py-1">
+                <span class="text-xs font-mono font-bold uppercase tracking-widest text-cyan-400">Module 03 // Spatial Mathematics</span>
+                <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-1">Great-Circle Distance & The Haversine Formula</h2>
+            </div>
+
+            <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-6 sm:p-8 space-y-6">
+                <div>
+                    <h3 class="text-xl font-bold text-white mb-2">Why Flat Maps Lie</h3>
+                    <p class="text-slate-300 text-sm leading-relaxed">
+                        Because the Earth is an oblate spheroid, drawing a straight line on a flat 2D map does not represent the shortest physical distance between two points. Instead, the shortest distance across a sphere's surface is an arc known as the <strong>Great-Circle Distance</strong>.
+                    </p>
+                </div>
+
+                <!-- Mathematical Equation Box -->
+                <div class="bg-slate-950 border border-slate-800 p-6 rounded-xl space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-mono uppercase tracking-widest text-cyan-400"><i class="fa-solid fa-calculator mr-2"></i> The Haversine Equation</span>
+                        <span class="text-xs font-mono text-slate-500">Spherical Trigonometry</span>
+                    </div>
+                    
+                    <div class="overflow-x-auto py-2 font-mono text-sm text-cyan-300 text-center bg-slate-900/80 p-4 rounded-lg border border-slate-800">
+                        $$a = \\sin^2\\left(\\frac{\\Delta \\phi}{2}\\right) + \\cos(\\phi_1) \\cdot \\cos(\\phi_2) \\cdot \\sin^2\\left(/frac{\\Delta \\lambda}{2}\\right)$$
+                        <div class="text-slate-400 text-xs mt-2">$c = 2 \\cdot \\text{atan2}(\\sqrt{a}, \\sqrt{1-a}) \\quad\\text{|}\\quad d = R \\cdot c$</div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                        <div class="bg-slate-900/50 p-3 rounded border border-slate-800">
+                            <span class="font-bold text-white block mb-1">$\\phi_1, \\phi_2$</span>
+                            <span class="text-slate-400">Latitudes of point 1 and point 2 in radians</span>
+                        </div>
+                        <div class="bg-slate-900/50 p-3 rounded border border-slate-800">
+                            <span class="font-bold text-white block mb-1">$\\Delta \\lambda$</span>
+                            <span class="text-slate-400">Difference in longitudes in radians</span>
+                        </div>
+                        <div class="bg-slate-900/50 p-3 rounded border border-slate-800">
+                            <span class="font-bold text-white block mb-1">$R$</span>
+                            <span class="text-slate-400">Earth's mean radius (~6,371 km)</span>
+                        </div>
+                        <div class="bg-slate-900/50 p-3 rounded border border-slate-800">
+                            <span class="font-bold text-white block mb-1">$d$</span>
+                            <span class="text-slate-400">Great-circle distance output</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Python Implementation Snippet -->
+                <div class="space-y-3">
+                    <h4 class="text-sm font-bold text-white flex items-center">
+                        <i class="fa-solid fa-code text-cyan-400 mr-2"></i> Python Implementation for OSINT Challenges
+                    </h4>
+                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 font-mono text-xs overflow-x-auto text-slate-300 leading-relaxed">
+                        <pre><span class="text-purple-400">import</span> math
+
+<span class="text-purple-400">def</span> <span class="text-blue-400">calculate_haversine_distance</span>(lat1, lon1, lat2, lon2):
+    R = <span class="text-orange-400">6371.0</span>  <span class="text-slate-500"># Earth radius in kilometers</span>
+    
+    <span class="text-slate-500"># Convert degrees to radians</span>
+    phi1, phi2 = math.<span class="text-blue-300">radians</span>(lat1), math.<span class="text-blue-300">radians</span>(lat2)
+    dlat = math.<span class="text-blue-300">radians</span>(lat2 - lat1)
+    dlon = math.<span class="text-blue-300">radians</span>(lon2 - lon1)
+    
+    <span class="text-slate-500"># Apply Haversine formula</span>
+    a = math.<span class="text-blue-300">sin</span>(dlat / <span class="text-orange-400">2</span>)**<span class="text-orange-400">2</span> + math.<span class="text-blue-300">cos</span>(phi1) * math.<span class="text-blue-300">cos</span>(phi2) * math.<span class="text-blue-300">sin</span>(dlon / <span class="text-orange-400">2</span>)**<span class="text-orange-400">2</span>
+    c = <span class="text-orange-400">2</span> * math.<span class="text-blue-300">atan2</span>(math.<span class="text-blue-300">sqrt</span>(a), math.<span class="text-blue-300">sqrt</span>(<span class="text-orange-400">1</span> - a))
+    
+    <span class="text-cyan-300">return</span> <span class="blue-300">round</span>(R * c) <span class="text-slate-500"># Rounded to nearest km</span></pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MODULE 4: COMMAND & TOOL CHEAT SHEET -->
+        <section id="cheatsheet" class="space-y-6">
+            <div class="border-l-4 border-cyan-500 pl-4 py-1">
+                <span class="text-xs font-mono font-bold uppercase tracking-widest text-cyan-400">Module 04 // Reference Manual</span>
+                <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-1">Command & Tool Cheat Sheet</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Tool Card 1 -->
+                <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-6 space-y-4 glow-border">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-mono px-2.5 py-1 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">Mapping Utility</span>
+                        <i class="fa-solid fa-map-location-dot text-slate-500 text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-white">Google Maps & What3Words API</h3>
+                        <p class="text-slate-400 text-xs mt-1">Used for geocoding word strings into precise spatial coordinates and locating nearby terrain features.</p>
+                    </div>
+                    <div class="bg-slate-950 p-3 rounded border border-slate-800 font-mono text-xs text-cyan-300">
+                        https://w3w.co/locals.attract.requirement
+                    </div>
+                </div>
+
+                <!-- Tool Card 2 -->
+                <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-6 space-y-4 glow-border">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-mono px-2.5 py-1 rounded bg-blue-500/10 text-blue-400 border border-blue-500/30">CLI Environment</span>
+                        <i class="fa-solid fa-terminal text-slate-500 text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-white">Python 3 Math Interpreter</h3>
+                        <p class="text-slate-400 text-xs mt-1">Executes trigonometric calculations and custom distance functions without rounding errors.</p>
+                    </div>
+                    <div class="bg-slate-950 p-3 rounded border border-slate-800 font-mono text-xs text-cyan-300">
+                        python3 -c "import math; print(...)"
+                    </div>
+                </div>
+
+                <!-- Tool Card 3 -->
+                <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-6 space-y-4 glow-border">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-mono px-2.5 py-1 rounded bg-purple-500/10 text-purple-400 border border-purple-500/30">Trail Reconnaissance</span>
+                        <i class="fa-solid fa-person-hiking text-slate-500 text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-white">AllTrails / Topographic GIS</h3>
+                        <p class="text-slate-400 text-xs mt-1">Identifies official trail names, elevation profiles, peaks, and intersecting landmarks.</p>
+                    </div>
+                    <div class="bg-slate-950 p-3 rounded border border-slate-800 font-mono text-xs text-cyan-300">
+                        Filter: Appalachian Trail System
+                    </div>
+                </div>
+
+                <!-- Tool Card 4 -->
+                <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-6 space-y-4 glow-border">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-mono px-2.5 py-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">EXIF Inspection</span>
+                        <i class="fa-solid fa-image text-slate-500 text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-white">ExifTool</h3>
+                        <p class="text-slate-400 text-xs mt-1">Extracts embedded GPS EXIF metadata from user-uploaded vacation photos or itinerary attachments.</p>
+                    </div>
+                    <div class="bg-slate-950 p-3 rounded border border-slate-800 font-mono text-xs text-cyan-300">
+                        exiftool -gps:all vacation_photo.jpg
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MODULE 5: FORENSIC INVESTIGATION & ATTACKER OBJECTIVES -->
+        <section id="forensics" class="space-y-6">
+            <div class="border-l-4 border-cyan-500 pl-4 py-1">
+                <span class="text-xs font-mono font-bold uppercase tracking-widest text-cyan-400">Module 05 // Security Analysis</span>
+                <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-1">Forensic Investigation & Attacker Objectives</h2>
+            </div>
+
+            <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-6 sm:p-8 space-y-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Attacker Perspective -->
+                    <div class="space-y-4 bg-slate-950/60 p-6 rounded-xl border border-red-500/20">
+                        <div class="flex items-center space-x-3 text-red-400">
+                            <i class="fa-solid fa-crosshairs text-xl"></i>
+                            <h3 class="text-lg font-bold text-white">What an Attacker Looks For</h3>
+                        </div>
+                        <ul class="space-y-3 text-sm text-slate-300">
+                            <li class="flex items-start">
+                                <i class="fa-solid fa-triangle-exclamation text-red-400 mt-1 mr-2.5 text-xs"></i>
+                                <span><strong>Predictable Routines:</strong> Habitual vacation spots, hiking schedules, or check-ins that reveal physical absence from secure premises.</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa-solid fa-triangle-exclamation text-red-400 mt-1 mr-2.5 text-xs"></i>
+                                <span><strong>Unsanitized Metadata:</strong> Photos posted to social media containing raw GPS coordinates, timestamps, and device serial numbers.</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa-solid fa-triangle-exclamation text-red-400 mt-1 mr-2.5 text-xs"></i>
+                                <span><strong>Geolocated Itineraries:</strong> Publicly shared travel plans allowing threat actors to intercept executives or map vulnerabilities.</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Analyst Perspective -->
+                    <div class="space-y-4 bg-slate-950/60 p-6 rounded-xl border border-emerald-500/20">
+                        <div class="flex items-center space-x-3 text-emerald-400">
+                            <i class="fa-solid fa-magnifying-glass-chart text-xl"></i>
+                            <h3 class="text-lg font-bold text-white">Step-by-Step Analyst Workflow</h3>
+                        </div>
+                        <ol class="space-y-3 text-sm text-slate-300 list-decimal list-inside">
+                            <li class="pl-1"><strong>Extract Artifacts:</strong> Gather clues (words, timestamps, or image files) from the intelligence brief or incident report.</li>
+                            <li class="pl-1"><strong>Normalize Coordinates:</strong> Convert verbal locators into standardized WGS 84 latitude/longitude decimal pairs.</li>
+                            <li class="pl-1"><strong>Topographical Cross-Reference:</strong> Overlay coordinates on regional GIS software or topographical maps to identify trails, peaks, or proximate businesses.</li>
+                            <li class="pl-1"><strong>Mathematical Verification:</strong> Compute distances and bearings using spherical formulas to validate transit feasibility.</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <!-- Step-by-Step Beginner Practical Guide -->
+                <div class="border-t border-slate-800 pt-6 space-y-4">
+                    <h3 class="text-lg font-bold text-white flex items-center">
+                        <i class="fa-solid fa-list-check text-cyan-400 mr-2"></i> Practical Challenge Walkthrough: Step-by-Step
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="bg-slate-950 p-4 rounded-lg border border-slate-800">
+                            <span class="text-cyan-400 font-mono text-xs font-bold block mb-1">STEP 01 // RESOLUTION</span>
+                            <p class="text-slate-300 text-xs leading-relaxed">Type the 3-word address into w3w, filter by regional context (e.g., New Hampshire), and capture the lat/long coordinates.</p>
+                        </div>
+                        <div class="bg-slate-950 p-4 rounded-lg border border-slate-800">
+                            <span class="text-cyan-400 font-mono text-xs font-bold block mb-1">STEP 02 // RECON</span>
+                            <p class="text-slate-300 text-xs leading-relaxed">Open Google Maps / Topo maps around the dropped pins to identify the nearest restaurant and mountain peak.</p>
+                        </div>
+                        <div class="bg-slate-950 p-4 rounded-lg border border-slate-800">
+                            <span class="text-cyan-400 font-mono text-xs font-bold block mb-1">STEP 03 // COMPUTATION</span>
+                            <p class="text-slate-300 text-xs leading-relaxed">Plug both coordinate pairs into the Haversine Python script to calculate the precise great-circle distance in kilometers.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ========================================== -->
+    <!-- FOOTER -->
+    <!-- ========================================== -->
+    <footer class="border-t border-slate-800 bg-[#0b0f19] mt-20 py-8 text-center text-slate-500 text-xs font-mono">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-2">
+            <p>CYBERACADEMY OSINT TRAINING MODULE // DESIGNED FOR BEGINNERS & PRACTITIONERS</p>
+            <p class="text-slate-600">Built with Tailwind CSS & FontAwesome. Secure Dark-Theme UI.</p>
+        </div>
+    </footer>
+
+    <!-- Mobile Menu Toggle Script -->
+    <script>
+        const btn = document.getElementById('mobile-menu-button');
+        const menu = document.getElementById('mobile-menu');
+
+        btn.addEventListener('click', () => {
+            menu.classList.toggle('hidden');
+        });
+
+        // Close menu on link click
+        menu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                menu.classList.add('hidden');
+            });
+        });
+    </script>
+</body>
+</html>
